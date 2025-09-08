@@ -32,6 +32,24 @@
   border-radius: 12px;
   background: #fff;
 
+  .row{
+  display:grid;
+  grid-template-columns:120px 1fr 88px 44px;
+  align-items:center;
+  gap:10px;
+  padding:14px 14px;
+  border-top:1px solid var(--line);
+  position:relative; /* Añadido para posicionamiento absoluto de la fecha */
+}
+
+.date {
+  position: absolute;
+  top: 2px;
+  right: 8px;
+  font-size: 12px;
+  color: #000;
+}
+
 }
 .amount[readonly]{border-color:transparent;background:var(--card)}
 
@@ -92,15 +110,29 @@
     const SKEY = 'debt-list-v1';
     let items = [];
 
+    // Función para formatear fecha como dd/mm/aaaa
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+  return `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+    }
+
     function save(){ localStorage.setItem(SKEY, JSON.stringify(items)); }
     function load(){ items = JSON.parse(localStorage.getItem(SKEY)||'[]'); }
 
     function addItem(name, amount){
-      if(!name) name = 'Sin nombre';
-      const amt = Number(amount)||0;
-      items.unshift({ id: crypto.randomUUID(), name, amount: amt, paid: false, created: Date.now() });
-      save();
-      render();
+  if(!name) name = 'Sin nombre';
+  const amt = Number(amount)||0;
+  items.unshift({ 
+    id: crypto.randomUUID(), 
+    name, 
+    amount: amt, 
+    paid: false, 
+    created: Date.now(),
+    // Guardamos la fecha formateada para mostrarla
+    displayDate: formatDate(Date.now())
+  });
+  save();
+  render();
     }
 
     function delItem(id){ items = items.filter(x=>x.id!==id); save(); render(); }
@@ -164,7 +196,15 @@
       del.textContent = '🗑️';
       del.addEventListener('click', ()=> delItem(item.id));
 
-      li.append(amountBox, name, statusBtn, del);
+      // Fecha de creación (se conserva la fecha original)
+const fechaSpan = document.createElement("span");
+fechaSpan.className = "date";
+fechaSpan.textContent = item.displayDate || formatDate(item.created);
+
+li.append(amountBox, name, statusBtn, del);
+li.appendChild(fechaSpan);
+
+  
       return li;
     }
 
