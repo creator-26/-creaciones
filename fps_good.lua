@@ -63,6 +63,41 @@ local frames = 0
 local fps = 0
 local visible = true
 
+-- --- Inicio: código de arrastrar (péguelo después de crear 'frame' y los labels) ---
+local dragging = false
+local dragInput, dragStart, startPos
+local UIS = game:GetService("UserInputService")
+
+local function update(input)
+    local delta = input.Position - dragStart
+    frame.Position = UDim2.new(
+        startPos.X.Scale,
+        startPos.X.Offset + delta.X,
+        startPos.Y.Scale,
+        startPos.Y.Offset + delta.Y
+    )
+end
+
+frame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = frame.Position
+        dragInput = input
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then
+                dragging = false
+            end
+        end)
+    end
+end)
+
+UIS.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        update(input)
+    end
+end)
+-- --- Fin: código de arrastrar ---
 -- Conexiones (para poder desconectar si es necesario)
 local connections = {}
 
