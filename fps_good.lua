@@ -36,7 +36,7 @@ uiCorner.Parent = frame
 -- Label de FPS
 local fpsLabel = Instance.new("TextLabel")
 fpsLabel.Size = UDim2.new(1, -10, 1, -10)
-fpsLabel.Position = UDim2.new(0, 8, 0, 6)
+fpsLabel.Position = UDim2.new(0, 8, 0, 3)
 fpsLabel.BackgroundTransparency = 1
 fpsLabel.Font = Enum.Font.GothamBold
 fpsLabel.TextSize = 20
