@@ -22,7 +22,7 @@ screenGui.Parent = game.CoreGui
 
 -- Frame principal
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 150, 0, 48)
+frame.Size = UDim2.new(0, 130, 0, 48)
 frame.Position = UDim2.new(0, 10, 0, 10)
 frame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
 frame.BackgroundTransparency = 0.15
