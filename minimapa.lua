@@ -1,6 +1,10 @@
--- 🔥 Alex_Minimap Mejorado 🔥
--- Triángulo central SIEMPRE visible, rota con la cámara.
--- Optimizado + draggable + suavizado.
+-- 🌍 Alex_Minimap v4 🌍
+-- ✅ Optimizado
+-- ✅ Triángulo central sin assetid (dibujado con Frames)
+-- ✅ Rota según la cámara
+-- ✅ Draggable
+-- ✅ Suavizado en dots
+-- ✅ Limpieza segura
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -8,25 +12,26 @@ local UserInputService = game:GetService("UserInputService")
 local LocalPlayer = Players.LocalPlayer
 local Camera = workspace.CurrentCamera
 
-local GUI_NAME = "Alex_Minimap_v3"
+local GUI_NAME = "Alex_Minimap_v4"
 
--- CONFIG
+-- ⚙️ CONFIG
 local MAP_SIZE = 140
 local MAP_RANGE = 120
 local DOT_SIZE = 6
-local updateRate = 0.08
-local smoothFactor = 0.25
+local UPDATE_RATE = 0.08
+local SMOOTH = 0.25
 
--- cleanup anterior
+-- 🧹 cleanup si ya existe
 if game.CoreGui:FindFirstChild(GUI_NAME) then
-    game.CoreGui[GUI_NAME]:Destroy()
+    pcall(function() game.CoreGui[GUI_NAME]:Destroy() end)
 end
 
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = GUI_NAME
+screenGui.ResetOnSpawn = false
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Marco minimapa
+-- 🖼️ Marco minimapa
 local mapFrame = Instance.new("Frame")
 mapFrame.Size = UDim2.new(0, MAP_SIZE, 0, MAP_SIZE)
 mapFrame.Position = UDim2.new(0, 30, 0, 90)
@@ -46,24 +51,41 @@ uiStroke.Color = Color3.fromRGB(0, 255, 120)
 uiStroke.Parent = mapFrame
 
 local dotsFolder = Instance.new("Folder")
+dotsFolder.Name = "Dots"
 dotsFolder.Parent = mapFrame
 
--- 🚩 Tu triángulo central
-local tri = Instance.new("ImageLabel")
-tri.Size = UDim2.new(0, 18, 0, 18)
+-- 🚩 Triángulo central hecho en Frames
+local tri = Instance.new("Frame")
+tri.Size = UDim2.new(0, 20, 0, 20)
 tri.AnchorPoint = Vector2.new(0.5, 0.5)
-tri.Position = UDim2.new(0.5, 0, 0.5, 0) -- centro exacto
+tri.Position = UDim2.new(0.5, 0, 0.5, 0)
 tri.BackgroundTransparency = 1
-tri.Image = "rbxassetid://10164277641" -- cambia si quieres otro
-tri.ImageColor3 = Color3.fromRGB(0, 255, 120)
 tri.Parent = mapFrame
 
--- draggable
+local function makeLine(rot)
+    local line = Instance.new("Frame")
+    line.Size = UDim2.new(0, 2, 0, 20)
+    line.AnchorPoint = Vector2.new(0.5, 0)
+    line.Position = UDim2.new(0.5, 0, 0, 0)
+    line.BackgroundColor3 = Color3.fromRGB(0, 255, 120)
+    line.BorderSizePixel = 0
+    line.Rotation = rot
+    line.Parent = tri
+end
+
+makeLine(0)
+makeLine(-120)
+makeLine(120)
+
+-- 🎮 draggable
 do
     local dragging, dragInput, dragStart, startPos
     local function update(input)
         local delta = input.Position - dragStart
-        mapFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        mapFrame.Position = UDim2.new(
+            startPos.X.Scale, startPos.X.Offset + delta.X,
+            startPos.Y.Scale, startPos.Y.Offset + delta.Y
+        )
     end
     mapFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -85,7 +107,7 @@ do
     end)
 end
 
--- Dots
+-- 🔴 dots players
 local playerDots = {}
 local half = MAP_SIZE / 2
 
@@ -104,16 +126,17 @@ local function createDot()
     return dot
 end
 
--- loop
+-- ♻️ loop
 task.spawn(function()
-    while task.wait(updateRate) do
+    while task.wait(UPDATE_RATE) do
         if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
             continue
         end
+
         local myRoot = LocalPlayer.Character.HumanoidRootPart
         local myPos = myRoot.Position
         local look = Camera.CFrame.LookVector
-        tri.Rotation = math.deg(math.atan2(-look.X, -look.Z))
+        tri.Rotation = math.deg(math.atan2(-look.X, -look.Z)) -- rotación según cámara
 
         local seen = {}
         for _, plr in ipairs(Players:GetPlayers()) do
@@ -128,8 +151,8 @@ task.spawn(function()
                         playerDots[plr] = createDot()
                     end
                     local cur = playerDots[plr].Position
-                    local newX = lerp(cur.X.Offset, px, smoothFactor)
-                    local newY = lerp(cur.Y.Offset, py, smoothFactor)
+                    local newX = lerp(cur.X.Offset, px, SMOOTH)
+                    local newY = lerp(cur.Y.Offset, py, SMOOTH)
                     playerDots[plr].Position = UDim2.new(0, newX, 0, newY)
                     playerDots[plr].Visible = true
                     seen[plr] = true
@@ -141,3 +164,12 @@ task.spawn(function()
         end
     end
 end)
+
+-- 🧹 cleanup manual
+_G.AlexMinimap_Cleanup = function()
+    pcall(function() screenGui:Destroy() end)
+    playerDots = {}
+    print("[AlexMinimap] Eliminado correctamente.")
+end
+
+print("[AlexMinimap] ✅ cargado. Triángulo verde activo en el centro.")
