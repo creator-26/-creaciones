@@ -29,6 +29,13 @@ frame.BackgroundTransparency = 0.15
 frame.BorderSizePixel = 0
 frame.Parent = screenGui
 
+-- Borde neón (UIStroke)
+local neonBorder = Instance.new("UIStroke")
+neonBorder.Thickness = 2
+neonBorder.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+neonBorder.Color = Color3.fromRGB(0, 255, 150) -- cambia el color si quieres
+neonBorder.Parent = frame
+
 local uiCorner = Instance.new("UICorner")
 uiCorner.CornerRadius = UDim.new(0, 8)
 uiCorner.Parent = frame
