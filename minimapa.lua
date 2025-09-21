@@ -54,28 +54,16 @@ local dotsFolder = Instance.new("Folder")
 dotsFolder.Name = "Dots"
 dotsFolder.Parent = mapFrame
 
--- 🚩 Triángulo central hecho en Frames
-local tri = Instance.new("Frame")
-tri.Size = UDim2.new(0, 20, 0, 20)
+-- 🚩 Triángulo central con emoji (⬆️)
+local tri = Instance.new("TextLabel")
+tri.Size = UDim2.new(0, 24, 0, 24)
 tri.AnchorPoint = Vector2.new(0.5, 0.5)
-tri.Position = UDim2.new(0.5, 0, 0.5, 0)
+tri.Position = UDim2.new(0.5, 0, 0.5, 0) -- centro exacto
 tri.BackgroundTransparency = 1
+tri.Text = "⬆️"
+tri.TextScaled = true
+tri.TextColor3 = Color3.fromRGB(0, 255, 120) -- verde
 tri.Parent = mapFrame
-
-local function makeLine(rot)
-    local line = Instance.new("Frame")
-    line.Size = UDim2.new(0, 2, 0, 20)
-    line.AnchorPoint = Vector2.new(0.5, 0)
-    line.Position = UDim2.new(0.5, 0, 0, 0)
-    line.BackgroundColor3 = Color3.fromRGB(0, 255, 120)
-    line.BorderSizePixel = 0
-    line.Rotation = rot
-    line.Parent = tri
-end
-
-makeLine(0)
-makeLine(-120)
-makeLine(120)
 
 -- 🎮 draggable
 do
