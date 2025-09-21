@@ -60,7 +60,7 @@ tri.Size = UDim2.new(0, 24, 0, 24)
 tri.AnchorPoint = Vector2.new(0.5, 0.5)
 tri.Position = UDim2.new(0.5, 0, 0.5, 0) -- centro exacto
 tri.BackgroundTransparency = 1
-tri.Text = "⬇️"
+tri.Text = "⬆️"
 tri.TextScaled = true
 tri.TextColor3 = Color3.fromRGB(0, 255, 120) -- verde
 tri.Parent = mapFrame
@@ -126,7 +126,7 @@ task.spawn(function()
         local myPos = myRoot.Position
         local cameraCFrame = Camera.CFrame
         local look = cameraCFrame.LookVector
-        local cameraRotation = -math.atan2(look.X, look.Z)
+        local cameraRotation = math.atan2(look.X, look.Z)
         
         tri.Rotation = math.deg(cameraRotation) -- rotación según cámara
 
