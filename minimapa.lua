@@ -124,10 +124,11 @@ task.spawn(function()
 
         local myRoot = LocalPlayer.Character.HumanoidRootPart
         local myPos = myRoot.Position
-        local cameraCFrame = Camera.CFrame             
-            -- Usa el RightVector para una rotación más precisa
-        local rightVector = cameraCFrame.RightVector
-        local cameraRotation = math.atan2(rightVector.X, rightVector.Z) + math.pi/2 
+        local cameraCFrame = Camera.CFrame
+        local look = cameraCFrame.LookVector
+        local cameraRotation = math.atan2(look.X, look.Z)
+
+        tri.Rotation = math.deg(-cameraRotation)  -- Signo negativo aplicado al ángulo 
 
         local seen = {}
         for _, plr in ipairs(Players:GetPlayers()) do
