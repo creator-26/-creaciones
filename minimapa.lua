@@ -125,9 +125,9 @@ task.spawn(function()
         local myRoot = LocalPlayer.Character.HumanoidRootPart
         local myPos = myRoot.Position
         local cameraCFrame = Camera.CFrame
-        local look = cameraCFrame.LookVector
-        local cameraRotation = math.atan2(look.X, look.Z)  -- AÑADIDO el signo negativo
-
+-- Calcula la rotación directamente desde los vectores de la cámara
+        local lookVector = cameraCFrame.LookVector
+        local cameraRotation = math.atan2(-lookVector.X, -lookVector.Z)
         tri.Rotation = math.deg(cameraRotation) -- rotación según cámara 
 
         local seen = {}
