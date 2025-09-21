@@ -115,7 +115,7 @@ local function createDot()
 end
 
 -- 
--- ♻️ loop CORREGIDO
+-- ♻️ loop CORREGIDO (Mapa rota, flecha fija)
 task.spawn(function()
     while task.wait(UPDATE_RATE) do
         if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -126,9 +126,10 @@ task.spawn(function()
         local myPos = myRoot.Position
         local cameraCFrame = Camera.CFrame
         local look = cameraCFrame.LookVector
-        local cameraRotation = math.atan2(look.X, look.Z)
+        local cameraRotation = -math.atan2(look.X, look.Z)  -- Rotación para el MAPA
 
-        tri.Rotation = math.deg(-cameraRotation)  -- Signo negativo aplicado al ángulo 
+        -- La flecha SIEMPRE mira hacia arriba (0 grados)
+        tri.Rotation = 0
 
         local seen = {}
         for _, plr in ipairs(Players:GetPlayers()) do
@@ -137,9 +138,11 @@ task.spawn(function()
                 local worldPos = hrp.Position
                 local relativePos = worldPos - myPos
                 
-                -- Rotar las coordenadas según la dirección de la cámara
-               local rotatedX = relativePos.X * math.cos(cameraRotation) - relativePos.Z * math.sin(cameraRotation)
-               local rotatedZ = relativePos.X * math.sin(cameraRotation) + relativePos.Z * math.cos(cameraRotation)
+                -- Rotar la posición relativa según la cámara (EL MAPA gira)
+                local cos = math.cos(cameraRotation)
+                local sin = math.sin(cameraRotation)
+                local rotatedX = relativePos.X * cos - relativePos.Z * sin
+                local rotatedZ = relativePos.X * sin + relativePos.Z * cos
                 
                 local dist = math.sqrt(rotatedX * rotatedX + rotatedZ * rotatedZ)
                 if dist < MAP_RANGE then
