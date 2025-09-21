@@ -54,7 +54,7 @@ tri.Size = UDim2.new(0, 18, 0, 18)
 tri.AnchorPoint = Vector2.new(0.5, 0.5)
 tri.Position = UDim2.new(0.5, 0, 0.5, 0) -- centro exacto
 tri.BackgroundTransparency = 1
-tri.Image = "rbxassetid://14590309638" -- cambia si quieres otro
+tri.Image = "rbxassetid://10164277641" -- cambia si quieres otro
 tri.ImageColor3 = Color3.fromRGB(0, 255, 120)
 tri.Parent = mapFrame
 
