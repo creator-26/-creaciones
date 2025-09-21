@@ -78,7 +78,7 @@ tri.AnchorPoint = Vector2.new(0.5, 0.5)
 tri.Position = UDim2.new(0.5, 0, 0.5, 0)
 tri.BackgroundTransparency = 1
 -- Imagen triangular ligera (si no carga, se verá vacío; puedes cambiar por otro asset)
-tri.Image = "rbxassetid://14590309638" 
+tri.Image = "rbxassetid://"10164277641" 
 tri.ImageColor3 = Color3.fromRGB(0, 255, 120)
 tri.Rotation = 0
 tri.Parent = playerIcon
