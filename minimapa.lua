@@ -137,11 +137,9 @@ task.spawn(function()
                 local worldPos = hrp.Position
                 local relativePos = worldPos - myPos
                 
-                -- Rotar la posición relativa según la cámara
-                local cos = math.cos(cameraRotation)
-                local sin = math.sin(cameraRotation)
-                local rotatedX = relativePos.X * cos - relativePos.Z * sin
-                local rotatedZ = relativePos.X * sin + relativePos.Z * cos
+                -- Rotar las coordenadas según la dirección de la cámara
+               local rotatedX = relativePos.X * math.cos(cameraRotation) - relativePos.Z * math.sin(cameraRotation)
+               local rotatedZ = relativePos.X * math.sin(cameraRotation) + relativePos.Z * math.cos(cameraRotation)
                 
                 local dist = math.sqrt(rotatedX * rotatedX + rotatedZ * rotatedZ)
                 if dist < MAP_RANGE then
