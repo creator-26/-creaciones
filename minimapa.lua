@@ -126,9 +126,9 @@ task.spawn(function()
         local myPos = myRoot.Position
         local cameraCFrame = Camera.CFrame
         local look = cameraCFrame.LookVector
-        local cameraRotation = -math.atan2(look.X, look.Z)  -- AÑADIDO el signo negativo
+        local cameraRotation = math.atan2(look.X, look.Z)  -- AÑADIDO el signo negativo
 
-        tri.Rotation = math.deg(cameraRotation) -- rotación según cámara -- rotación según cámara
+        tri.Rotation = math.deg(cameraRotation) -- rotación según cámara 
 
         local seen = {}
         for _, plr in ipairs(Players:GetPlayers()) do
@@ -140,8 +140,8 @@ task.spawn(function()
                 -- Rotar la posición relativa según la cámara
                 local cos = math.cos(cameraRotation)
                 local sin = math.sin(cameraRotation)
-                local rotatedX = relativePos.X * cos - relativePos.Z * sin
-                local rotatedZ = relativePos.X * sin + relativePos.Z * cos
+                local rotatedX = relativePos.X * cos + relativePos.Z * sin
+                local rotatedZ = -relativePos.X * sin + relativePos.Z * cos
                 
                 local dist = math.sqrt(rotatedX * rotatedX + rotatedZ * rotatedZ)
                 if dist < MAP_RANGE then
