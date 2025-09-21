@@ -60,7 +60,7 @@ tri.Size = UDim2.new(0, 24, 0, 24)
 tri.AnchorPoint = Vector2.new(0.5, 0.5)
 tri.Position = UDim2.new(0.5, 0, 0.5, 0) -- centro exacto
 tri.BackgroundTransparency = 1
-tri.Text = "⬇️"
+tri.Text = "⬆️"
 tri.TextScaled = true
 tri.TextColor3 = Color3.fromRGB(0, 255, 120) -- verde
 tri.Parent = mapFrame
@@ -114,7 +114,8 @@ local function createDot()
     return dot
 end
 
--- ♻️ loop
+-- 
+-- ♻️ loop CORREGIDO
 task.spawn(function()
     while task.wait(UPDATE_RATE) do
         if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -123,21 +124,34 @@ task.spawn(function()
 
         local myRoot = LocalPlayer.Character.HumanoidRootPart
         local myPos = myRoot.Position
-        local look = Camera.CFrame.LookVector
-        tri.Rotation = math.deg(math.atan2(-look.X, -look.Z)) -- rotación según cámara
+        local cameraCFrame = Camera.CFrame
+        local look = cameraCFrame.LookVector
+        local cameraRotation = -math.atan2(look.X, look.Z)
+        
+        tri.Rotation = math.deg(cameraRotation) -- rotación según cámara
 
         local seen = {}
         for _, plr in ipairs(Players:GetPlayers()) do
             if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
                 local hrp = plr.Character.HumanoidRootPart
-                local dx, dz = hrp.Position.X - myPos.X, hrp.Position.Z - myPos.Z
-                local dist = math.sqrt(dx*dx + dz*dz)
+                local worldPos = hrp.Position
+                local relativePos = worldPos - myPos
+                
+                -- Rotar la posición relativa según la cámara
+                local cos = math.cos(cameraRotation)
+                local sin = math.sin(cameraRotation)
+                local rotatedX = relativePos.X * cos - relativePos.Z * sin
+                local rotatedZ = relativePos.X * sin + relativePos.Z * cos
+                
+                local dist = math.sqrt(rotatedX * rotatedX + rotatedZ * rotatedZ)
                 if dist < MAP_RANGE then
-                    local px = half + (dx / MAP_RANGE) * half
-                    local py = half + (-dz / MAP_RANGE) * half
+                    local px = half + (rotatedX / MAP_RANGE) * half
+                    local py = half + (-rotatedZ / MAP_RANGE) * half
+                    
                     if not playerDots[plr] then
                         playerDots[plr] = createDot()
                     end
+                    
                     local cur = playerDots[plr].Position
                     local newX = lerp(cur.X.Offset, px, SMOOTH)
                     local newY = lerp(cur.Y.Offset, py, SMOOTH)
@@ -152,7 +166,6 @@ task.spawn(function()
         end
     end
 end)
-
 -- 🧹 cleanup manual
 _G.AlexMinimap_Cleanup = function()
     pcall(function() screenGui:Destroy() end)
