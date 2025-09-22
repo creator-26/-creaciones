@@ -121,6 +121,11 @@ local function createDot(plr)
         dot.BackgroundColor3 = Color3.fromRGB(255, 200, 40) -- amarillo para NPCs
     end
 
+    -- 🔵 Hacer círculo
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(1, 0) -- 100% redondeado = círculo
+    corner.Parent = dot
+
     dot.Parent = dotsFolder
     return dot
 end
