@@ -116,7 +116,7 @@ local function createDot()
 end
 
 -- 
--- ♻️ loop FINAL - SIN ROTACIÓN DE CÁMARA
+-- ♻️ loop FINAL - CON ROTACIÓN DEL PERSONAJE
 task.spawn(function()
     while task.wait(UPDATE_RATE) do
         if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -126,9 +126,9 @@ task.spawn(function()
         local myRoot = LocalPlayer.Character.HumanoidRootPart
         local myPos = myRoot.Position
 
-        -- Flecha rota con la cámara (NO FIJA)
-        local look = Camera.CFrame.LookVector
-        tri.Rotation = math.deg(math.atan2(look.Z, look.X))
+        -- Flecha rota según el personaje (NO la cámara)
+        local myLook = myRoot.CFrame.LookVector
+        tri.Rotation = math.deg(math.atan2(myLook.X, myLook.Z))
 
         local seen = {}
         for _, plr in ipairs(Players:GetPlayers()) do
@@ -136,26 +136,26 @@ task.spawn(function()
                 local hrp = plr.Character.HumanoidRootPart
                 local worldPos = hrp.Position
                 
-                -- POSICIÓN RELATIVA SIMPLE (sin rotación)
+                -- POSICIÓN RELATIVA SIMPLE (sin rotación de cámara)
                 local dx = worldPos.X - myPos.X
                 local dz = worldPos.Z - myPos.Z
                 
                 local dist = math.sqrt(dx*dx + dz*dz)
                 if dist > 0 then
-                local clampDist = math.min(dist, MAP_RANGE)
-                local px = half + (dx / dist) * (clampDist / MAP_RANGE) * half
-                local py = half + (-dz / dist) * (clampDist / MAP_RANGE) * half
+                    local clampDist = math.min(dist, MAP_RANGE)
+                    local px = half + (dx / dist) * (clampDist / MAP_RANGE) * half
+                    local py = half + (-dz / dist) * (clampDist / MAP_RANGE) * half
 
-               if not playerDots[plr] then
-               playerDots[plr] = createDot()
-             end
-    
-              local cur = playerDots[plr].Position
-              local newX = lerp(cur.X.Offset, px, SMOOTH)
-              local newY = lerp(cur.Y.Offset, py, SMOOTH)
-              playerDots[plr].Position = UDim2.new(0, newX, 0, newY)
-                   playerDots[plr].Visible = true
-                   seen[plr] = true
+                    if not playerDots[plr] then
+                        playerDots[plr] = createDot()
+                    end
+
+                    local cur = playerDots[plr].Position
+                    local newX = lerp(cur.X.Offset, px, SMOOTH)
+                    local newY = lerp(cur.Y.Offset, py, SMOOTH)
+                    playerDots[plr].Position = UDim2.new(0, newX, 0, newY)
+                    playerDots[plr].Visible = true
+                    seen[plr] = true
                 end
             end
         end
