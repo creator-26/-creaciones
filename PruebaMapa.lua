@@ -1,163 +1,345 @@
--- Mapa minimapa para Roblox con triángulo y desplazamiento táctil
+-- SUPER MAPA PROFESIONAL PARA ROBLOX
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Lighting = game:GetService("Lighting")
 
--- Crear el minimapa
-local function createMinimap()
-    -- Crear ScreenGui
+-- Configuración del mapa
+local MAP_CONFIG = {
+    Size = UDim2.new(0, 220, 0, 220),
+    Position = UDim2.new(0, 25, 0, 25),
+    BackgroundColor = Color3.fromRGB(20, 20, 30),
+    BorderColor = Color3.fromRGB(0, 200, 255),
+    BorderSize = 3,
+    CornerRadius = 1,
+    MaxDistance = 150,
+    PulseEffect = true,
+    DynamicLighting = true,
+    ZoomLevels = {0.5, 0.8, 1.0, 1.5, 2.0},
+    CurrentZoom = 1
+}
+
+-- Colores profesionales
+local COLORS = {
+    Player = Color3.fromRGB(0, 255, 150),        -- Verde neón para ti
+    Allies = Color3.fromRGB(0, 180, 255),        -- Azul para aliados
+    Enemies = Color3.fromRGB(255, 80, 80),       -- Rojo para enemigos
+    Neutral = Color3.fromRGB(255, 200, 0),       -- Amarillo para neutrales
+    Objectives = Color3.fromRGB(255, 0, 200),    -- Rosa para objetivos
+    Background = Color3.fromRGB(20, 20, 30),     -- Fondo oscuro
+    Border = Color3.fromRGB(0, 200, 255),        -- Borde azul neón
+    Grid = Color3.fromRGB(40, 40, 60),          -- Líneas de grid
+    Text = Color3.fromRGB(255, 255, 255)         -- Texto blanco
+}
+
+-- Crear efecto de pulso
+local function createPulseEffect(frame)
+    local pulse = Instance.new("UIGradient")
+    pulse.Rotation = 90
+    pulse.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.8),
+        NumberSequenceKeypoint.new(0.5, 0.4),
+        NumberSequenceKeypoint.new(1, 0.8)
+    })
+    pulse.Parent = frame
+    
+    local pulseTween = TweenService:Create(pulse, TweenInfo.new(2, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1), {
+        Rotation = 450
+    })
+    pulseTween:Play()
+    
+    return pulse
+end
+
+-- Crear efecto de brillo
+local function createGlowEffect(frame, color)
+    local glow = Instance.new("UIStroke")
+    glow.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    glow.Color = color
+    glow.Thickness = 2
+    glow.Transparency = 0.7
+    glow.Parent = frame
+    
+    local glowTween = TweenService:Create(glow, TweenInfo.new(1.5, Enum.EasingStyle.Sine, Enum.EasingDirection.InOut, -1), {
+        Transparency = 0.3
+    })
+    glowTween:Play()
+    
+    return glow
+end
+
+-- Crear marcador profesional
+local function createProfessionalMarker(markerType, size)
+    local marker = Instance.new("Frame")
+    marker.Size = UDim2.new(0, size, 0, size)
+    marker.AnchorPoint = Vector2.new(0.5, 0.5)
+    marker.BackgroundTransparency = 1
+    marker.BorderSizePixel = 0
+    
+    local icon = Instance.new("ImageLabel")
+    icon.Size = UDim2.new(1, 0, 1, 0)
+    icon.BackgroundTransparency = 1
+    icon.BorderSizePixel = 0
+    icon.Parent = marker
+    
+    local glow = createGlowEffect(marker, COLORS[markerType])
+    
+    -- Asignar color según tipo
+    if markerType == "Player" then
+        icon.Image = "rbxassetid://10734994525" -- Triángulo verde
+        glow.Color = COLORS.Player
+    elseif markerType == "Allies" then
+        icon.Image = "rbxassetid://10734992743" -- Círculo azul
+        glow.Color = COLORS.Allies
+    elseif markerType == "Enemies" then
+        icon.Image = "rbxassetid://10734993314" -- Rombo rojo
+        glow.Color = COLORS.Enemies
+    elseif markerType == "Neutral" then
+        icon.Image = "rbxassetid://10734993978" -- Cuadrado amarillo
+        glow.Color = COLORS.Neutral
+    elseif markerType == "Objectives" then
+        icon.Image = "rbxassetid://10734995189" -- Estrella rosa
+        glow.Color = COLORS.Objectives
+    end
+    
+    return marker
+end
+
+-- Crear el minimapa profesional
+local function createProfessionalMinimap()
+    -- Crear ScreenGui principal
     local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = "MinimapGui"
+    screenGui.Name = "ProMinimapGui"
     screenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
-    -- Contenedor principal del minimapa (círculo más pequeño)
-    local minimapFrame = Instance.new("Frame")
-    minimapFrame.Name = "Minimap"
-    minimapFrame.Size = UDim2.new(0, 150, 0, 150) -- Más pequeño
-    minimapFrame.Position = UDim2.new(0, 20, 0, 20)
-    minimapFrame.BackgroundColor3 = Color3.new(0, 0, 0) -- Fondo negro
-    minimapFrame.BorderSizePixel = 2
-    minimapFrame.BorderColor3 = Color3.new(1, 1, 1)
-    minimapFrame.Parent = screenGui
+    -- Contenedor principal del minimapa
+    local mainContainer = Instance.new("Frame")
+    mainContainer.Name = "MainContainer"
+    mainContainer.Size = MAP_CONFIG.Size
+    mainContainer.Position = MAP_CONFIG.Position
+    mainContainer.BackgroundTransparency = 1
+    mainContainer.Parent = screenGui
     
-    -- Hacer el frame circular
+    -- Fondo del minimapa con efecto de vidrio esmerilado
+    local minimapBackground = Instance.new("Frame")
+    minimapBackground.Name = "MinimapBackground"
+    minimapBackground.Size = UDim2.new(1, 0, 1, 0)
+    minimapBackground.BackgroundColor3 = COLORS.Background
+    minimapBackground.BorderSizePixel = 0
+    
+    -- Efecto de vidrio esmerilado
+    local blur = Instance.new("UIGradient")
+    blur.Rotation = 45
+    blur.Transparency = NumberSequence.new({
+        NumberSequenceKeypoint.new(0, 0.3),
+        NumberSequenceKeypoint.new(0.5, 0.1),
+        NumberSequenceKeypoint.new(1, 0.3)
+    })
+    blur.Parent = minimapBackground
+    
+    -- Borde con efecto neón
+    local border = Instance.new("UIStroke")
+    border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    border.Color = COLORS.Border
+    border.Thickness = MAP_CONFIG.BorderSize
+    border.Transparency = 0.2
+    border.Parent = minimapBackground
+    
+    -- Esquinas redondeadas
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = minimapFrame
+    corner.CornerRadius = UDim.new(0, 12)
+    corner.Parent = minimapBackground
     
-    -- Punto central como triángulo (jugador local)
-    local playerTriangle = Instance.new("Frame")
-    playerTriangle.Name = "PlayerTriangle"
-    playerTriangle.Size = UDim2.new(0, 12, 0, 12)
-    playerTriangle.AnchorPoint = Vector2.new(0.5, 0.5)
-    playerTriangle.Position = UDim2.new(0.5, 0, 0.5, 0)
-    playerTriangle.BackgroundColor3 = Color3.new(0, 1, 0) -- Verde
-    playerTriangle.BorderSizePixel = 0
-    playerTriangle.Parent = minimapFrame
+    minimapBackground.Parent = mainContainer
     
-    -- Crear forma de triángulo usando UIStroke y rotación
-    local triangleCorner = Instance.new("UICorner")
-    triangleCorner.CornerRadius = UDim.new(0, 0)
-    triangleCorner.Parent = playerTriangle
+    -- Efecto de pulso en el borde
+    if MAP_CONFIG.PulseEffect then
+        createPulseEffect(minimapBackground)
+    end
     
-    -- Rotar para forma triangular
-    playerTriangle.Rotation = 45
+    -- Grid de referencia
+    local gridContainer = Instance.new("Frame")
+    gridContainer.Name = "GridContainer"
+    gridContainer.Size = UDim2.new(1, -10, 1, -10)
+    gridContainer.Position = UDim2.new(0, 5, 0, 5)
+    gridContainer.BackgroundTransparency = 1
+    gridContainer.Parent = minimapBackground
     
-    -- Hacer que el triángulo apunte hacia arriba
-    local trianglePointer = Instance.new("Frame")
-    trianglePointer.Name = "TrianglePointer"
-    trianglePointer.Size = UDim2.new(0, 6, 0, 6)
-    trianglePointer.Position = UDim2.new(0.5, 0, 0.5, 0)
-    trianglePointer.AnchorPoint = Vector2.new(0.5, 0.5)
-    trianglePointer.BackgroundColor3 = Color3.new(0, 1, 0)
-    trianglePointer.BorderSizePixel = 0
-    trianglePointer.Parent = playerTriangle
+    -- Líneas de grid
+    for i = 1, 3 do
+        local horizontalLine = Instance.new("Frame")
+        horizontalLine.Size = UDim2.new(1, 0, 0, 1)
+        horizontalLine.Position = UDim2.new(0, 0, (i-1)/3, 0)
+        horizontalLine.BackgroundColor3 = COLORS.Grid
+        horizontalLine.BorderSizePixel = 0
+        horizontalLine.Parent = gridContainer
+        
+        local verticalLine = Instance.new("Frame")
+        verticalLine.Size = UDim2.new(0, 1, 1, 0)
+        verticalLine.Position = UDim2.new((i-1)/3, 0, 0, 0)
+        verticalLine.BackgroundColor3 = COLORS.Grid
+        verticalLine.BorderSizePixel = 0
+        verticalLine.Parent = gridContainer
+    end
     
-    local pointerCorner = Instance.new("UICorner")
-    pointerCorner.CornerRadius = UDim.new(0, 0)
-    pointerCorner.Parent = trianglePointer
+    -- Marcador del jugador (triángulo verde con efecto)
+    local playerMarker = createProfessionalMarker("Player", 16)
+    playerMarker.Name = "PlayerMarker"
+    playerMarker.Position = UDim2.new(0.5, 0, 0.5, 0)
+    playerMarker.Parent = minimapBackground
     
-    -- Hacer el minimapa arrastrable
+    -- Indicador de dirección
+    local directionIndicator = Instance.new("Frame")
+    directionIndicator.Name = "DirectionIndicator"
+    directionIndicator.Size = UDim2.new(0, 4, 0, 8)
+    directionIndicator.Position = UDim2.new(0.5, 0, 0.5, -20)
+    directionIndicator.AnchorPoint = Vector2.new(0.5, 1)
+    directionIndicator.BackgroundColor3 = COLORS.Player
+    directionIndicator.BorderSizePixel = 0
+    directionIndicator.Parent = playerMarker
+    
+    -- Controles de UI
+    local controlsFrame = Instance.new("Frame")
+    controlsFrame.Name = "Controls"
+    controlsFrame.Size = UDim2.new(1, 0, 0, 30)
+    controlsFrame.Position = UDim2.new(0, 0, 1, 5)
+    controlsFrame.BackgroundTransparency = 1
+    controlsFrame.Parent = mainContainer
+    
+    -- Botón de zoom out
+    local zoomOutButton = Instance.new("TextButton")
+    zoomOutButton.Name = "ZoomOut"
+    zoomOutButton.Size = UDim2.new(0, 30, 1, 0)
+    zoomOutButton.Position = UDim2.new(0, 0, 0, 0)
+    zoomOutButton.Text = "-"
+    zoomOutButton.TextColor3 = COLORS.Text
+    zoomOutButton.BackgroundColor3 = COLORS.Border
+    zoomOutButton.BorderSizePixel = 0
+    zoomOutButton.Parent = controlsFrame
+    
+    -- Indicador de zoom
+    local zoomLabel = Instance.new("TextLabel")
+    zoomLabel.Name = "ZoomLabel"
+    zoomLabel.Size = UDim2.new(0, 60, 1, 0)
+    zoomLabel.Position = UDim2.new(0.5, -30, 0, 0)
+    zoomLabel.Text = "Zoom: 1.0x"
+    zoomLabel.TextColor3 = COLORS.Text
+    zoomLabel.BackgroundTransparency = 1
+    zoomLabel.Parent = controlsFrame
+    
+    -- Botón de zoom in
+    local zoomInButton = Instance.new("TextButton")
+    zoomInButton.Name = "ZoomIn"
+    zoomInButton.Size = UDim2.new(0, 30, 1, 0)
+    zoomInButton.Position = UDim2.new(1, -30, 0, 0)
+    zoomInButton.Text = "+"
+    zoomInButton.TextColor3 = COLORS.Text
+    zoomInButton.BackgroundColor3 = COLORS.Border
+    zoomInButton.BorderSizePixel = 0
+    zoomInButton.Parent = controlsFrame
+    
+    -- Hacer los botones redondos
+    local buttonCorner = Instance.new("UICorner")
+    buttonCorner.CornerRadius = UDim.new(0, 6)
+    buttonCorner.Parent = zoomOutButton
+    buttonCorner:Clone().Parent = zoomInButton
+    
+    -- Función para hacer el minimapa arrastrable
     local isDragging = false
     local dragStartPosition = Vector2.new(0, 0)
     local mapStartPosition = UDim2.new(0, 0, 0, 0)
     
-    -- Función para manejar el inicio del arrastre
     local function onInputBegan(input, gameProcessed)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             local mousePos = Vector2.new(input.Position.X, input.Position.Y)
-            local mapPos = Vector2.new(minimapFrame.AbsolutePosition.X, minimapFrame.AbsolutePosition.Y)
-            local mapSize = Vector2.new(minimapFrame.AbsoluteSize.X, minimapFrame.AbsoluteSize.Y)
+            local mapPos = Vector2.new(mainContainer.AbsolutePosition.X, mainContainer.AbsolutePosition.Y)
+            local mapSize = Vector2.new(mainContainer.AbsoluteSize.X, mainContainer.AbsoluteSize.Y)
             
-            -- Verificar si el clic está dentro del minimapa
             if mousePos.X >= mapPos.X and mousePos.X <= mapPos.X + mapSize.X and
                mousePos.Y >= mapPos.Y and mousePos.Y <= mapPos.Y + mapSize.Y then
                 isDragging = true
                 dragStartPosition = mousePos
-                mapStartPosition = minimapFrame.Position
+                mapStartPosition = mainContainer.Position
             end
         end
     end
     
-    -- Función para manejar el arrastre
     local function onInputChanged(input, gameProcessed)
         if isDragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
             local mousePos = Vector2.new(input.Position.X, input.Position.Y)
             local delta = mousePos - dragStartPosition
             
-            -- Calcular nueva posición manteniéndolo dentro de la pantalla
-            local newX = math.clamp(mapStartPosition.X.Offset + delta.X, 0, screenGui.AbsoluteSize.X - minimapFrame.AbsoluteSize.X)
-            local newY = math.clamp(mapStartPosition.Y.Offset + delta.Y, 0, screenGui.AbsoluteSize.Y - minimapFrame.AbsoluteSize.Y)
+            local newX = math.clamp(mapStartPosition.X.Offset + delta.X, 0, screenGui.AbsoluteSize.X - mainContainer.AbsoluteSize.X)
+            local newY = math.clamp(mapStartPosition.Y.Offset + delta.Y, 0, screenGui.AbsoluteSize.Y - mainContainer.AbsoluteSize.Y)
             
-            minimapFrame.Position = UDim2.new(0, newX, 0, newY)
+            mainContainer.Position = UDim2.new(0, newX, 0, newY)
         end
     end
     
-    -- Función para manejar el fin del arrastre
     local function onInputEnded(input, gameProcessed)
         if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
             isDragging = false
         end
     end
     
-    -- Conectar eventos de input
     UserInputService.InputBegan:Connect(onInputBegan)
     UserInputService.InputChanged:Connect(onInputChanged)
     UserInputService.InputEnded:Connect(onInputEnded)
     
-    return minimapFrame, screenGui
+    -- Funcionalidad de zoom
+    zoomInButton.MouseButton1Click:Connect(function()
+        MAP_CONFIG.CurrentZoom = math.min(MAP_CONFIG.CurrentZoom + 1, #MAP_CONFIG.ZoomLevels)
+        zoomLabel.Text = "Zoom: " .. MAP_CONFIG.ZoomLevels[MAP_CONFIG.CurrentZoom] .. "x"
+    end)
+    
+    zoomOutButton.MouseButton1Click:Connect(function()
+        MAP_CONFIG.CurrentZoom = math.max(MAP_CONFIG.CurrentZoom - 1, 1)
+        zoomLabel.Text = "Zoom: " .. MAP_CONFIG.ZoomLevels[MAP_CONFIG.CurrentZoom] .. "x"
+    end)
+    
+    return mainContainer, screenGui
 end
 
--- Función para crear puntos de otros jugadores (círculos rojos)
-local function createPlayerDot(playerName)
-    local dot = Instance.new("Frame")
-    dot.Name = playerName
-    dot.Size = UDim2.new(0, 6, 0, 6)
-    dot.AnchorPoint = Vector2.new(0.5, 0.5)
-    dot.BackgroundColor3 = Color3.new(1, 0, 0) -- Rojo para otros jugadores
-    dot.BorderSizePixel = 0
-    
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(1, 0)
-    corner.Parent = dot
-    
-    return dot
-end
-
--- Función principal para actualizar el minimapa
-local function setupMinimap()
-    local minimapFrame, screenGui = createMinimap()
+-- Sistema de marcadores profesionales
+local function setupProfessionalMinimap()
+    local mainContainer, screenGui = createProfessionalMinimap()
+    local minimapBackground = mainContainer:FindFirstChild("MinimapBackground")
     local localPlayer = Players.LocalPlayer
-    local playerDots = {}
+    local markers = {}
     
-    -- Crear puntos para todos los jugadores existentes
+    -- Crear marcadores para todos los jugadores
     for _, player in ipairs(Players:GetPlayers()) do
         if player ~= localPlayer then
-            local dot = createPlayerDot(player.Name)
-            dot.Parent = minimapFrame
-            playerDots[player.Name] = dot
+            local markerType = math.random() > 0.5 and "Enemies" or "Allies" -- Ejemplo: 50% aliados, 50% enemigos
+            local marker = createProfessionalMarker(markerType, 12)
+            marker.Name = player.Name
+            marker.Parent = minimapBackground
+            markers[player.Name] = {marker = marker, type = markerType}
         end
     end
     
-    -- Conectar evento para nuevos jugadores
+    -- Eventos para jugadores
     Players.PlayerAdded:Connect(function(player)
         if player ~= localPlayer then
-            local dot = createPlayerDot(player.Name)
-            dot.Parent = minimapFrame
-            playerDots[player.Name] = dot
+            local markerType = math.random() > 0.5 and "Enemies" or "Allies"
+            local marker = createProfessionalMarker(markerType, 12)
+            marker.Name = player.Name
+            marker.Parent = minimapBackground
+            markers[player.Name] = {marker = marker, type = markerType}
         end
     end)
     
-    -- Conectar evento para jugadores que salen
     Players.PlayerRemoving:Connect(function(player)
-        if playerDots[player.Name] then
-            playerDots[player.Name]:Destroy()
-            playerDots[player.Name] = nil
+        if markers[player.Name] then
+            markers[player.Name].marker:Destroy()
+            markers[player.Name] = nil
         end
     end)
     
-    -- Función para actualizar posiciones
-    local function updateMinimap()
+    -- Función de actualización principal
+    local function updateProfessionalMinimap()
         local localCharacter = localPlayer.Character
         if not localCharacter then return end
         
@@ -165,24 +347,32 @@ local function setupMinimap()
         if not localHumanoidRootPart then return end
         
         local localPosition = localHumanoidRootPart.Position
-        local mapRadius = minimapFrame.AbsoluteSize.X / 2
-        local maxDistance = 100 -- Distancia máxima para mostrar jugadores completos
+        local mapRadius = minimapBackground.AbsoluteSize.X / 2
+        local currentZoom = MAP_CONFIG.ZoomLevels[MAP_CONFIG.CurrentZoom]
+        local maxDistance = MAP_CONFIG.MaxDistance / currentZoom
         
-        -- Actualizar rotación del triángulo según la dirección del jugador
-        local playerTriangle = minimapFrame:FindFirstChild("PlayerTriangle")
-        if playerTriangle then
+        -- Actualizar rotación del jugador según la cámara
+        local playerMarker = minimapBackground:FindFirstChild("PlayerMarker")
+        if playerMarker then
             local camera = workspace.CurrentCamera
             if camera then
-                -- Calcular ángulo de rotación basado en la cámara
                 local cameraCFrame = camera.CFrame
                 local lookVector = cameraCFrame.LookVector
                 local angle = math.atan2(lookVector.X, lookVector.Z) * (180 / math.pi)
-                playerTriangle.Rotation = angle + 45 -- Ajustar para que apunte correctamente
+                playerMarker.Rotation = angle
+                
+                -- Actualizar indicador de dirección
+                local directionIndicator = playerMarker:FindFirstChild("DirectionIndicator")
+                if directionIndicator then
+                    directionIndicator.Rotation = angle
+                end
             end
         end
         
-        for _, player in ipairs(Players:GetPlayers()) do
-            if player ~= localPlayer and playerDots[player.Name] then
+        -- Actualizar todos los marcadores
+        for playerName, markerData in pairs(markers) do
+            local player = Players:FindFirstChild(playerName)
+            if player then
                 local character = player.Character
                 if character then
                     local humanoidRootPart = character:FindFirstChild("HumanoidRootPart")
@@ -190,35 +380,58 @@ local function setupMinimap()
                         local playerPosition = humanoidRootPart.Position
                         local offset = playerPosition - localPosition
                         
-                        -- Calcular distancia y dirección
                         local distance = offset.Magnitude
                         local direction = offset.Unit
                         
-                        -- Si está dentro del rango máximo, mostrar en posición relativa
-                        if distance <= maxDistance then
-                            local xPos = (direction.X * distance / maxDistance) * mapRadius
-                            local zPos = (direction.Z * distance / maxDistance) * mapRadius
-                            playerDots[player.Name].Position = UDim2.new(0.5, xPos, 0.5, zPos)
-                            playerDots[player.Name].Visible = true
+                        -- Aplicar zoom
+                        local displayDistance = math.min(distance, maxDistance)
+                        local xPos = (direction.X * displayDistance / maxDistance) * mapRadius
+                        local zPos = (direction.Z * displayDistance / maxDistance) * mapRadius
+                        
+                        markerData.marker.Position = UDim2.new(0.5, xPos, 0.5, zPos)
+                        markerData.marker.Visible = true
+                        
+                        -- Efecto de parpadeo para enemigos lejanos
+                        if markerData.type == "Enemies" and distance > maxDistance * 0.8 then
+                            markerData.marker.UIStroke.Transparency = 0.5 + 0.5 * math.sin(os.clock() * 3)
                         else
-                            -- Si está fuera del rango, mostrar en el borde
-                            local edgeX = direction.X * mapRadius
-                            local edgeZ = direction.Z * mapRadius
-                            playerDots[player.Name].Position = UDim2.new(0.5, edgeX, 0.5, edgeZ)
-                            playerDots[player.Name].Visible = true
+                            markerData.marker.UIStroke.Transparency = 0.3
                         end
+                    else
+                        markerData.marker.Visible = false
                     end
                 else
-                    playerDots[player.Name].Visible = false
+                    markerData.marker.Visible = false
                 end
+            else
+                markerData.marker.Visible = false
             end
+        end
+        
+        -- Efectos de iluminación dinámica
+        if MAP_CONFIG.DynamicLighting then
+            local timeOfDay = Lighting:GetMinutesAfterMidnight() / 60
+            local brightness = 0.5 + 0.5 * math.sin(timeOfDay * math.pi / 12)
+            minimapBackground.BackgroundColor3 = COLORS.Background:Lerp(Color3.new(0.1, 0.1, 0.2), brightness)
         end
     end
     
-    -- Conectar al bucle de renderizado
-    RunService.RenderStepped:Connect(updateMinimap)
+    -- Bucle de actualización
+    RunService.RenderStepped:Connect(updateProfessionalMinimap)
+    
+    return mainContainer
 end
 
--- Inicializar el minimapa cuando el jugador se une
+-- Inicialización
 Players.LocalPlayer:WaitForChild("PlayerGui")
-setupMinimap()
+setupProfessionalMinimap()
+
+print("✅ Super Mapa Profesional cargado exitosamente!")
+print("🎮 Características activadas:")
+print("   • Efectos visuales avanzados")
+print("   • Sistema de zoom (5 niveles)")
+print("   • Marcadores profesionales")
+print("   • Iluminación dinámica")
+print("   • Arrrastre táctil/mouse")
+print("   • Efectos de pulso y brillo")
+print("   • Interfaz de usuario pro")
