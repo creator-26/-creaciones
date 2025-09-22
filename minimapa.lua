@@ -148,7 +148,7 @@ task.spawn(function()
                 if dist < MAP_RANGE then
                     -- INVERTIR las coordenadas Y
                     local px = half + (rotatedX / MAP_RANGE) * half
-                    local py = half + (rotatedZ / MAP_RANGE) * half  -- Quité el signo negativo
+                    local py = half - (rotatedZ / MAP_RANGE) * half  -- Quité el signo negativo
                     
                     if not playerDots[plr] then
                         playerDots[plr] = createDot()
