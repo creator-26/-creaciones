@@ -29,7 +29,8 @@ end
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = GUI_NAME
 screenGui.ResetOnSpawn = false
-screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = game:GetService("CoreGui")
 
 -- 🖼️ Marco minimapa
 local mapFrame = Instance.new("Frame")
