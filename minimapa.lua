@@ -115,7 +115,7 @@ local function createDot()
 end
 
 -- 
--- ♻️ loop CORREGIDO (Mapa rota, flecha fija)
+-- ♻️ loop DEFINITIVO
 task.spawn(function()
     while task.wait(UPDATE_RATE) do
         if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -126,9 +126,9 @@ task.spawn(function()
         local myPos = myRoot.Position
         local cameraCFrame = Camera.CFrame
         local look = cameraCFrame.LookVector
-        local cameraRotation = -math.atan2(look.X, look.Z)  -- Rotación para el MAPA
+        local cameraRotation = math.atan2(look.X, look.Z)
 
-        -- La flecha SIEMPRE mira hacia arriba (0 grados)
+        -- Flecha siempre hacia arriba
         tri.Rotation = 0
 
         local seen = {}
@@ -138,16 +138,17 @@ task.spawn(function()
                 local worldPos = hrp.Position
                 local relativePos = worldPos - myPos
                 
-                -- Rotar la posición relativa según la cámara (EL MAPA gira)
-                local cos = math.cos(cameraRotation)
-                local sin = math.sin(cameraRotation)
-                local rotatedX = relativePos.X * cos + relativePos.Z * sin
-                local rotatedZ = relativePos.X * sin - relativePos.Z * cos
+                -- ROTACIÓN INVERTIDA (esto es lo clave)
+                local cos = math.cos(-cameraRotation)  -- Signo negativo aquí
+                local sin = math.sin(-cameraRotation)  -- Signo negativo aquí
+                local rotatedX = relativePos.X * cos - relativePos.Z * sin
+                local rotatedZ = relativePos.X * sin + relativePos.Z * cos
                 
                 local dist = math.sqrt(rotatedX * rotatedX + rotatedZ * rotatedZ)
                 if dist < MAP_RANGE then
+                    -- INVERTIR las coordenadas Y
                     local px = half + (rotatedX / MAP_RANGE) * half
-                    local py = half + (-rotatedZ / MAP_RANGE) * half
+                    local py = half + (rotatedZ / MAP_RANGE) * half  -- Quité el signo negativo
                     
                     if not playerDots[plr] then
                         playerDots[plr] = createDot()
