@@ -140,10 +140,11 @@ task.spawn(function()
                 local dz = worldPos.Z - myPos.Z
                 
                 local dist = math.sqrt(dx*dx + dz*dz)
-                if dist < MAP_RANGE then
-                    local px = half + (dx / MAP_RANGE) * half
-                    local py = half + (-dz / MAP_RANGE) * half  -- negativo para Z
-                    
+                -- si el jugador está más lejos que MAP_RANGE, recorta la distancia
+                local clampDist = math.min(dist, MAP_RANGE)
+
+                local px = half + (dx / dist) * (clampDist / MAP_RANGE) * half
+                local py = half + (-dz / dist) * (clampDist / MAP_RANGE) * half
                     if not playerDots[plr] then
                         playerDots[plr] = createDot()
                     end
