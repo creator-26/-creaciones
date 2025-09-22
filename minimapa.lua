@@ -141,21 +141,21 @@ task.spawn(function()
                 local dz = worldPos.Z - myPos.Z
                 
                 local dist = math.sqrt(dx*dx + dz*dz)
-                -- si el jugador está más lejos que MAP_RANGE, recorta la distancia
+                if dist > 0 then
                 local clampDist = math.min(dist, MAP_RANGE)
-
                 local px = half + (dx / dist) * (clampDist / MAP_RANGE) * half
                 local py = half + (-dz / dist) * (clampDist / MAP_RANGE) * half
-                    if not playerDots[plr] then
-                        playerDots[plr] = createDot()
-                    end
-                    
-                    local cur = playerDots[plr].Position
-                    local newX = lerp(cur.X.Offset, px, SMOOTH)
-                    local newY = lerp(cur.Y.Offset, py, SMOOTH)
-                    playerDots[plr].Position = UDim2.new(0, newX, 0, newY)
-                    playerDots[plr].Visible = true
-                    seen[plr] = true
+
+               if not playerDots[plr] then
+               playerDots[plr] = createDot()
+             end
+    
+              local cur = playerDots[plr].Position
+              local newX = lerp(cur.X.Offset, px, SMOOTH)
+              local newY = lerp(cur.Y.Offset, py, SMOOTH)
+              playerDots[plr].Position = UDim2.new(0, newX, 0, newY)
+                   playerDots[plr].Visible = true
+                   seen[plr] = true
                 end
             end
         end
