@@ -141,14 +141,14 @@ task.spawn(function()
                 -- ROTACIÓN INVERTIDA (esto es lo clave)
                 local cos = math.cos(-cameraRotation)  -- Signo negativo aquí
                 local sin = math.sin(-cameraRotation)  -- Signo negativo aquí
-                local rotatedX = relativePos.X * cos - relativePos.Z * sin
-                local rotatedZ = relativePos.X * sin + relativePos.Z * cos
+                local rotatedX = relativePos.X * sin + relativePos.Z * cos
+                local rotatedZ = relativePos.X * cos - relativePos.Z * sin
                 
                 local dist = math.sqrt(rotatedX * rotatedX + rotatedZ * rotatedZ)
                 if dist < MAP_RANGE then
                     -- INVERTIR las coordenadas Y
                     local px = half + (rotatedX / MAP_RANGE) * half
-                    local py = half - (rotatedZ / MAP_RANGE) * half  -- Quité el signo negativo
+                    local py = half - (-rotatedZ / MAP_RANGE) * half  -- Quité el signo negativo
                     
                     if not playerDots[plr] then
                         playerDots[plr] = createDot()
