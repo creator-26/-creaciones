@@ -104,13 +104,23 @@ local function lerp(a, b, t)
     return a + (b - a) * t
 end
 
-local function createDot()
+local function createDot(plr)
     local dot = Instance.new("Frame")
     dot.Size = UDim2.new(0, DOT_SIZE, 0, DOT_SIZE)
     dot.AnchorPoint = Vector2.new(0.5, 0.5)
-    dot.BackgroundColor3 = Color3.fromRGB(255, 60, 60)
     dot.BorderSizePixel = 0
-    dot.Position = UDim2.new(0.5, 0.5)
+    
+    -- 🎨 Colores según el tipo
+    if plr and plr:IsA("Player") then
+        if Players.LocalPlayer:IsFriendsWith(plr.UserId) then
+            dot.BackgroundColor3 = Color3.fromRGB(60, 150, 255) -- azul para amigos
+        else
+            dot.BackgroundColor3 = Color3.fromRGB(255, 60, 60) -- rojo para jugadores normales
+        end
+    else
+        dot.BackgroundColor3 = Color3.fromRGB(255, 200, 40) -- amarillo para NPCs
+    end
+
     dot.Parent = dotsFolder
     return dot
 end
@@ -147,7 +157,7 @@ task.spawn(function()
                     local py = half + (-dz / dist) * (clampDist / MAP_RANGE) * half
 
                     if not playerDots[plr] then
-                        playerDots[plr] = createDot()
+                        playerDots[plr] = createDot(plr)
                     end
 
                     local cur = playerDots[plr].Position
