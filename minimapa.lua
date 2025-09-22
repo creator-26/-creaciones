@@ -128,7 +128,7 @@ task.spawn(function()
 
         -- Flecha rota con la cámara (NO FIJA)
         local look = Camera.CFrame.LookVector
-        tri.Rotation = math.deg(math.atan2(look.X, look.Z))
+        tri.Rotation = -math.deg(math.atan2(look.X, look.Z))
 
         local seen = {}
         for _, plr in ipairs(Players:GetPlayers()) do
