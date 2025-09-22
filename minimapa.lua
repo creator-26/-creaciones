@@ -115,7 +115,7 @@ local function createDot()
 end
 
 -- 
--- ♻️ loop DEFINITIVO
+-- ♻️ loop FINAL - SIN ROTACIÓN DE CÁMARA
 task.spawn(function()
     while task.wait(UPDATE_RATE) do
         if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
@@ -124,31 +124,25 @@ task.spawn(function()
 
         local myRoot = LocalPlayer.Character.HumanoidRootPart
         local myPos = myRoot.Position
-        local cameraCFrame = Camera.CFrame
-        local look = cameraCFrame.LookVector
-        local cameraRotation = math.atan2(look.X, look.Z)
 
-        -- Flecha siempre hacia arriba
-        tri.Rotation = 0
+        -- Flecha rota con la cámara (NO FIJA)
+        local look = Camera.CFrame.LookVector
+        tri.Rotation = math.deg(math.atan2(look.X, look.Z))
 
         local seen = {}
         for _, plr in ipairs(Players:GetPlayers()) do
             if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
                 local hrp = plr.Character.HumanoidRootPart
                 local worldPos = hrp.Position
-                local relativePos = worldPos - myPos
                 
-                -- ROTACIÓN INVERTIDA (esto es lo clave)
-                local cos = math.cos(-cameraRotation)  -- Signo negativo aquí
-                local sin = math.sin(-cameraRotation)  -- Signo negativo aquí
-                local rotatedX = relativePos.X * sin + relativePos.Z * cos
-                local rotatedZ = relativePos.X * cos - relativePos.Z * sin
+                -- POSICIÓN RELATIVA SIMPLE (sin rotación)
+                local dx = worldPos.X - myPos.X
+                local dz = worldPos.Z - myPos.Z
                 
-                local dist = math.sqrt(rotatedX * rotatedX + rotatedZ * rotatedZ)
+                local dist = math.sqrt(dx*dx + dz*dz)
                 if dist < MAP_RANGE then
-                    -- INVERTIR las coordenadas Y
-                    local px = half + (rotatedX / MAP_RANGE) * half
-                    local py = half - (-rotatedZ / MAP_RANGE) * half  -- Quité el signo negativo
+                    local px = half + (dx / MAP_RANGE) * half
+                    local py = half + (-dz / MAP_RANGE) * half  -- negativo para Z
                     
                     if not playerDots[plr] then
                         playerDots[plr] = createDot()
