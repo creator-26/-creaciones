@@ -22,17 +22,20 @@ button.Parent = gui
 -- 📌 Función para crear el clon
 local function createClone()
 	if clone then clone:Destroy() clone = nil end
-	
-	local desc = Players:GetHumanoidDescriptionFromUserId(LocalPlayer.UserId)
-	
+	if not LocalPlayer.Character then return end
+
+	-- copiamos la descripción directamente de tu humanoid
+	local humanoid = LocalPlayer.Character:FindFirstChildOfClass("Humanoid")
+	if not humanoid then return end
+	local desc = humanoid:GetAppliedDescription()
+
 	local char = Instance.new("Model")
 	char.Name = LocalPlayer.Name .. "_Clon"
-	
+
 	-- humanoid + HRP
-	local humanoid = Instance.new("Humanoid")
-	humanoid.Name = "Humanoid"
-	humanoid.Parent = char
-	
+	local hum = Instance.new("Humanoid")
+	hum.Parent = char
+
 	local hrp = Instance.new("Part")
 	hrp.Name = "HumanoidRootPart"
 	hrp.Size = Vector3.new(2,2,1)
@@ -40,13 +43,13 @@ local function createClone()
 	hrp.CanCollide = false
 	hrp.Transparency = 1
 	hrp.Parent = char
-	
+
 	char.PrimaryPart = hrp
 	char.Parent = workspace
-	
-	-- aplicar descripción (ropa, accesorios, etc)
-	humanoid:ApplyDescription(desc)
-	
+
+	-- aplicamos la descripción copiada de tu personaje
+	hum:ApplyDescription(desc)
+
 	clone = char
 end
 
