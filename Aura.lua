@@ -57,7 +57,7 @@ local function createButton()
     Button.Size = UDim2.new(0, 80, 0, 30)
     Button.Position = UDim2.new(0.05, 0, 0.1, 0)
     Button.Text = "Aura: ON"
-    Button.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+    Button.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
     Button.TextColor3 = Color3.fromRGB(255, 255, 255)
     Button.Font = Enum.Font.SourceSansBold
     Button.TextSize = 18
@@ -70,7 +70,7 @@ local function createButton()
         auraEnabled = not auraEnabled
         if auraEnabled then
             Button.Text = "Aura: ON"
-            Button.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+            Button.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
             -- reactivar auras
             for _, plr in ipairs(Players:GetPlayers()) do
                 if plr ~= LocalPlayer and plr.Character then
