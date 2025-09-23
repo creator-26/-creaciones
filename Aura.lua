@@ -1,11 +1,11 @@
--- 🌌 Aura Toggle Script (solo visible para ti)
+-- 🌌 Aura Toggle Script (Highlight)
 -- ✅ Botón ON/OFF
 -- ✅ Draggable
 -- ✅ Auras azules en jugadores
 
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
 
 local GUI_NAME = "AuraToggleUI"
 
@@ -34,7 +34,6 @@ button.Parent = screenGui
 button.Active = true
 
 -- 🔄 Draggable
-local UserInputService = game:GetService("UserInputService")
 do
     local dragging, dragInput, dragStart, startPos
     local function update(input)
@@ -64,21 +63,20 @@ do
     end)
 end
 
--- ✨ Aura lógica
+-- ✨ Aura con Highlight
 local enabled = false
 local auras = {}
 
 local function createAura(character)
     if not character or auras[character] then return end
-    local hrp = character:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        local aura = Instance.new("SelectionSphere")
-        aura.Adornee = hrp
-        aura.Color3 = Color3.fromRGB(60, 150, 255) -- azul
-        aura.Transparency = 0.5
-        aura.Parent = hrp
-        auras[character] = aura
-    end
+    local aura = Instance.new("Highlight")
+    aura.FillColor = Color3.fromRGB(0, 120, 255) -- azul
+    aura.FillTransparency = 0.7
+    aura.OutlineColor = Color3.fromRGB(0, 180, 255)
+    aura.OutlineTransparency = 0
+    aura.Adornee = character
+    aura.Parent = character
+    auras[character] = aura
 end
 
 local function removeAura(character)
