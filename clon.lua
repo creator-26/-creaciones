@@ -1,90 +1,59 @@
--- 🤖 Clon avanzado: imita caminar, correr y saltar
+-- 🤖 Clon con tu misma ropa/cuerpo
 -- 📌 LocalScript en StarterPlayerScripts
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
--- 🟩 Botón en pantalla
-local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
-local Boton = Instance.new("TextButton", ScreenGui)
-Boton.Size = UDim2.new(0, 100, 0, 40)
-Boton.Position = UDim2.new(0, 20, 0, 200)
-Boton.Text = "Clon OFF"
-Boton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-Boton.TextColor3 = Color3.fromRGB(255,255,255)
-Boton.TextScaled = true
-Boton.Draggable = true
+-- 🟩 Botón
+local gui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+local boton = Instance.new("TextButton", gui)
+boton.Size = UDim2.new(0, 100, 0, 40)
+boton.Position = UDim2.new(0, 20, 0, 200)
+boton.Text = "Clon OFF"
+boton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+boton.TextColor3 = Color3.new(1,1,1)
+boton.TextScaled = true
+boton.Draggable = true
 
 local clonActivo = false
 local clonObj = nil
-local humanoidClone = nil
 
--- 🔹 Crear clon idéntico
 local function crearClon()
-    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    if not char then return end
+    if clonObj then clonObj:Destroy() end
 
-    -- eliminar clon previo
-    if clonObj then
-        clonObj:Destroy()
-        clonObj = nil
-    end
+    local desc = Players:GetHumanoidDescriptionFromUserId(LocalPlayer.UserId)
+    local clon = Instance.new("Model")
+    clon.Name = "MiClon"
+    clon.Parent = workspace
 
-    -- clonar jugador completo
-    clonObj = char:Clone()
-    clonObj.Name = "MiClon"
-    clonObj.Parent = workspace
+    -- crear humanoid + rig R15
+    local humanoid = Instance.new("Humanoid")
+    humanoid.Parent = clon
+    humanoid.Name = "Humanoid"
 
-    humanoidClone = clonObj:FindFirstChildOfClass("Humanoid")
+    local rootPart = Instance.new("Part")
+    rootPart.Name = "HumanoidRootPart"
+    rootPart.Size = Vector3.new(2,2,1)
+    rootPart.Anchored = false
+    rootPart.CanCollide = true
+    rootPart.Position = (LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart")) and 
+        LocalPlayer.Character.HumanoidRootPart.Position + Vector3.new(3,0,0) or Vector3.new(0,5,0)
+    rootPart.Parent = clon
 
-    -- quitar nombre flotante
-    if humanoidClone then
-        humanoidClone.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-    end
+    humanoid:ApplyDescription(desc)
 
-    -- seguir al jugador con path simple
-    task.spawn(function()
-        while clonObj and clonObj.Parent do
-            local root = clonObj:FindFirstChild("HumanoidRootPart")
-            local myRoot = char:FindFirstChild("HumanoidRootPart")
-            if root and myRoot and humanoidClone then
-                humanoidClone:MoveTo(myRoot.Position + Vector3.new(3,0,0)) -- sigue al lado tuyo
-            end
-            task.wait(0.2)
-        end
-    end)
-
-    -- imitar SALTO
-    local humanoidPlayer = char:FindFirstChildOfClass("Humanoid")
-    if humanoidPlayer and humanoidClone then
-        humanoidPlayer.Jumping:Connect(function(isJumping)
-            if isJumping and humanoidClone then
-                humanoidClone.Jump = true
-            end
-        end)
-
-        -- imitar VELOCIDAD (caminar/correr)
-        humanoidPlayer.Running:Connect(function(speed)
-            if humanoidClone then
-                humanoidClone:Move(Vector3.new(speed,0,0), true)
-            end
-        end)
-    end
+    clonObj = clon
 end
 
--- 🟢 Botón ON/OFF
-Boton.MouseButton1Click:Connect(function()
+boton.MouseButton1Click:Connect(function()
     clonActivo = not clonActivo
     if clonActivo then
-        Boton.Text = "Clon ON"
-        Boton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        boton.Text = "Clon ON"
+        boton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
         crearClon()
     else
-        Boton.Text = "Clon OFF"
-        Boton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-        if clonObj then
-            clonObj:Destroy()
-            clonObj = nil
-        end
+        boton.Text = "Clon OFF"
+        boton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        if clonObj then clonObj:Destroy() end
     end
 end)
