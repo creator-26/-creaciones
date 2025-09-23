@@ -1,69 +1,38 @@
--- AutoAim helper: devuelve una dirección (Vector3) ajustada hacia el objetivo más cercano
--- Parámetros ajustables:
-local AIM_RANGE = 120       -- studs máximos para buscar objetivos
-local AIM_ANGLE = 12        -- ángulo en grados (cuánto del centro de la mira se considera "cercano")
-
+-- 🔫 Pistola con Auto-Aim estilo Free Fire (LocalScript)
+local Tool = script.Parent
 local Players = game:GetService("Players")
-local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+local mouse = LocalPlayer:GetMouse()
+local camera = workspace.CurrentCamera
+local remote = game.ReplicatedStorage:WaitForChild("GunShoot")
 
--- Devuelve true si 'part' pertenece a un character jugador con Humanoid y vida > 0
-local function isValidTargetPart(part)
-    if not part or not part.Parent then return false end
-    local hum = part.Parent:FindFirstChild("Humanoid")
-    if not hum then return false end
-    return hum.Health > 0
-end
-
--- main: obtiene dirección de auto-aim
--- player: LocalPlayer
--- originPos: Vector3 (punto de salida del disparo)
--- aimVector: Vector3 unitario (dirección "original" donde ibas a disparar)
--- return: Vector3 unitario (nueva dirección para disparar)
-local function getAutoAimDirection(player, originPos, aimVector)
-    -- seguridad
-    if not player or not originPos or not aimVector then
-        return aimVector or (Camera.CFrame.LookVector)
-    end
-
-    local bestTarget = nil
-    local bestScore = math.huge -- menor es mejor (distancia en pantalla)
-    local centerScreen = Vector2.new(Camera.ViewportSize.X/2, Camera.ViewportSize.Y/2)
-
+-- función para encontrar jugador más cercano al centro de pantalla
+local function getClosestPlayer()
+    local closest, closestDist = nil, math.huge
     for _, plr in ipairs(Players:GetPlayers()) do
-        if plr ~= player and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
+        if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
             local hrp = plr.Character.HumanoidRootPart
-            -- distancia 3D desde origin
-            local worldDist = (hrp.Position - originPos).Magnitude
-            if worldDist <= AIM_RANGE then
-                -- proyectar al viewport para ver qué tan cerca está del centro
-                local screenPos, onScreen = Camera:WorldToViewportPoint(hrp.Position)
-                if onScreen then
-                    local screenDist = (Vector2.new(screenPos.X, screenPos.Y) - centerScreen).Magnitude
-                    -- convertir AIM_ANGLE (grados) a una tolerancia en píxeles aproximada:
-                    -- esto es aproximado pero útil: a menor angulo -> menor pixel tolerancia
-                    local pixelTolerance = (AIM_ANGLE / 90) * math.max(Camera.ViewportSize.X, Camera.ViewportSize.Y)
-                    -- aceptar solo si está dentro del ángulo (o pantalla) y más cercano en pantalla
-                    if screenDist <= pixelTolerance and screenDist < bestScore then
-                        bestScore = screenDist
-                        bestTarget = hrp
-                    end
+            local pos, onScreen = camera:WorldToViewportPoint(hrp.Position)
+            if onScreen then
+                local screenPos = Vector2.new(pos.X, pos.Y)
+                local center = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
+                local dist = (screenPos - center).Magnitude
+                if dist < closestDist then
+                    closestDist = dist
+                    closest = hrp
                 end
             end
         end
     end
-
-    if bestTarget then
-        local dir = (bestTarget.Position - originPos)
-        if dir.Magnitude == 0 then return aimVector end
-        return dir.Unit
-    end
-
-    -- si no hay objetivo válido, devolvemos la dirección original
-    return aimVector
+    return closest
 end
 
--- ===== Ejemplo de uso dentro del Script de arma =====
--- local origin = Tool.Handle.Position
--- local rawDir = (mouse.Hit.p - origin).Unit  -- o Camera.CFrame.LookVector
--- local finalDir = getAutoAimDirection(Players.LocalPlayer, origin, rawDir)
--- usar finalDir para tu raycast o proyectil
+-- cuando se dispara
+Tool.Activated:Connect(function()
+    local target = getClosestPlayer()
+    if target then
+        remote:FireServer(target.Position) -- auto-aim al jugador más cercano
+    else
+        remote:FireServer(mouse.Hit.Position) -- normal si no hay nadie
+    end
+end)
