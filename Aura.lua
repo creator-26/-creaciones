@@ -3,10 +3,11 @@
 
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
+local auraEnabled = true -- por defecto activado
 
 -- función para aplicar aura
 local function applyAura(character)
-    if not character then return end
+    if not character or not auraEnabled then return end
     if character:FindFirstChild("HumanoidRootPart") then
         -- si ya tiene aura, evitar duplicados
         if not character:FindFirstChild("AuraHighlight") then
@@ -42,3 +43,45 @@ end
 
 -- nuevos jugadores
 Players.PlayerAdded:Connect(setupPlayer)
+
+-------------------------------------------------
+-- 🔘 BOTÓN ON/OFF (movible)
+-------------------------------------------------
+local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+ScreenGui.ResetOnSpawn = false
+
+local Button = Instance.new("TextButton")
+Button.Size = UDim2.new(0, 80, 0, 30)
+Button.Position = UDim2.new(0.05, 0, 0.1, 0)
+Button.Text = "Aura: ON"
+Button.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+Button.Font = Enum.Font.SourceSansBold
+Button.TextSize = 18
+Button.Parent = ScreenGui
+Button.Active = true
+Button.Draggable = true -- se puede mover el botón
+
+-- acción del botón
+Button.MouseButton1Click:Connect(function()
+    auraEnabled = not auraEnabled
+    if auraEnabled then
+        Button.Text = "Aura: ON"
+        Button.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+        -- reactivar auras
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character then
+                applyAura(plr.Character)
+            end
+        end
+    else
+        Button.Text = "Aura: OFF"
+        Button.BackgroundColor3 = Color3.fromRGB(120, 120, 120)
+        -- borrar todas las auras
+        for _, plr in ipairs(Players:GetPlayers()) do
+            if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("AuraHighlight") then
+                plr.Character.AuraHighlight:Destroy()
+            end
+        end
+    end
+end)
