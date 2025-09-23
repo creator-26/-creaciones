@@ -1,100 +1,74 @@
--- 🔫 Pistola con Auto-Aim estilo Free Fire (Setup Completo)
+-- 🤖 Clon igual a tu personaje
+-- 📌 LocalScript en StarterPlayerScripts
 
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local ServerScriptService = game:GetService("ServerScriptService")
-local StarterPack = game:GetService("StarterPack")
+local LocalPlayer = Players.LocalPlayer
 
--- Crear RemoteEvent si no existe
-local remote = ReplicatedStorage:FindFirstChild("GunShoot")
-if not remote then
-    remote = Instance.new("RemoteEvent")
-    remote.Name = "GunShoot"
-    remote.Parent = ReplicatedStorage
-end
+-- Crear botón
+local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+local Boton = Instance.new("TextButton", ScreenGui)
+Boton.Size = UDim2.new(0, 100, 0, 40)
+Boton.Position = UDim2.new(0, 20, 0, 200)
+Boton.Text = "Clon OFF"
+Boton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+Boton.TextColor3 = Color3.fromRGB(255,255,255)
+Boton.TextScaled = true
+Boton.AutoButtonColor = true
+Boton.Active = true
+Boton.Draggable = true
 
--- Crear el arma Tool si no existe
-local gun = StarterPack:FindFirstChild("Gun")
-if not gun then
-    gun = Instance.new("Tool")
-    gun.Name = "Gun"
-    gun.RequiresHandle = true
+local clonActivo = false
+local clonObj = nil
 
-    local handle = Instance.new("Part")
-    handle.Name = "Handle"
-    handle.Size = Vector3.new(1,1,2)
-    handle.Color = Color3.fromRGB(60,60,60)
-    handle.Parent = gun
+local function crearClon()
+    local char = LocalPlayer.Character
+    if not char then return end
 
-    gun.Parent = StarterPack
+    -- borrar clon anterior
+    if clonObj then
+        clonObj:Destroy()
+        clonObj = nil
+    end
 
-    -- LocalScript dentro del arma
-    local localScript = Instance.new("LocalScript")
-    localScript.Name = "GunClient"
-    localScript.Source = [[
-        local Tool = script.Parent
-        local Players = game:GetService("Players")
-        local LocalPlayer = Players.LocalPlayer
-        local camera = workspace.CurrentCamera
-        local remote = game.ReplicatedStorage:WaitForChild("GunShoot")
-        local mouse = LocalPlayer:GetMouse()
+    -- clonar personaje completo
+    local clon = char:Clone()
+    clon.Name = "MiClon"
+    clon.Parent = workspace
+    clonObj = clon
 
-        local function getClosestPlayer()
-            local closest, closestDist = nil, math.huge
-            for _, plr in ipairs(Players:GetPlayers()) do
-                if plr ~= LocalPlayer and plr.Character and plr.Character:FindFirstChild("HumanoidRootPart") then
-                    local hrp = plr.Character.HumanoidRootPart
-                    local pos, onScreen = camera:WorldToViewportPoint(hrp.Position)
-                    if onScreen then
-                        local screenPos = Vector2.new(pos.X, pos.Y)
-                        local center = Vector2.new(camera.ViewportSize.X/2, camera.ViewportSize.Y/2)
-                        local dist = (screenPos - center).Magnitude
-                        if dist < closestDist then
-                            closestDist = dist
-                            closest = hrp
-                        end
-                    end
-                end
+    -- darle humanoid para que se mueva
+    local humanoid = clon:FindFirstChildOfClass("Humanoid")
+    if humanoid then
+        humanoid.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None -- sin nombre flotante
+    end
+
+    -- seguir al jugador
+    task.spawn(function()
+        while clonObj and clonObj.Parent do
+            local root = clonObj:FindFirstChild("HumanoidRootPart")
+            local myRoot = char:FindFirstChild("HumanoidRootPart")
+            local hum = clonObj:FindFirstChildOfClass("Humanoid")
+            if root and myRoot and hum then
+                hum:MoveTo(myRoot.Position + Vector3.new(2,0,2))
             end
-            return closest
+            task.wait(0.5)
         end
-
-        Tool.Activated:Connect(function()
-            local target = getClosestPlayer()
-            if target then
-                remote:FireServer(target.Position)
-            else
-                remote:FireServer(mouse.Hit.Position)
-            end
-        end)
-    ]]
-    localScript.Parent = gun
+    end)
 end
 
--- Crear Script del servidor si no existe
-local serverGun = ServerScriptService:FindFirstChild("GunServer")
-if not serverGun then
-    serverGun = Instance.new("Script")
-    serverGun.Name = "GunServer"
-    serverGun.Source = [[
-        local ReplicatedStorage = game:GetService("ReplicatedStorage")
-        local remote = ReplicatedStorage:WaitForChild("GunShoot")
-
-        remote.OnServerEvent:Connect(function(player, targetPos)
-            if not player.Character or not player.Character:FindFirstChild("Head") then return end
-
-            local origin = player.Character.Head.Position
-            local direction = (targetPos - origin).Unit * 500
-
-            local ray = Ray.new(origin, direction)
-            local part, pos = workspace:FindPartOnRay(ray, player.Character)
-
-            if part and part.Parent:FindFirstChild("Humanoid") then
-                part.Parent.Humanoid:TakeDamage(35)
-            end
-        end)
-    ]]
-    serverGun.Parent = ServerScriptService
-end
-
-print("✅ Pistola con AutoAim lista en StarterPack")
+-- botón ON/OFF
+Boton.MouseButton1Click:Connect(function()
+    clonActivo = not clonActivo
+    if clonActivo then
+        Boton.Text = "Clon ON"
+        Boton.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+        crearClon()
+    else
+        Boton.Text = "Clon OFF"
+        Boton.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        if clonObj then
+            clonObj:Destroy()
+            clonObj = nil
+        end
+    end
+end)
