@@ -47,7 +47,7 @@ title.TextSize = 20
 title.Parent = frame
 
 -------------------------------------------------
--- Invisible (flotar arriba)
+-- Invisible (fantasma)
 -------------------------------------------------
 local invisibleBtn = Instance.new("TextButton")
 invisibleBtn.Size = UDim2.new(0, 120, 0, 30)
@@ -58,23 +58,45 @@ invisibleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 invisibleBtn.Parent = frame
 
 local invisibleOn = false
+local storedCameraType
+
 invisibleBtn.MouseButton1Click:Connect(function()
     local char = LocalPlayer.Character
-    if char and char:FindFirstChild("HumanoidRootPart") then
+    local humanoid = char and char:FindFirstChild("Humanoid")
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+    if humanoid and hrp then
         if not invisibleOn then
-            char:MoveTo(Vector3.new(0,1000,0)) -- flotar arriba
+            -- Guardar cámara actual
+            storedCameraType = workspace.CurrentCamera.CameraType
+
+            -- Mandar el cuerpo muy lejos y congelarlo
+            hrp.CFrame = CFrame.new(0, 10000, 0)
+            humanoid.PlatformStand = true -- no se cae
+
+            -- Desacoplar cámara del cuerpo
+            workspace.CurrentCamera.CameraSubject = nil
+            workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
+            workspace.CurrentCamera.CFrame = CFrame.new(Vector3.new(0,10,0)) * CFrame.Angles(0,0,0)
+
             invisibleOn = true
             invisibleBtn.Text = "Invisible: ON"
             invisibleBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
         else
-            char:MoveTo(Vector3.new(0,10,0)) -- volver abajo
+            -- Restaurar cámara
+            workspace.CurrentCamera.CameraSubject = humanoid
+            workspace.CurrentCamera.CameraType = storedCameraType or Enum.CameraType.Custom
+
+            -- Volver a abajo
+            hrp.CFrame = CFrame.new(0, 10, 0)
+            humanoid.PlatformStand = false
+
             invisibleOn = false
             invisibleBtn.Text = "Invisible: OFF"
             invisibleBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
         end
     end
 end)
-
 -------------------------------------------------
 -- Infinite Jump
 -------------------------------------------------
