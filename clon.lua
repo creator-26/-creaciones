@@ -14,7 +14,7 @@ local spawnButton = Instance.new("TextButton")
 spawnButton.Size = UDim2.new(0, 120, 0, 40)
 spawnButton.Position = UDim2.new(0, 10, 0, 200)
 spawnButton.Text = "Clon OFF"
-spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100)
+spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100) -- rojo = apagado
 spawnButton.Parent = ScreenGui
 
 local swapButton = Instance.new("TextButton")
@@ -24,21 +24,53 @@ swapButton.Text = "Intercambiar"
 swapButton.BackgroundColor3 = Color3.fromRGB(200, 200, 100)
 swapButton.Parent = ScreenGui
 
--- Crear Dummy mejorado copiando apariencia
+-- Crear un Dummy estilo personaje
 local function crearDummy()
-    local dummy = Character:Clone() -- clonamos al jugador real
+    local dummy = Instance.new("Model")
     dummy.Name = "ClonDummy"
 
-    -- lo ponemos delante del jugador
-    local frente = HumanoidRootPart.CFrame.LookVector * 6
-    dummy:MoveTo(HumanoidRootPart.Position + frente)
+    local humanoid = Instance.new("Humanoid")
+    humanoid.Parent = dummy
 
-    -- quitamos scripts internos para que no se buguee
-    for _, obj in pairs(dummy:GetDescendants()) do
-        if obj:IsA("LocalScript") or obj:IsA("Script") then
-            obj:Destroy()
-        end
-    end
+    local root = Instance.new("Part")
+    root.Name = "HumanoidRootPart"
+    root.Size = Vector3.new(2, 2, 1)
+
+    -- posición frente al jugador
+    local frente = HumanoidRootPart.CFrame.LookVector * 6
+    root.Position = HumanoidRootPart.Position + frente + Vector3.new(0, 0, 0)
+
+    root.Anchored = false
+    root.BrickColor = BrickColor.new("Medium stone grey")
+    root.Parent = dummy
+    dummy.PrimaryPart = root
+
+    -- Cabeza
+    local head = Instance.new("Part")
+    head.Size = Vector3.new(2, 1, 1)
+    head.Position = root.Position + Vector3.new(0, 3, 0)
+    head.BrickColor = BrickColor.new("Really black")
+    head.Name = "Head"
+    head.Parent = dummy
+
+    -- Torso
+    local torso = Instance.new("Part")
+    torso.Size = Vector3.new(2, 2, 1)
+    torso.Position = root.Position + Vector3.new(0, 2, 0)
+    torso.BrickColor = BrickColor.new("Bright blue")
+    torso.Name = "Torso"
+    torso.Parent = dummy
+
+    -- Welds
+    local weld1 = Instance.new("WeldConstraint")
+    weld1.Part0 = root
+    weld1.Part1 = torso
+    weld1.Parent = root
+
+    local weld2 = Instance.new("WeldConstraint")
+    weld2.Part0 = torso
+    weld2.Part1 = head
+    weld2.Parent = torso
 
     dummy.Parent = workspace
     return dummy
@@ -47,16 +79,18 @@ end
 -- ON/OFF Clon
 spawnButton.MouseButton1Click:Connect(function()
     if clonActivo then
+        -- Apagar clon
         if clon and clon.Parent then clon:Destroy() end
         clon = nil
         clonActivo = false
         spawnButton.Text = "Clon OFF"
-        spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100)
+        spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100) -- rojo
     else
+        -- Encender clon
         clon = crearDummy()
         clonActivo = true
         spawnButton.Text = "Clon ON"
-        spawnButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+        spawnButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100) -- verde
     end
 end)
 
