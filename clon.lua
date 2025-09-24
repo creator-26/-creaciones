@@ -24,22 +24,18 @@ swapButton.Text = "Intercambiar"
 swapButton.BackgroundColor3 = Color3.fromRGB(200, 200, 100)
 swapButton.Parent = ScreenGui
 
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
-
--- Crear clon igual al personaje
+-- Crear un clon igual al personaje del jugador
 local function crearClon()
     local char = LocalPlayer.Character
     if not char then return end
 
+    -- Copiar el modelo del Character entero
     local dummy = char:Clone()
     dummy.Name = "ClonDummy"
 
-    -- Eliminar scripts para que no se autodestruya
+    -- Quitar scripts que puedan dar problemas
     for _, obj in pairs(dummy:GetDescendants()) do
-        if obj:IsA("Script") or obj:IsA("LocalScript") then
+        if obj:IsA("LocalScript") or obj:IsA("Script") then
             obj:Destroy()
         end
     end
@@ -49,21 +45,19 @@ local function crearClon()
     if hrp then
         local frente = HumanoidRootPart.CFrame.LookVector * 6
         hrp.CFrame = HumanoidRootPart.CFrame + frente
+        hrp.Anchored = true -- lo congela en el aire
     end
 
-    -- Congelarlo como estatua
+    -- Congelar humanoid
     local hum = dummy:FindFirstChildOfClass("Humanoid")
     if hum then
+        hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
         hum.PlatformStand = true
-        hum:ChangeState(Enum.HumanoidStateType.Physics)
     end
 
     dummy.Parent = workspace
     return dummy
 end
-
--- 🔹 Ejecutar
-local clon = crearClon()
 
 -- ON/OFF Clon
 spawnButton.MouseButton1Click:Connect(function()
