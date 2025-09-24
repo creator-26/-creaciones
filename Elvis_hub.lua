@@ -1,94 +1,136 @@
--- GUI principal
-local ScreenGui = Instance.new("ScreenGui")
-ScreenGui.Parent = game.Players.LocalPlayer:WaitForChild("PlayerGui")
+-- 🟢 Elvis_hub
+-- 📌 LocalScript en StarterPlayerScripts
 
-local Frame = Instance.new("Frame")
-Frame.Parent = ScreenGui
-Frame.Position = UDim2.new(0.75,0,0.1,0) -- esquina derecha arriba
-Frame.Size = UDim2.new(0,150,0,200)
-Frame.BackgroundColor3 = Color3.fromRGB(0,255,127)
-Frame.Visible = true
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UserInputService = game:GetService("UserInputService")
+local StarterGui = game:GetService("StarterGui")
 
--- Botón de mostrar/ocultar
-local ToggleButton = Instance.new("TextButton")
-ToggleButton.Parent = ScreenGui
-ToggleButton.Size = UDim2.new(0,60,0,30)
-ToggleButton.Position = UDim2.new(0.9,0,0,10)
-ToggleButton.Text = "Elvis_Hub"
-ToggleButton.BackgroundColor3 = Color3.fromRGB(255,0,0)
+-- Crear ScreenGui
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-ToggleButton.MouseButton1Click:Connect(function()
-    Frame.Visible = not Frame.Visible
+-- Marco principal
+local frame = Instance.new("Frame")
+frame.Size = UDim2.new(0, 150, 0, 220)
+frame.Position = UDim2.new(1, -160, 0, 50)
+frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+frame.BorderSizePixel = 0
+frame.Active = true
+frame.Draggable = true
+frame.Parent = screenGui
+
+-- Botón ocultar/mostrar
+local toggleButton = Instance.new("TextButton")
+toggleButton.Size = UDim2.new(0, 120, 0, 30)
+toggleButton.Position = UDim2.new(0, 15, 0, -35)
+toggleButton.Text = "Mostrar/Ocultar Hub"
+toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Parent = screenGui
+
+-- Estado visible
+local hubVisible = true
+toggleButton.MouseButton1Click:Connect(function()
+    hubVisible = not hubVisible
+    frame.Visible = hubVisible
 end)
 
--- Invisible botón
-local InvisibleBtn = Instance.new("TextButton")
-InvisibleBtn.Parent = Frame
-InvisibleBtn.Size = UDim2.new(1,0,0,40)
-InvisibleBtn.Position = UDim2.new(0,0,0,0)
-InvisibleBtn.Text = "Invisible OFF"
-InvisibleBtn.BackgroundColor3 = Color3.fromRGB(135,206,235)
+-- Título
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "Elvis_hub"
+title.TextColor3 = Color3.fromRGB(0, 255, 0)
+title.Font = Enum.Font.SourceSansBold
+title.TextSize = 20
+title.Parent = frame
 
-local invisible = false
-InvisibleBtn.MouseButton1Click:Connect(function()
-    local char = game.Players.LocalPlayer.Character
-    if char then
-        invisible = not invisible
-        if invisible then
-            for _,part in pairs(char:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.Transparency = 1
-                end
-            end
-            InvisibleBtn.Text = "Invisible ON"
+-------------------------------------------------
+-- Invisible (flotar arriba)
+-------------------------------------------------
+local invisibleBtn = Instance.new("TextButton")
+invisibleBtn.Size = UDim2.new(0, 120, 0, 30)
+invisibleBtn.Position = UDim2.new(0, 15, 0, 40)
+invisibleBtn.Text = "Invisible: OFF"
+invisibleBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+invisibleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+invisibleBtn.Parent = frame
+
+local invisibleOn = false
+invisibleBtn.MouseButton1Click:Connect(function()
+    local char = LocalPlayer.Character
+    if char and char:FindFirstChild("HumanoidRootPart") then
+        if not invisibleOn then
+            char:MoveTo(Vector3.new(0,1000,0)) -- flotar arriba
+            invisibleOn = true
+            invisibleBtn.Text = "Invisible: ON"
+            invisibleBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
         else
-            for _,part in pairs(char:GetDescendants()) do
-                if part:IsA("BasePart") then
-                    part.Transparency = 0
-                end
-            end
-            InvisibleBtn.Text = "Invisible OFF"
+            char:MoveTo(Vector3.new(0,10,0)) -- volver abajo
+            invisibleOn = false
+            invisibleBtn.Text = "Invisible: OFF"
+            invisibleBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
         end
     end
 end)
 
--- Infinite Jump botón
-local InfJumpBtn = Instance.new("TextButton")
-InfJumpBtn.Parent = Frame
-InfJumpBtn.Size = UDim2.new(1,0,0,40)
-InfJumpBtn.Position = UDim2.new(0,0,0,40)
-InfJumpBtn.Text = "Infinite Jump OFF"
-InfJumpBtn.BackgroundColor3 = Color3.fromRGB(255,255,0)
+-------------------------------------------------
+-- Infinite Jump
+-------------------------------------------------
+local jumpBtn = Instance.new("TextButton")
+jumpBtn.Size = UDim2.new(0, 120, 0, 30)
+jumpBtn.Position = UDim2.new(0, 15, 0, 80)
+jumpBtn.Text = "Infinite Jump: OFF"
+jumpBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+jumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+jumpBtn.Parent = frame
 
-local infjump = false
-InfJumpBtn.MouseButton1Click:Connect(function()
-    infjump = not infjump
-    if infjump then
-        InfJumpBtn.Text = "Infinite Jump ON"
+local infiniteJump = false
+jumpBtn.MouseButton1Click:Connect(function()
+    infiniteJump = not infiniteJump
+    if infiniteJump then
+        jumpBtn.Text = "Infinite Jump: ON"
+        jumpBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
     else
-        InfJumpBtn.Text = "Infinite Jump OFF"
+        jumpBtn.Text = "Infinite Jump: OFF"
+        jumpBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
     end
 end)
 
-game:GetService("UserInputService").JumpRequest:Connect(function()
-    if infjump then
-        game.Players.LocalPlayer.Character:FindFirstChildOfClass("Humanoid"):ChangeState("Jumping")
+UserInputService.JumpRequest:Connect(function()
+    if infiniteJump and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+        LocalPlayer.Character.Humanoid:ChangeState("Jumping")
     end
 end)
 
--- TP caja de texto
-local TPBox = Instance.new("TextBox")
-TPBox.Parent = Frame
-TPBox.Size = UDim2.new(1,0,0,40)
-TPBox.Position = UDim2.new(0,0,0,80)
-TPBox.PlaceholderText = "Usuario para TP"
-TPBox.BackgroundColor3 = Color3.fromRGB(173,216,230)
+-------------------------------------------------
+-- Teleport con cuadro de texto
+-------------------------------------------------
+local tpBox = Instance.new("TextBox")
+tpBox.Size = UDim2.new(0, 120, 0, 30)
+tpBox.Position = UDim2.new(0, 15, 0, 120)
+tpBox.PlaceholderText = "Usuario..."
+tpBox.TextColor3 = Color3.fromRGB(0, 0, 0)
+tpBox.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
+tpBox.Parent = frame
 
-TPBox.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        local target = game.Players:FindFirstChild(TPBox.Text)
-        if target and target.Character and target.Character:FindFirstChild("HumanoidRootPart") then
-            game.Players.LocalPlayer.Character:MoveTo(target.Character.HumanoidRootPart.Position + Vector3.new(2,0,0))
+local tpBtn = Instance.new("TextButton")
+tpBtn.Size = UDim2.new(0, 120, 0, 30)
+tpBtn.Position = UDim2.new(0, 15, 0, 160)
+tpBtn.Text = "Teleport"
+tpBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+tpBtn.Parent = frame
+
+tpBtn.MouseButton1Click:Connect(function()
+    local targetName = tpBox.Text
+    if targetName ~= "" then
+        local targetPlayer = Players:FindFirstChild(targetName)
+        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            local targetPos = targetPlayer.Character.HumanoidRootPart.Position
+            local offset = Vector3.new(3, 0, 3) -- pasos al costado
+            LocalPlayer.Character:MoveTo(targetPos + offset)
         end
     end
 end)
