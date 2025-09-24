@@ -33,6 +33,13 @@ local function crearClon()
     local dummy = char:Clone()
     dummy.Name = "ClonDummy"
 
+    -- Quitar scripts que puedan hacerlo desaparecer
+    for _, obj in pairs(dummy:GetDescendants()) do
+        if obj:IsA("LocalScript") or obj:IsA("Script") then
+            obj:Destroy()
+        end
+    end
+
     -- Posición frente al jugador
     local hrp = dummy:FindFirstChild("HumanoidRootPart")
     if hrp then
@@ -45,6 +52,7 @@ local function crearClon()
     if hum then
         hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None -- oculta nombre
         hum:ChangeState(Enum.HumanoidStateType.Seated) -- lo deja quieto
+        hum.PlatformStand = true -- congelado
     end
 
     dummy.Parent = workspace
