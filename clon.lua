@@ -14,7 +14,7 @@ local spawnButton = Instance.new("TextButton")
 spawnButton.Size = UDim2.new(0, 120, 0, 40)
 spawnButton.Position = UDim2.new(0, 10, 0, 200)
 spawnButton.Text = "Clon OFF"
-spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100) -- rojo = apagado
+spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100)
 spawnButton.Parent = ScreenGui
 
 local swapButton = Instance.new("TextButton")
@@ -29,7 +29,6 @@ local function crearClon()
     local char = LocalPlayer.Character
     if not char then return end
 
-    -- Copiar el modelo del Character entero
     local dummy = char:Clone()
     dummy.Name = "ClonDummy"
 
@@ -40,13 +39,16 @@ local function crearClon()
         end
     end
 
-    -- Posicionar frente al jugador
     local hrp = dummy:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        local frente = HumanoidRootPart.CFrame.LookVector * 6
-        hrp.CFrame = HumanoidRootPart.CFrame + frente
-        hrp.Anchored = true -- lo congela en el aire
-    end
+    if not hrp then return end
+
+    -- Definir PrimaryPart
+    dummy.PrimaryPart = hrp
+
+    -- Posicionar frente al jugador
+    local frente = HumanoidRootPart.CFrame.LookVector * 6
+    hrp.CFrame = HumanoidRootPart.CFrame + frente
+    hrp.Anchored = true -- lo congela en el aire
 
     -- Congelar humanoid
     local hum = dummy:FindFirstChildOfClass("Humanoid")
@@ -62,18 +64,16 @@ end
 -- ON/OFF Clon
 spawnButton.MouseButton1Click:Connect(function()
     if clonActivo then
-        -- Apagar clon
         if clon and clon.Parent then clon:Destroy() end
         clon = nil
         clonActivo = false
         spawnButton.Text = "Clon OFF"
-        spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100) -- rojo
+        spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100)
     else
-        -- Encender clon
         clon = crearClon()
         clonActivo = true
         spawnButton.Text = "Clon ON"
-        spawnButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100) -- verde
+        spawnButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
     end
 end)
 
