@@ -47,7 +47,7 @@ title.TextSize = 20
 title.Parent = frame
 
 -------------------------------------------------
--- Invisible (fantasma)
+-- Invisible (de verdad)
 -------------------------------------------------
 local invisibleBtn = Instance.new("TextButton")
 invisibleBtn.Size = UDim2.new(0, 120, 0, 30)
@@ -58,39 +58,28 @@ invisibleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 invisibleBtn.Parent = frame
 
 local invisibleOn = false
-local storedCameraType
+
+local function setInvisible(char, state)
+    for _, part in pairs(char:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+            part.Transparency = state and 1 or 0
+            part.CanCollide = not state
+        elseif part:IsA("Decal") then
+            part.Transparency = state and 1 or 0
+        end
+    end
+end
 
 invisibleBtn.MouseButton1Click:Connect(function()
     local char = LocalPlayer.Character
-    local humanoid = char and char:FindFirstChild("Humanoid")
-    local hrp = char and char:FindFirstChild("HumanoidRootPart")
-
-    if humanoid and hrp then
+    if char then
         if not invisibleOn then
-            -- Guardar cámara actual
-            storedCameraType = workspace.CurrentCamera.CameraType
-
-            -- Mandar el cuerpo muy lejos y congelarlo
-            hrp.CFrame = CFrame.new(0, 10000, 0)
-            humanoid.PlatformStand = true -- no se cae
-
-            -- Desacoplar cámara del cuerpo
-            workspace.CurrentCamera.CameraSubject = nil
-            workspace.CurrentCamera.CameraType = Enum.CameraType.Scriptable
-            workspace.CurrentCamera.CFrame = CFrame.new(Vector3.new(0,10,0)) * CFrame.Angles(0,0,0)
-
+            setInvisible(char, true)
             invisibleOn = true
             invisibleBtn.Text = "Invisible: ON"
             invisibleBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
         else
-            -- Restaurar cámara
-            workspace.CurrentCamera.CameraSubject = humanoid
-            workspace.CurrentCamera.CameraType = storedCameraType or Enum.CameraType.Custom
-
-            -- Volver a abajo
-            hrp.CFrame = CFrame.new(0, 10, 0)
-            humanoid.PlatformStand = false
-
+            setInvisible(char, false)
             invisibleOn = false
             invisibleBtn.Text = "Invisible: OFF"
             invisibleBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
