@@ -6,56 +6,45 @@ local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 local clon = nil
 local clonActivo = false
 
--- GUI simple
-local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+-- GUI
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local spawnButton = Instance.new("TextButton", ScreenGui)
+local spawnButton = Instance.new("TextButton")
 spawnButton.Size = UDim2.new(0, 120, 0, 40)
 spawnButton.Position = UDim2.new(0, 10, 0, 200)
 spawnButton.Text = "Clon OFF"
 spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100)
+spawnButton.Parent = ScreenGui
 
-local swapButton = Instance.new("TextButton", ScreenGui)
+local swapButton = Instance.new("TextButton")
 swapButton.Size = UDim2.new(0, 120, 0, 40)
 swapButton.Position = UDim2.new(0, 10, 0, 250)
 swapButton.Text = "Intercambiar"
 swapButton.BackgroundColor3 = Color3.fromRGB(200, 200, 100)
+swapButton.Parent = ScreenGui
 
--- Crear clon igual al jugador
-local function crearClon()
-    local char = LocalPlayer.Character
-    if not char then return end
-
-    -- clonar
-    local dummy = char:Clone()
+-- Crear Dummy mejorado copiando apariencia
+local function crearDummy()
+    local dummy = Character:Clone() -- clonamos al jugador real
     dummy.Name = "ClonDummy"
 
-    -- eliminar scripts que den problemas
+    -- lo ponemos delante del jugador
+    local frente = HumanoidRootPart.CFrame.LookVector * 6
+    dummy:MoveTo(HumanoidRootPart.Position + frente)
+
+    -- quitamos scripts internos para que no se buguee
     for _, obj in pairs(dummy:GetDescendants()) do
         if obj:IsA("LocalScript") or obj:IsA("Script") then
             obj:Destroy()
         end
     end
 
-    -- posicionar al frente
-    local hrp = dummy:FindFirstChild("HumanoidRootPart")
-    if hrp then
-        hrp.CFrame = HumanoidRootPart.CFrame * CFrame.new(0, 0, -6)
-        hrp.Anchored = true
-    end
-
-    -- congelar
-    local hum = dummy:FindFirstChildOfClass("Humanoid")
-    if hum then
-        hum.PlatformStand = true
-        hum.DisplayDistanceType = Enum.HumanoidDisplayDistanceType.None
-    end
-
     dummy.Parent = workspace
     return dummy
 end
 
--- Botón ON/OFF
+-- ON/OFF Clon
 spawnButton.MouseButton1Click:Connect(function()
     if clonActivo then
         if clon and clon.Parent then clon:Destroy() end
@@ -64,14 +53,14 @@ spawnButton.MouseButton1Click:Connect(function()
         spawnButton.Text = "Clon OFF"
         spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100)
     else
-        clon = crearClon()
+        clon = crearDummy()
         clonActivo = true
         spawnButton.Text = "Clon ON"
         spawnButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
     end
 end)
 
--- Botón intercambiar
+-- Intercambiar posiciones
 swapButton.MouseButton1Click:Connect(function()
     if clon and clon.PrimaryPart then
         local playerPos = HumanoidRootPart.CFrame
