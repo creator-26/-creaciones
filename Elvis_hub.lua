@@ -12,7 +12,7 @@ screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 -- Marco principal
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 150, 0, 220)
+frame.Size = UDim2.new(0, 150, 0, 250)
 frame.Position = UDim2.new(1, -160, 0, 50)
 frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
 frame.BorderSizePixel = 0
@@ -23,8 +23,8 @@ frame.Parent = screenGui
 -- Botón ocultar/mostrar
 local toggleButton = Instance.new("TextButton")
 toggleButton.Size = UDim2.new(0, 120, 0, 30)
-toggleButton.Position = UDim2.new(0, 15, 0, -35)
-toggleButton.Text = "Mostrar/Ocultar Hub"
+toggleButton.Position = UDim2.new(0, 15, 0, 10)
+toggleButton.Text = "Mostrar/Ocultar"
 toggleButton.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 toggleButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 toggleButton.Parent = screenGui
@@ -137,14 +137,8 @@ showListBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
 showListBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 showListBtn.Parent = frame
 
--- TextBox para mostrar el jugador seleccionado
-local tpBox = Instance.new("TextBox")
-tpBox.Size = UDim2.new(0, 120, 0, 30)
-tpBox.Position = UDim2.new(0, 15, 0, 160)
-tpBox.PlaceholderText = "Selecciona un jugador..."
-tpBox.TextColor3 = Color3.fromRGB(0, 0, 0)
-tpBox.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-tpBox.Parent = frame
+-- Variable para almacenar el jugador seleccionado
+local selectedPlayer = nil
 
 -- Marco para la lista de jugadores
 local playerListFrame = Instance.new("Frame")
@@ -188,8 +182,9 @@ local function updatePlayerList()
             playerBtn.Parent = scrollFrame
             
             playerBtn.MouseButton1Click:Connect(function()
-                -- Poner el nombre del jugador en el TextBox
-                tpBox.Text = player.Name
+                -- Guardar el jugador seleccionado y mostrar su nombre en el botón
+                selectedPlayer = player
+                showListBtn.Text = player.Name
                 -- Ocultar la lista después de seleccionar
                 playerListFrame.Visible = false
             end)
@@ -212,7 +207,7 @@ end)
 
 local tpBtn = Instance.new("TextButton")
 tpBtn.Size = UDim2.new(0, 120, 0, 30)
-tpBtn.Position = UDim2.new(0, 15, 0, 200)
+tpBtn.Position = UDim2.new(0, 15, 0, 160)
 tpBtn.Text = "Teleport"
 tpBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
 tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -220,21 +215,17 @@ tpBtn.Parent = frame
 
 -- Función de teleport
 tpBtn.MouseButton1Click:Connect(function()
-    local targetName = tpBox.Text
-    if targetName ~= "" then
-        local targetPlayer = Players:FindFirstChild(targetName)
-        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local targetPos = targetPlayer.Character.HumanoidRootPart.Position
-            local offset = Vector3.new(3, 0, 3) -- pasos al costado
-            LocalPlayer.Character:MoveTo(targetPos + offset)
-        end
+    if selectedPlayer and selectedPlayer.Character and selectedPlayer.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPos = selectedPlayer.Character.HumanoidRootPart.Position
+        local offset = Vector3.new(3, 0, 3) -- pasos al costado
+        LocalPlayer.Character:MoveTo(targetPos + offset)
     end
 end)
 
 -- Botón Refresh Player list
 local refreshBtn = Instance.new("TextButton")
 refreshBtn.Size = UDim2.new(0, 120, 0, 30)
-refreshBtn.Position = UDim2.new(0, 15, 0, 240)
+refreshBtn.Position = UDim2.new(0, 15, 0, 200)
 refreshBtn.Text = "Refresh Player list"
 refreshBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 255)
 refreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
