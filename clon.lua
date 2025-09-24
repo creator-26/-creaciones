@@ -7,7 +7,8 @@ local clon = nil
 local clonActivo = false
 
 -- GUI
-local ScreenGui = Instance.new("ScreenGui", LocalPlayer:WaitForChild("PlayerGui"))
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local spawnButton = Instance.new("TextButton")
 spawnButton.Size = UDim2.new(0, 120, 0, 40)
@@ -23,27 +24,33 @@ swapButton.Text = "Intercambiar"
 swapButton.BackgroundColor3 = Color3.fromRGB(200, 200, 100)
 swapButton.Parent = ScreenGui
 
--- Crear clon copiando el rig del jugador
+-- Crear clon con la misma apariencia del jugador
 local function crearClon()
-    -- Duplicar el character actual
-    local dummy = Character:Clone()
+    local dummy = Instance.new("Model")
     dummy.Name = "ClonDummy"
 
-    -- Posición del clon
-    dummy:MoveTo(HumanoidRootPart.Position + (HumanoidRootPart.CFrame.LookVector * 6))
+    local humanoid = Instance.new("Humanoid")
+    humanoid.Parent = dummy
 
-    -- Quitar scripts que puedan buguear
-    for _, obj in pairs(dummy:GetDescendants()) do
-        if obj:IsA("LocalScript") or obj:IsA("Script") then
-            obj:Destroy()
-        end
-    end
+    local root = Instance.new("Part")
+    root.Name = "HumanoidRootPart"
+    root.Size = Vector3.new(2,2,1)
+    root.Anchored = true
+    root.CanCollide = false
+    root.Transparency = 1
+    root.Position = HumanoidRootPart.Position + (HumanoidRootPart.CFrame.LookVector * 6)
+    root.Parent = dummy
+    dummy.PrimaryPart = root
+
+    -- copiar apariencia del jugador
+    local desc = Character:FindFirstChildOfClass("Humanoid"):GetAppliedDescription()
+    humanoid:ApplyDescription(desc)
 
     dummy.Parent = workspace
     return dummy
 end
 
--- Botón ON/OFF clon
+-- ON/OFF Clon
 spawnButton.MouseButton1Click:Connect(function()
     if clonActivo then
         if clon and clon.Parent then clon:Destroy() end
@@ -61,9 +68,9 @@ end)
 
 -- Intercambiar posiciones
 swapButton.MouseButton1Click:Connect(function()
-    if clon and clon:FindFirstChild("HumanoidRootPart") then
+    if clon and clon.PrimaryPart then
         local playerPos = HumanoidRootPart.CFrame
-        HumanoidRootPart.CFrame = clon.HumanoidRootPart.CFrame
-        clon.HumanoidRootPart.CFrame = playerPos
+        HumanoidRootPart.CFrame = clon.PrimaryPart.CFrame
+        clon.PrimaryPart.CFrame = playerPos
     end
 end)
