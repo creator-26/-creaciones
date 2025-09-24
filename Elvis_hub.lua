@@ -127,15 +127,81 @@ UserInputService.JumpRequest:Connect(function()
 end)
 
 -------------------------------------------------
--- Teleport con cuadro de texto
+-- Teleport con lista de jugadores
 -------------------------------------------------
-local tpBox = Instance.new("TextBox")
-tpBox.Size = UDim2.new(0, 120, 0, 30)
-tpBox.Position = UDim2.new(0, 15, 0, 120)
-tpBox.PlaceholderText = "Usuario..."
-tpBox.TextColor3 = Color3.fromRGB(0, 0, 0)
-tpBox.BackgroundColor3 = Color3.fromRGB(200, 200, 200)
-tpBox.Parent = frame
+local showListBtn = Instance.new("TextButton")
+showListBtn.Size = UDim2.new(0, 120, 0, 30)
+showListBtn.Position = UDim2.new(0, 15, 0, 120)
+showListBtn.Text = "TextBox"
+showListBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
+showListBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+showListBtn.Parent = frame
+
+-- Marco para la lista de jugadores
+local playerListFrame = Instance.new("Frame")
+playerListFrame.Size = UDim2.new(0, 150, 0, 200)
+playerListFrame.Position = UDim2.new(1, 10, 0, 0)
+playerListFrame.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+playerListFrame.BorderSizePixel = 0
+playerListFrame.Visible = false
+playerListFrame.Parent = frame
+
+-- ScrollingFrame para la lista deslizable
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, -10, 1, -40)
+scrollFrame.Position = UDim2.new(0, 5, 0, 5)
+scrollFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+scrollFrame.BorderSizePixel = 0
+scrollFrame.ScrollBarThickness = 8
+scrollFrame.Parent = playerListFrame
+
+-- Lista para almacenar botones de jugadores
+local playerButtons = {}
+
+-- Función para actualizar la lista de jugadores
+local function updatePlayerList()
+    -- Limpiar botones anteriores
+    for _, button in pairs(playerButtons) do
+        button:Destroy()
+    end
+    playerButtons = {}
+    
+    -- Crear botones para cada jugador
+    local yOffset = 0
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer then
+            local playerBtn = Instance.new("TextButton")
+            playerBtn.Size = UDim2.new(1, -10, 0, 30)
+            playerBtn.Position = UDim2.new(0, 5, 0, yOffset)
+            playerBtn.Text = player.Name
+            playerBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            playerBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+            playerBtn.Parent = scrollFrame
+            
+            playerBtn.MouseButton1Click:Connect(function()
+                -- Teleport al jugador seleccionado
+                if player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+                    local targetPos = player.Character.HumanoidRootPart.Position
+                    local offset = Vector3.new(3, 0, 3)
+                    LocalPlayer.Character:MoveTo(targetPos + offset)
+                end
+            end)
+            
+            table.insert(playerButtons, playerBtn)
+            yOffset = yOffset + 35
+        end
+    end
+    
+    scrollFrame.CanvasSize = UDim2.new(0, 0, 0, yOffset)
+end
+
+-- Botón para mostrar/ocultar lista
+showListBtn.MouseButton1Click:Connect(function()
+    playerListFrame.Visible = not playerListFrame.Visible
+    if playerListFrame.Visible then
+        updatePlayerList()
+    end
+end)
 
 local tpBtn = Instance.new("TextButton")
 tpBtn.Size = UDim2.new(0, 120, 0, 30)
@@ -145,14 +211,17 @@ tpBtn.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
 tpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
 tpBtn.Parent = frame
 
-tpBtn.MouseButton1Click:Connect(function()
-    local targetName = tpBox.Text
-    if targetName ~= "" then
-        local targetPlayer = Players:FindFirstChild(targetName)
-        if targetPlayer and targetPlayer.Character and targetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-            local targetPos = targetPlayer.Character.HumanoidRootPart.Position
-            local offset = Vector3.new(3, 0, 3) -- pasos al costado
-            LocalPlayer.Character:MoveTo(targetPos + offset)
-        end
+-- Botón Refresh Player list
+local refreshBtn = Instance.new("TextButton")
+refreshBtn.Size = UDim2.new(0, 120, 0, 30)
+refreshBtn.Position = UDim2.new(0, 15, 0, 200)
+refreshBtn.Text = "Refresh Player list"
+refreshBtn.BackgroundColor3 = Color3.fromRGB(120, 0, 255)
+refreshBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+refreshBtn.Parent = frame
+
+refreshBtn.MouseButton1Click:Connect(function()
+    if playerListFrame.Visible then
+        updatePlayerList()
     end
 end)
