@@ -70,7 +70,7 @@ spawnButton.MouseButton1Click:Connect(function()
         spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100) -- rojo
     else
         -- Encender clon
-        clon = crearDummy()
+        clon = crearClon()
         clonActivo = true
         spawnButton.Text = "Clon ON"
         spawnButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100) -- verde
