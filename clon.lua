@@ -3,20 +3,19 @@ local LocalPlayer = Players.LocalPlayer
 local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
 local HumanoidRootPart = Character:WaitForChild("HumanoidRootPart")
 
--- Eliminar clon anterior si existe
+-- Borrar clon anterior si existiera
 if workspace:FindFirstChild("ClonDummy") then
     workspace.ClonDummy:Destroy()
 end
 
--- Crear nuevo clon vacío
+-- Crear un rig R15 vacío
 local dummy = Instance.new("Model")
 dummy.Name = "ClonDummy"
 
--- Crear un humanoid
 local humanoid = Instance.new("Humanoid")
+humanoid.RigType = Enum.HumanoidRigType.R15
 humanoid.Parent = dummy
 
--- Crear HRP
 local hrp = Instance.new("Part")
 hrp.Name = "HumanoidRootPart"
 hrp.Size = Vector3.new(2,2,1)
@@ -26,13 +25,18 @@ hrp.Position = HumanoidRootPart.Position + HumanoidRootPart.CFrame.LookVector * 
 hrp.Parent = dummy
 dummy.PrimaryPart = hrp
 
--- Clonar la apariencia del jugador
-local description = Players:GetHumanoidDescriptionFromUserId(LocalPlayer.UserId)
-humanoid:ApplyDescription(description)
+-- Obtener tu apariencia
+local success, description = pcall(function()
+    return Players:GetHumanoidDescriptionFromUserId(LocalPlayer.UserId)
+end)
+
+if success and description then
+    humanoid:ApplyDescription(description)
+end
 
 dummy.Parent = workspace
 
--- Anclar todo para que no se caiga
+-- Anclar todas las partes del clon
 for _, part in ipairs(dummy:GetDescendants()) do
     if part:IsA("BasePart") then
         part.Anchored = true
