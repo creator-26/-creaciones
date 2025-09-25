@@ -2,6 +2,7 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
 
 -- GUI principal
 local ScreenGui = Instance.new("ScreenGui")
@@ -16,129 +17,181 @@ inmortalButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 inmortalButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 inmortalButton.Parent = ScreenGui
 
--- Hacer el botón arrastrable
 inmortalButton.Active = true
 inmortalButton.Draggable = true
 
 -- Estado inmortal
 local inmortal = false
-local healthConnection = nil
-local renderConnection = nil
+local connections = {}
 
--- Función para manejar el cambio de personaje
-LocalPlayer.CharacterAdded:Connect(function(newCharacter)
-    wait(1) -- Esperar a que el character se estabilice
-    if inmortal then
-        setImmortal(true)
+-- FUNCIONES AVANZADAS DE INMORTALIDAD
+local function setupUltraImmortality()
+    if not inmortal then return end
+    
+    local Character = LocalPlayer.Character
+    if not Character then return end
+    
+    local Humanoid = Character:WaitForChild("Humanoid")
+    local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
+    
+    -- MÉTODO 1: LOOP CONSTANTE DE PROTECCIÓN
+    table.insert(connections, RunService.Heartbeat:Connect(function()
+        if not inmortal or not Character or not Character.Parent then return end
+        
+        -- Forzar salud máxima SIEMPRE
+        if Humanoid and Humanoid.Health < Humanoid.MaxHealth then
+            Humanoid.Health = Humanoid.MaxHealth
+        end
+        
+        -- Prevenir muerte
+        if Humanoid and Humanoid.Health <= 0 then
+            Humanoid.Health = 100
+        end
+        
+        -- Resetear estado de muerte
+        if Humanoid and Humanoid:GetState() == Enum.HumanoidStateType.Dead then
+            Humanoid:ChangeState(Enum.HumanoidStateType.Running)
+        end
+    end))
+    
+    -- MÉTODO 2: PROTECCIÓN ANTIDMG AVANZADA
+    table.insert(connections, Humanoid.HealthChanged:Connect(function(hp)
+        if not inmortal then return end
+        
+        -- Si la salud baja, restaurar inmediatamente
+        if hp < Humanoid.MaxHealth then
+            Humanoid.Health = math.huge
+        end
+        
+        -- Si muere, revivir instantáneamente
+        if hp <= 0 then
+            wait(0.1)
+            if Humanoid then
+                Humanoid.Health = math.huge
+                Humanoid:ChangeState(Enum.HumanoidStateType.Running)
+            end
+        end
+    end))
+    
+    -- MÉTODO 3: ELIMINAR TODAS LAS ZONAS DE DAÑO
+    table.insert(connections, Workspace.DescendantAdded:Connect(function(descendant)
+        if not inmortal then return end
+        
+        -- Eliminar killbricks, lava, fuego, etc.
+        if descendant:IsA("Part") and (
+            descendant.Name:lower():find("kill") or 
+            descendant.Name:lower():find("death") or 
+            descendant.Name:lower():find("lava") or
+            descendant.Name:lower():find("fire") or
+            descendant.Name:lower():find("damage") or
+            descendant.BrickColor == BrickColor.new("Bright red")
+        ) then
+            descendant.CanTouch = false
+            descendant:Destroy()
+        end
+        
+        -- Eliminar fuegos y efectos de daño
+        if descendant:IsA("Fire") or descendant:IsA("Sparkles") or descendant:IsA("Smoke") then
+            descendant:Destroy()
+        end
+    end))
+    
+    -- MÉTODO 4: HACER EL PERSONAJE INVULNERABLE A TODO
+    Humanoid.MaxHealth = math.huge
+    Humanoid.Health = math.huge
+    
+    -- MÉTODO 5: PROTEGER DE HERRAMIENTAS DE DAÑO
+    for _, tool in ipairs(Workspace:GetDescendants()) do
+        if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
+            local handle = tool.Handle
+            for _, touch in ipairs(handle:GetChildren()) do
+                if touch:IsA("TouchTransmitter") then
+                    touch:Destroy()
+                end
+            end
+        end
     end
-end)
+    
+    -- MÉTODO 6: DESACTIVAR SCRIPTS DE MUERTE
+    for _, script in ipairs(Workspace:GetDescendants()) do
+        if script:IsA("Script") and (
+            script.Name:lower():find("kill") or 
+            script.Name:lower():find("death") or
+            script.Name:lower():find("damage")
+        ) then
+            script.Disabled = true
+        end
+    end
+    
+    -- MÉTODO 7: PROTECCIÓN CONTRA CAÍDA
+    if HumanoidRootPart then
+        table.insert(connections, RunService.Stepped:Connect(function()
+            if not inmortal then return end
+            if HumanoidRootPart.Position.Y < -500 then
+                HumanoidRootPart.CFrame = CFrame.new(0, 100, 0)
+            end
+        end))
+    end
+    
+    -- MÉTODO 8: ANTI-TELEPORT A ZONAS DE MUERTE
+    local lastSafePosition = HumanoidRootPart and HumanoidRootPart.Position or Vector3.new(0, 10, 0)
+    table.insert(connections, RunService.Heartbeat:Connect(function()
+        if not inmortal or not HumanoidRootPart then return end
+        
+        -- Detectar si te teleportan a zona de muerte
+        if (HumanoidRootPart.Position - lastSafePosition).Magnitude > 100 then
+            local ray = Workspace:Raycast(HumanoidRootPart.Position, Vector3.new(0, -10, 0))
+            if not ray or ray.Instance and (
+                ray.Instance.Name:lower():find("kill") or 
+                ray.Instance.Name:lower():find("death")
+            ) then
+                HumanoidRootPart.CFrame = CFrame.new(lastSafePosition)
+            else
+                lastSafePosition = HumanoidRootPart.Position
+            end
+        end
+    end))
+end
+
+-- Función para limpiar conexiones
+local function cleanConnections()
+    for _, connection in ipairs(connections) do
+        connection:Disconnect()
+    end
+    connections = {}
+end
 
 -- Función para activar/desactivar
 local function setImmortal(state)
     inmortal = state
     
-    -- Limpiar conexiones anteriores
-    if healthConnection then
-        healthConnection:Disconnect()
-        healthConnection = nil
-    end
-    if renderConnection then
-        renderConnection:Disconnect()
-        renderConnection = nil
-    end
+    cleanConnections() -- Limpiar conexiones anteriores
     
     if inmortal then
         inmortalButton.Text = "Inmortal: ON"
         inmortalButton.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
         
-        local function setupImmortality()
-            local Character = LocalPlayer.Character
-            if not Character then return end
-            
-            local Humanoid = Character:FindFirstChild("Humanoid")
-            local HumanoidRootPart = Character:FindFirstChild("HumanoidRootPart")
-            
-            if Humanoid then
-                -- MÉTODO 1: HealthChanged (básico)
-                healthConnection = Humanoid.HealthChanged:Connect(function(hp)
-                    if inmortal and hp < Humanoid.MaxHealth then
-                        Humanoid.Health = Humanoid.MaxHealth
-                    end
-                end)
-                
-                -- MÉTODO 2: MaxHealth infinito
-                Humanoid.MaxHealth = math.huge
-                Humanoid.Health = math.huge
-                
-                -- MÉTODO 3: Prevenir muerte por fall damage
-                if Humanoid:FindFirstChild("PlatformStand") then
-                    Humanoid.PlatformStand = false
-                end
-                
-                -- MÉTODO 4: Loop de protección constante
-                renderConnection = RunService.Heartbeat:Connect(function()
-                    if not inmortal then return end
-                    
-                    -- Verificar si el personaje existe
-                    if not Character or not Character.Parent then
-                        return
-                    end
-                    
-                    -- Forzar salud máxima constantemente
-                    if Humanoid and Humanoid.Health < Humanoid.MaxHealth then
-                        Humanoid.Health = Humanoid.MaxHealth
-                    end
-                    
-                    -- Prevenir muerte instantánea (kill scripts)
-                    if Humanoid and Humanoid.Health <= 0 then
-                        Humanoid.Health = Humanoid.MaxHealth
-                    end
-                    
-                    -- Protección contra herramientas de daño
-                    for _, tool in ipairs(Character:GetChildren()) do
-                        if tool:IsA("Tool") and tool:FindFirstChild("Handle") then
-                            local handle = tool.Handle
-                            -- Prevenir daño por contacto
-                            for _, touchInterest in ipairs(handle:GetChildren()) do
-                                if touchInterest:IsA("TouchTransmitter") then
-                                    touchInterest:Destroy()
-                                end
-                            end
-                        end
-                    end
-                end)
-                
-                -- MÉTODO 5: Protección contra fuego/veneno
-                for _, child in ipairs(Character:GetChildren()) do
-                    if child:IsA("Fire") or child:IsA("Sparkles") or child.Name:lower():find("fire") or child.Name:lower():find("damage") then
-                        child:Destroy()
-                    end
-                end
-                
-                -- MÉTODO 6: Conectar evento de muerte
-                Humanoid.Died:Connect(function()
-                    if inmortal then
-                        wait(2)
-                        if LocalPlayer.Character then
-                            setImmortal(true)
-                        end
-                    end
-                end)
-            end
+        -- Esperar a que el character esté listo
+        if LocalPlayer.Character then
+            setupUltraImmortality()
         end
         
-        -- Ejecutar ahora y en cada respawn
-        setupImmortality()
+        -- Conectar para cuando respawnees
+        LocalPlayer.CharacterAdded:Connect(function()
+            wait(1) -- Esperar a que cargue
+            if inmortal then
+                setupUltraImmortality()
+            end
+        end)
         
     else
         inmortalButton.Text = "Inmortal: OFF"
         inmortalButton.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
         
         -- Restaurar valores normales
-        local Character = LocalPlayer.Character
-        if Character and Character:FindFirstChild("Humanoid") then
-            Character.Humanoid.MaxHealth = 100
-            Character.Humanoid.Health = 100
+        if LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") then
+            LocalPlayer.Character.Humanoid.MaxHealth = 100
+            LocalPlayer.Character.Humanoid.Health = 100
         end
     end
 end
@@ -148,16 +201,16 @@ inmortalButton.MouseButton1Click:Connect(function()
     setImmortal(not inmortal)
 end)
 
--- Protección extra para MM2 y juegos con anti-cheat
-local function antiKillProtection()
-    -- Prevenir scripts de kill instantáneo
-    for _, script in ipairs(LocalPlayer.PlayerScripts:GetDescendants()) do
-        if script:IsA("LocalScript") and script.Name:lower():find("kill") or script.Name:lower():find("death") then
-            script.Disabled = true
+-- Protección inicial
+wait(2)
+if LocalPlayer.Character then
+    -- Limpiar zonas de muerte al iniciar
+    for _, part in ipairs(Workspace:GetDescendants()) do
+        if part:IsA("Part") and (
+            part.Name:lower():find("kill") or 
+            part.Name:lower():find("death")
+        ) then
+            part.CanTouch = false
         end
     end
 end
-
--- Ejecutar protección anti-kill al iniciar
-wait(3)
-antiKillProtection()
