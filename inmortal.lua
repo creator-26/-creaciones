@@ -3,29 +3,30 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
--- GUI que NO desaparece
+-- GUI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "RealImmortalGUI"
+screenGui.Name = "StealthImmortalGUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local button = Instance.new("TextButton")
 button.Size = UDim2.new(0, 150, 0, 50)
 button.Position = UDim2.new(0, 20, 0, 200)
-button.Text = "INMORTAL: OFF"
-button.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+button.Text = "STEALTH GOD: OFF"
+button.BackgroundColor3 = Color3.fromRGB(80, 80, 80) -- Gris discreto
 button.TextColor3 = Color3.fromRGB(255, 255, 255)
 button.Font = Enum.Font.SourceSansBold
-button.TextSize = 16
+button.TextSize = 14
 button.Parent = screenGui
 button.Active = true
 button.Draggable = true
 
--- 🔥 MÉTODO REAL DE INMORTALIDAD
-local immortal = false
+-- 🔥 MÉTODO STEALTH (INDETECTABLE)
+local stealthMode = false
+local normalHealth = 100
 
-local function makeImmortal()
-    if not immortal then return end
+local function activateStealthGod()
+    if not stealthMode then return end
     
     local character = LocalPlayer.Character
     if not character then
@@ -34,85 +35,110 @@ local function makeImmortal()
     
     local humanoid = character:WaitForChild("Humanoid")
     
-    -- 🔥 TÉCNICA 1: ELIMINAR EL HUMANOIDE COMPLETAMENTE
-    -- Sin humanoid = no puedes morir
-    wait(1)
+    -- 🔥 TÉCNICA 1: MANTENER VALORES NORMALES (NO INFINITOS)
+    humanoid.MaxHealth = 100
+    humanoid.Health = 100
+    normalHealth = 100
     
-    -- Crear un humanoide falso
-    local fakeHumanoid = humanoid:Clone()
-    humanoid:Destroy()
-    fakeHumanoid.Parent = character
-    
-    -- Configurar humanoide falso
-    fakeHumanoid.MaxHealth = 0
-    fakeHumanoid.Health = 0
-    fakeHumanoid.BreakJointsOnDeath = false
-    
-    -- 🔥 TÉCNICA 2: HACER TODAS LAS PARTES INTOCABLES
-    for _, part in ipairs(character:GetDescendants()) do
-        if part:IsA("BasePart") then
-            part.CanTouch = false
-            part.CanCollide = false
-            part.Massless = true
-        end
-    end
-    
-    -- 🔥 TÉCNICA 3: ANULAR TODAS LAS CONEXIONES DE DAÑO
-    for _, script in ipairs(character:GetDescendants()) do
-        if script:IsA("Script") or script:IsA("LocalScript") then
-            if script.Name:lower():find("damage") or script.Name:lower():find("health") then
-                script.Disabled = true
-            end
-        end
-    end
-    
-    -- 🔥 TÉCNICA 4: PROTECCIÓN CONSTANTE EXTREMA
+    -- 🔥 TÉCNICA 2: CURACIÓN RÁPIDA EN LUGAR DE INMORTALIDAD
     RunService.Heartbeat:Connect(function()
-        if not immortal or not character.Parent then return end
+        if not stealthMode or not character.Parent then return end
         
-        -- Mantener partes intocables
-        for _, part in ipairs(character:GetDescendants()) do
-            if part:IsA("BasePart") then
-                part.CanTouch = false
-            end
+        -- Si recibe daño, curar rápidamente (no instantáneamente)
+        if humanoid.Health < normalHealth then
+            wait(0.3) -- Pequeño delay para parecer natural
+            humanoid.Health = normalHealth
         end
         
-        -- Prevenir caída
-        local root = character:FindFirstChild("HumanoidRootPart")
-        if root and root.Position.Y < -100 then
-            root.CFrame = CFrame.new(0, 50, 0)
+        -- Prevenir muerte sin ser obvio
+        if humanoid.Health <= 10 then
+            humanoid.Health = 50 -- No revivir completo, solo salvar de la muerte
+        end
+    end)
+    
+    -- 🔥 TÉCNICA 3: PROTECCIÓN DISCRETA CONTRA CAÍDA
+    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    if rootPart then
+        RunService.Stepped:Connect(function()
+            if not stealthMode then return end
+            
+            -- Si cae muy bajo, teletransportar discretamente
+            if rootPart.Position.Y < -200 then
+                -- Buscar una posición segura cerca
+                local safeCFrame = CFrame.new(0, 50, 0)
+                rootPart.CFrame = safeCFrame
+            end
+        end)
+    end
+    
+    -- 🔥 TÉCNICA 4: SIMULAR COMPORTAMIENTO NORMAL
+    humanoid.Died:Connect(function()
+        if stealthMode then
+            wait(3) -- Esperar tiempo normal de respawn
+            -- Reactivar protección en nuevo character
+            if stealthMode then
+                activateStealthGod()
+            end
         end
     end)
 end
 
+local function deactivateStealthGod()
+    local character = LocalPlayer.Character
+    if character and character:FindFirstChild("Humanoid") then
+        character.Humanoid.MaxHealth = 100
+        character.Humanoid.Health = 100
+    end
+end
+
 button.MouseButton1Click:Connect(function()
-    immortal = not immortal
+    stealthMode = not stealthMode
     
-    if immortal then
-        button.Text = "INMORTAL: ON"
-        button.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-        makeImmortal()
+    if stealthMode then
+        button.Text = "STEALTH GOD: ON"
+        button.BackgroundColor3 = Color3.fromRGB(0, 120, 0) -- Verde oscuro (discreto)
+        activateStealthGod()
         
-        -- Reconectar al respawn
+        -- Reconectar silenciosamente
         LocalPlayer.CharacterAdded:Connect(function()
-            if immortal then
-                makeImmortal()
+            wait(2) -- Esperar normal
+            if stealthMode then
+                activateStealthGod()
             end
         end)
-    else
-        button.Text = "INMORTAL: OFF"
-        button.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
         
-        -- Restaurar character normal
-        local character = LocalPlayer.Character
-        if character then
-            local humanoid = character:FindFirstChild("Humanoid")
-            if humanoid then
-                humanoid.MaxHealth = 100
-                humanoid.Health = 100
-            end
-        end
+        print("🕵️ MODO STEALTH ACTIVADO - Eres casi inmortal pero discreto")
+    else
+        button.Text = "STEALTH GOD: OFF"
+        button.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+        deactivateStealthGod()
+        print("❌ MODO STEALTH DESACTIVADO")
     end
 end)
 
-print("🔥 MÉTODO REAL DE INMORTALIDAD ACTIVADO")
+-- 🔥 TÉCNICA 5: PROTECCIÓN SILENCIOSA DEL ENTORNO
+wait(3)
+
+local function makeEnvironmentSafe()
+    if not stealthMode then return end
+    
+    -- Desactivar zonas de muerte SILENCIOSAMENTE
+    for _, part in ipairs(workspace:GetDescendants()) do
+        if part:IsA("Part") and (
+            part.Name:lower():find("kill") or 
+            part.Name:lower():find("instant") or
+            part.Name:lower():find("lava")
+        ) then
+            -- No destruir, solo hacer intocable temporalmente
+            part.CanTouch = false
+        end
+    end
+end
+
+-- Aplicar protección ambiental cada 30 segundos (discreto)
+while true do
+    if stealthMode then
+        makeEnvironmentSafe()
+    end
+    wait(30)
+end
