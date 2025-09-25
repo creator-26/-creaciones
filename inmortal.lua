@@ -3,9 +3,9 @@ local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 local RunService = game:GetService("RunService")
 
--- GUI
+-- GUI que NO desaparece
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "FixedImmortalGUI"
+screenGui.Name = "RealImmortalGUI"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
@@ -21,12 +21,10 @@ button.Parent = screenGui
 button.Active = true
 button.Draggable = true
 
--- 🔥 VARIABLES GLOBALES CORREGIDAS
+-- 🔥 MÉTODO REAL DE INMORTALIDAD
 local immortal = false
-local activeConnections = {}
 
--- 🔥 FUNCIÓN MEJORADA SIN ERRORES
-local function activateImmortality()
+local function makeImmortal()
     if not immortal then return end
     
     local character = LocalPlayer.Character
@@ -34,96 +32,87 @@ local function activateImmortality()
         character = LocalPlayer.CharacterAdded:Wait()
     end
     
-    -- Esperar a que el character esté listo
+    local humanoid = character:WaitForChild("Humanoid")
+    
+    -- 🔥 TÉCNICA 1: ELIMINAR EL HUMANOIDE COMPLETAMENTE
+    -- Sin humanoid = no puedes morir
     wait(1)
     
-    local humanoid = character:FindFirstChild("Humanoid")
-    local rootPart = character:FindFirstChild("HumanoidRootPart")
+    -- Crear un humanoide falso
+    local fakeHumanoid = humanoid:Clone()
+    humanoid:Destroy()
+    fakeHumanoid.Parent = character
     
-    if not humanoid then return end
+    -- Configurar humanoide falso
+    fakeHumanoid.MaxHealth = 0
+    fakeHumanoid.Health = 0
+    fakeHumanoid.BreakJointsOnDeath = false
     
-    -- 🔥 CONEXIÓN PRINCIPAL SIMPLE
-    local mainConnection = RunService.Heartbeat:Connect(function()
-        if not immortal or not character or not character.Parent then 
-            return
+    -- 🔥 TÉCNICA 2: HACER TODAS LAS PARTES INTOCABLES
+    for _, part in ipairs(character:GetDescendants()) do
+        if part:IsA("BasePart") then
+            part.CanTouch = false
+            part.CanCollide = false
+            part.Massless = true
+        end
+    end
+    
+    -- 🔥 TÉCNICA 3: ANULAR TODAS LAS CONEXIONES DE DAÑO
+    for _, script in ipairs(character:GetDescendants()) do
+        if script:IsA("Script") or script:IsA("LocalScript") then
+            if script.Name:lower():find("damage") or script.Name:lower():find("health") then
+                script.Disabled = true
+            end
+        end
+    end
+    
+    -- 🔥 TÉCNICA 4: PROTECCIÓN CONSTANTE EXTREMA
+    RunService.Heartbeat:Connect(function()
+        if not immortal or not character.Parent then return end
+        
+        -- Mantener partes intocables
+        for _, part in ipairs(character:GetDescendants()) do
+            if part:IsA("BasePart") then
+                part.CanTouch = false
+            end
         end
         
-        -- Verificar que humanoid aún existe
-        local currentHumanoid = character:FindFirstChild("Humanoid")
-        if not currentHumanoid then return end
-        
-        -- Curar solo si es necesario
-        if currentHumanoid.Health < 100 then
-            currentHumanoid.Health = 100
-        end
-        
-        -- Prevenir muerte
-        if currentHumanoid.Health <= 0 then
-            currentHumanoid.Health = 100
-            currentHumanoid:ChangeState(Enum.HumanoidStateType.Running)
+        -- Prevenir caída
+        local root = character:FindFirstChild("HumanoidRootPart")
+        if root and root.Position.Y < -100 then
+            root.CFrame = CFrame.new(0, 50, 0)
         end
     end)
-    
-    table.insert(activeConnections, mainConnection)
-    
-    -- 🔥 PROTECCIÓN CONTRA CAÍDA (OPCIONAL)
-    if rootPart then
-        local fallConnection = RunService.Stepped:Connect(function()
-            if not immortal or not character or not character.Parent then return end
-            if rootPart.Position.Y < -500 then
-                rootPart.CFrame = CFrame.new(0, 100, 0)
-            end
-        end)
-        table.insert(activeConnections, fallConnection)
-    end
 end
 
--- 🔥 FUNCIÓN DE DESACTIVACIÓN CORREGIDA
-local function deactivateImmortality()
-    -- Desconectar TODAS las conexiones
-    for i, connection in ipairs(activeConnections) do
-        if typeof(connection) == "RBXScriptConnection" then
-            pcall(function() -- 🔥 EVITA ERRORES SI LA CONEXIÓN YA NO EXISTE
-                connection:Disconnect()
-            end)
-        end
-    end
-    activeConnections = {} -- 🔥 LIMPIAR LA TABLA COMPLETAMENTE
-end
-
--- 🔥 CONTROL PRINCIPAL SIMPLIFICADO
 button.MouseButton1Click:Connect(function()
     immortal = not immortal
     
     if immortal then
-        -- DESACTIVAR PRIMERO para evitar duplicados
-        deactivateImmortality()
-        
         button.Text = "INMORTAL: ON"
         button.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+        makeImmortal()
         
-        -- Activar en character actual
-        activateImmortality()
-        
-        -- Conectar para futuros characters
-        local respawnConnection = LocalPlayer.CharacterAdded:Connect(function(character)
+        -- Reconectar al respawn
+        LocalPlayer.CharacterAdded:Connect(function()
             if immortal then
-                wait(1)
-                deactivateImmortality() -- Limpiar antes de reactivar
-                activateImmortality()
+                makeImmortal()
             end
         end)
-        
-        table.insert(activeConnections, respawnConnection)
-        
-        print("🟢 INMORTALIDAD ACTIVADA")
     else
         button.Text = "INMORTAL: OFF"
         button.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
         
-        deactivateImmortality()
-        print("🔴 INMORTALIDAD DESACTIVADA")
+        -- Restaurar character normal
+        local character = LocalPlayer.Character
+        if character then
+            local humanoid = character:FindFirstChild("Humanoid")
+            if humanoid then
+                humanoid.MaxHealth = 100
+                humanoid.Health = 100
+            end
+        end
     end
 end)
 
-print("✅ SISTEMA 100% CORREGIDO")
+print("🔥 MÉTODO REAL DE INMORTALIDAD ACTIVADO")
