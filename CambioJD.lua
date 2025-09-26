@@ -17,7 +17,7 @@ local selectedPlayerObj = nil
 local maxDistance = 100
 local isGuiVisible = true
 
--- Función para intercambiar posiciones (lado cliente)
+-- Función para intercambiar posiciones (lado cliente) - ARREGLADA
 local function swapPositions(targetPlayer)
     local myCharacter = player.Character
     local targetCharacter = targetPlayer.Character
@@ -26,7 +26,7 @@ local function swapPositions(targetPlayer)
        myCharacter:FindFirstChild("HumanoidRootPart") and 
        targetCharacter:FindFirstChild("HumanoidRootPart") then
         
-        -- Guardar posiciones originales
+        -- Guardar posiciones originales COMPLETAS
         local myPosition = myCharacter.HumanoidRootPart.CFrame
         local targetPosition = targetCharacter.HumanoidRootPart.CFrame
         
@@ -42,9 +42,19 @@ local function swapPositions(targetPlayer)
             return false
         end
         
-        -- Intercambiar posiciones
+        -- INTERCAMBIO REAL - Usamos un pequeño delay para asegurar sincronización
+        local tempPosition = myPosition
+        
+        -- Mover al jugador objetivo a una posición temporal primero
+        targetCharacter.HumanoidRootPart.CFrame = CFrame.new(myPosition.Position + Vector3.new(0, 100, 0))
+        wait(0.1)
+        
+        -- Ahora moverme a la posición del objetivo
         myCharacter.HumanoidRootPart.CFrame = targetPosition
-        targetCharacter.HumanoidRootPart.CFrame = myPosition
+        wait(0.1)
+        
+        -- Finalmente mover al objetivo a mi posición original
+        targetCharacter.HumanoidRootPart.CFrame = tempPosition
         
         game.StarterGui:SetCore("ChatMakeSystemMessage", {
             Text = "[SWAP] ✅ Posición intercambiada con " .. targetPlayer.DisplayName;
@@ -101,11 +111,11 @@ local function createGUI()
     screenGui.ResetOnSpawn = false
     screenGui.Parent = playerGui
     
-    -- Frame principal
+    -- Frame principal - TAMAÑO REDUCIDO
     mainFrame = Instance.new("Frame")
     mainFrame.Name = "MainFrame"
-    mainFrame.Size = UDim2.new(0, 320, 0, 450)
-    mainFrame.Position = UDim2.new(0, 10, 0.5, -225)
+    mainFrame.Size = UDim2.new(0, 280, 0, 380)
+    mainFrame.Position = UDim2.new(0, 10, 0.5, -190)
     mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
     mainFrame.BorderSizePixel = 0
     mainFrame.Active = true
@@ -211,10 +221,10 @@ local function createGUI()
     configCorner.CornerRadius = UDim.new(0, 8)
     configCorner.Parent = configButton
     
-    -- Frame para lista de jugadores
+    -- Frame para lista de jugadores - TAMAÑO AJUSTADO
     playerListFrame = Instance.new("ScrollingFrame")
     playerListFrame.Name = "PlayerListFrame"
-    playerListFrame.Size = UDim2.new(0.95, 0, 0, 280)
+    playerListFrame.Size = UDim2.new(0.95, 0, 0, 220)
     playerListFrame.Position = UDim2.new(0.025, 0, 0, 125)
     playerListFrame.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
     playerListFrame.BorderSizePixel = 0
@@ -231,11 +241,11 @@ local function createGUI()
     listLayout.Padding = UDim.new(0, 3)
     listLayout.Parent = playerListFrame
     
-    -- Botón de Intercambio
+    -- Botón de Intercambio - POSICIÓN AJUSTADA
     local swapButton = Instance.new("TextButton")
     swapButton.Name = "SwapButton"
-    swapButton.Size = UDim2.new(0.95, 0, 0, 40)
-    swapButton.Position = UDim2.new(0.025, 0, 0, 405)
+    swapButton.Size = UDim2.new(0.95, 0, 0, 35)
+    swapButton.Position = UDim2.new(0.025, 0, 0, 350)
     swapButton.BackgroundColor3 = Color3.fromRGB(231, 76, 60)
     swapButton.Text = "❌ SELECCIONA UN JUGADOR"
     swapButton.TextColor3 = Color3.new(1, 1, 1)
