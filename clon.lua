@@ -14,7 +14,7 @@ local spawnButton = Instance.new("TextButton")
 spawnButton.Size = UDim2.new(0, 120, 0, 40)
 spawnButton.Position = UDim2.new(0, 10, 0, 200)
 spawnButton.Text = "Clon OFF"
-spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100) -- rojo = apagado
+spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100)
 spawnButton.Parent = ScreenGui
 
 local swapButton = Instance.new("TextButton")
@@ -24,54 +24,62 @@ swapButton.Text = "Intercambiar"
 swapButton.BackgroundColor3 = Color3.fromRGB(200, 200, 100)
 swapButton.Parent = ScreenGui
 
--- Crear un Dummy estilo personaje
-local function crearDummy()
-    local dummy = Instance.new("Model")
-    dummy.Name = "ClonDummy"
+-- Crear NPC real usando el ID que encontraste
+local function crearNPCRreal()
+    local success, npcModel = pcall(function()
+        return game:GetObjects('rbxassetid://4446576906')[1]
+    end)
+    
+    if success and npcModel then
+        print("✅ NPC cargado correctamente!")
+        
+        -- Configurar el NPC
+        npcModel.Name = "MiClonNPC"
+        
+        -- Posicionar frente al jugador
+        local frente = HumanoidRootPart.CFrame.LookVector * 6
+        local posicion = HumanoidRootPart.Position + frente
+        
+        -- Mover todo el modelo
+        if npcModel:FindFirstChild("HumanoidRootPart") then
+            npcModel.HumanoidRootPart.CFrame = CFrame.new(posicion)
+        else
+            -- Si no tiene root part, mover el modelo completo
+            npcModel:PivotTo(CFrame.new(posicion))
+        end
+        
+        -- Asegurar que no sea dañino
+        local humanoid = npcModel:FindFirstChildOfClass("Humanoid")
+        if humanoid then
+            humanoid.WalkSpeed = 0  -- Que no se mueva
+        end
+        
+        npcModel.Parent = workspace
+        return npcModel
+        
+    else
+        print("❌ Error cargando NPC, usando dummy de respaldo")
+        return crearDummyRespaldo()
+    end
+end
 
+-- Función de respaldo por si falla el ID
+local function crearDummyRespaldo()
+    local dummy = Instance.new("Model")
+    dummy.Name = "ClonRespaldo"
+    
     local humanoid = Instance.new("Humanoid")
     humanoid.Parent = dummy
-
+    
     local root = Instance.new("Part")
     root.Name = "HumanoidRootPart"
     root.Size = Vector3.new(2, 2, 1)
-
-    -- posición frente al jugador
-    local frente = HumanoidRootPart.CFrame.LookVector * 6
-    root.Position = HumanoidRootPart.Position + frente + Vector3.new(0, 0, 0)
-
+    root.Position = HumanoidRootPart.Position + (HumanoidRootPart.CFrame.LookVector * 6)
     root.Anchored = false
-    root.BrickColor = BrickColor.new("Medium stone grey")
+    root.BrickColor = BrickColor.new("Bright green")
     root.Parent = dummy
     dummy.PrimaryPart = root
-
-    -- Cabeza
-    local head = Instance.new("Part")
-    head.Size = Vector3.new(2, 1, 1)
-    head.Position = root.Position + Vector3.new(0, 3, 0)
-    head.BrickColor = BrickColor.new("Really black")
-    head.Name = "Head"
-    head.Parent = dummy
-
-    -- Torso
-    local torso = Instance.new("Part")
-    torso.Size = Vector3.new(2, 2, 1)
-    torso.Position = root.Position + Vector3.new(0, 2, 0)
-    torso.BrickColor = BrickColor.new("Bright blue")
-    torso.Name = "Torso"
-    torso.Parent = dummy
-
-    -- Welds
-    local weld1 = Instance.new("WeldConstraint")
-    weld1.Part0 = root
-    weld1.Part1 = torso
-    weld1.Parent = root
-
-    local weld2 = Instance.new("WeldConstraint")
-    weld2.Part0 = torso
-    weld2.Part1 = head
-    weld2.Parent = torso
-
+    
     dummy.Parent = workspace
     return dummy
 end
@@ -80,25 +88,43 @@ end
 spawnButton.MouseButton1Click:Connect(function()
     if clonActivo then
         -- Apagar clon
-        if clon and clon.Parent then clon:Destroy() end
+        if clon and clon.Parent then 
+            clon:Destroy() 
+        end
         clon = nil
         clonActivo = false
         spawnButton.Text = "Clon OFF"
-        spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100) -- rojo
+        spawnButton.BackgroundColor3 = Color3.fromRGB(200, 100, 100)
     else
-        -- Encender clon
-        clon = crearDummy()
+        -- Encender clon con NPC real
+        clon = crearNPCRreal()
         clonActivo = true
         spawnButton.Text = "Clon ON"
-        spawnButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100) -- verde
+        spawnButton.BackgroundColor3 = Color3.fromRGB(100, 200, 100)
+        
+        -- Verificar qué se cargó
+        if clon.Name == "MiClonNPC" then
+            print("🎮 NPC real cargado!")
+        else
+            print("⚙️ Usando dummy de respaldo")
+        end
     end
 end)
 
 -- Intercambiar posiciones
 swapButton.MouseButton1Click:Connect(function()
-    if clon and clon.PrimaryPart then
+    if clon then
         local playerPos = HumanoidRootPart.CFrame
-        HumanoidRootPart.CFrame = clon.PrimaryPart.CFrame
-        clon.PrimaryPart.CFrame = playerPos
+        
+        -- Buscar la root part del NPC
+        local clonRoot = clon:FindFirstChild("HumanoidRootPart") or clon.PrimaryPart
+        
+        if clonRoot then
+            HumanoidRootPart.CFrame = clonRoot.CFrame
+            clonRoot.CFrame = playerPos
+            print("🔄 Posiciones intercambiadas!")
+        end
     end
 end)
+
+print("✅ Script de clon mejorado listo!")
