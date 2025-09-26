@@ -69,10 +69,10 @@ end
 
 -- Cargar la alfombra con el nuevo ID
 local function crearAlfombra()
-    print("🎯 Cargando alfombra con ID: 6847969414")
+    print("🎯 Cargando alfombra con ID: 13547631593")
     
     local success, modeloAlfombra = pcall(function()
-        return game:GetObjects('rbxassetid://6847969414')[1]
+        return game:GetObjects('rbxassetid://13547631593')[1]
     end)
     
     if success and modeloAlfombra then
@@ -238,7 +238,7 @@ alfombraButton.MouseButton1Click:Connect(function()
         
     else
         -- Primero diagnosticar
-        diagnosticarAsset(6847969414)
+        diagnosticarAsset(13547631593)
         
         -- Encender alfombra
         alfombra = crearAlfombra()
@@ -255,5 +255,5 @@ alfombraButton.MouseButton1Click:Connect(function()
     end
 end)
 
-print("✅ Script de alfombra mágica LISTO con ID 6847969414")
+print("✅ Script de alfombra mágica LISTO con ID 13547631593")
 print("🔍 El diagnóstico te dirá qué tipo de asset es")
