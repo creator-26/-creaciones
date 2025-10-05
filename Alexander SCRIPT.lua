@@ -4497,7 +4497,7 @@ end)
 
 local Credits = window:AddTab("Credits")
 
-Credits:AddLabel("paid version cracked by ztx")
+Credits:AddLabel("paid version cracked by VAL")
 Credits:AddLabel("Script Made by username:")
-Credits:AddLabel("Demon_misteriousX clown | ZTX ON TOP")
+Credits:AddLabel("Val_xphol clown | VAL ON TOP")
 Credits:AddLabel("I hope you like the script, for bugs or suggestions on my discord server")
