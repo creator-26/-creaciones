@@ -1,23 +1,6 @@
--- Sistema de Suelo Rojo para Exploit
-if not LPH_OBFUSCATED then
-    LPH_JIT_MAX = function(f) return f end
-    LPH_NO_VIRTUALIZE = function(f) return f end
-end
-
-local LPH_JIT = (function() return function(f) return f end end)()
-
-local function safeCall(callback, ...)
-    local success, result = pcall(callback, ...)
-    if not success then
-        warn("Error: " .. tostring(result))
-        return nil
-    end
-    return result
-end
-
--- Inicialización principal
+-- Sistema de Alfombra Voladora Roja para Exploit
 local function Main()
-    print("🎮 Iniciando Sistema de Suelo Rojo...")
+    print("🎮 Iniciando Sistema de Alfombra Voladora...")
     
     -- Esperar a que el juego cargue
     if not game:IsLoaded() then
@@ -35,56 +18,90 @@ local function Main()
     local localPlayer = Players.LocalPlayer
     local activeFloors = {}
     local floorEnabled = true
+    local lastYPosition = 0
     
     print("👤 Jugador: " .. localPlayer.Name)
     
     -- Configuración
     local CONFIG = {
-        FLOOR_DURATION = 2.5,
+        FLOOR_DURATION = 3.0,  -- Más tiempo para escalar
         FLOOR_COLOR = Color3.fromRGB(255, 50, 50),
-        FLOOR_SIZE = Vector3.new(5, 0.3, 5),
-        JUMP_COOLDOWN = 0.4,
-        RUN_COOLDOWN = 0.6
+        FLOOR_SIZE = Vector3.new(6, 0.4, 6),  -- Más grande para mejor plataforma
+        JUMP_COOLDOWN = 0.3,
+        RUN_COOLDOWN = 0.5,
+        MAX_HEIGHT_DIFFERENCE = 20  -- Máxima diferencia de altura entre suelos
     }
     
-    -- Función optimizada para crear suelos
-    local function createFloor(position)
+    -- Función para crear suelos en el aire
+    local function createFlyingFloor(position, isJump)
         if not floorEnabled then return end
         
+        -- Para saltos, crear el suelo justo debajo de los pies
+        local floorHeight = position.Y - 4
+        if isJump then
+            floorHeight = position.Y - 2  -- Más cerca al jugador durante saltos
+        end
+        
+        -- Verificar que no estemos creando suelos muy altos
+        if math.abs(floorHeight - lastYPosition) > CONFIG.MAX_HEIGHT_DIFFERENCE then
+            floorHeight = lastYPosition + (position.Y > lastYPosition and 8 or -8)
+        end
+        
         local floor = Instance.new("Part")
-        floor.Name = "RedFloor_" .. math.random(1000, 9999)
+        floor.Name = "FlyingFloor_" .. math.random(1000, 9999)
         floor.Size = CONFIG.FLOOR_SIZE
         floor.Position = Vector3.new(
             math.floor(position.X / 4) * 4,
-            position.Y - 3.5,
+            floorHeight,
             math.floor(position.Z / 4) * 4
         )
         floor.Anchored = true
         floor.CanCollide = true
         floor.Material = Enum.Material.Neon
         floor.BrickColor = BrickColor.new("Really red")
-        floor.Transparency = 0.1
+        floor.Transparency = 0.15
         
-        -- Efecto de luz
+        -- Efecto de luz más intenso
         local light = Instance.new("PointLight")
-        light.Brightness = 2
-        light.Range = 8
+        light.Brightness = 3
+        light.Range = 12
         light.Color = CONFIG.FLOOR_COLOR
         light.Parent = floor
         
-        -- Efecto de partículas simple
+        -- Efecto de partículas flotantes
         local sparkles = Instance.new("Sparkles")
         sparkles.SparkleColor = CONFIG.FLOOR_COLOR
         sparkles.Parent = floor
         
+        -- Humo mágico
+        local smoke = Instance.new("Smoke")
+        smoke.Color = Color3.new(1, 0.3, 0.3)
+        smoke.Opacity = 0.3
+        smoke.Size = 0.5
+        smoke.RiseVelocity = 2
+        smoke.Parent = floor
+        
         floor.Parent = workspace
+        
+        -- Animación de aparición
+        floor.Size = Vector3.new(0.1, 0.1, 0.1)
+        local tween = TweenService:Create(
+            floor, 
+            TweenInfo.new(0.3, Enum.EasingStyle.Back, Enum.EasingDirection.Out),
+            {Size = CONFIG.FLOOR_SIZE, Transparency = 0.15}
+        )
+        tween:Play()
         
         -- Guardar referencia
         local floorData = {
             part = floor,
-            createdAt = tick()
+            createdAt = tick(),
+            height = floorHeight
         }
         table.insert(activeFloors, floorData)
+        
+        lastYPosition = floorHeight
+        print("🪄 Alfombra creada a altura: " .. math.floor(floorHeight))
         
         return floor
     end
@@ -96,23 +113,23 @@ local function Main()
             local data = activeFloors[i]
             if currentTime - data.createdAt > CONFIG.FLOOR_DURATION then
                 if data.part and data.part.Parent then
-                    -- Animación de desaparición
+                    -- Animación de desaparición suave
                     local tween = TweenService:Create(
                         data.part, 
-                        TweenInfo.new(0.5, Enum.EasingStyle.Quad),
+                        TweenInfo.new(0.8, Enum.EasingStyle.Quad),
                         {Transparency = 1, Size = Vector3.new(0.1, 0.1, 0.1)}
                     )
                     tween:Play()
-                    game:GetService("Debris"):AddItem(data.part, 0.6)
+                    game:GetService("Debris"):AddItem(data.part, 1)
                 end
                 table.remove(activeFloors, i)
             end
         end
     end
     
-    -- Detector de movimiento mejorado
+    -- Detector de movimiento aéreo
     local function setupCharacter(character)
-        print("🎯 Configurando personaje...")
+        print("🎯 Configurando personaje para alfombra voladora...")
         
         local humanoid = character:WaitForChild("Humanoid")
         local rootPart = character:WaitForChild("HumanoidRootPart")
@@ -120,6 +137,8 @@ local function Main()
         local lastPosition = rootPart.Position
         local lastJumpTime = 0
         local lastRunTime = 0
+        local lastAirTime = 0
+        local isInAir = false
         local connection
         
         connection = RunService.Heartbeat:Connect(function()
@@ -132,22 +151,37 @@ local function Main()
             local currentTime = tick()
             local state = humanoid:GetState()
             
-            -- Detectar salto
-            if state == Enum.HumanoidStateType.Jumping then
+            -- Verificar si está en el aire
+            local nowInAir = humanoid.FloorMaterial == Enum.Material.Air
+            local justLeftGround = not isInAir and nowInAir
+            isInAir = nowInAir
+            
+            -- Detectar salto (crear suelo en el aire)
+            if state == Enum.HumanoidStateType.Jumping or (isInAir and currentPos.Y > lastPosition.Y + 1) then
                 if currentTime - lastJumpTime > CONFIG.JUMP_COOLDOWN then
-                    createFloor(currentPos)
+                    createFlyingFloor(currentPos, true)
                     lastJumpTime = currentTime
+                    lastAirTime = currentTime
                 end
             end
             
-            -- Detectar carrera
+            -- Crear suelos mientras estás en el aire y te mueves
+            if isInAir and (state == Enum.HumanoidStateType.Freefall or state == Enum.HumanoidStateType.Jumping) then
+                local distance = (Vector3.new(currentPos.X, 0, currentPos.Z) - Vector3.new(lastPosition.X, 0, lastPosition.Z)).Magnitude
+                
+                if distance > 2 and currentTime - lastAirTime > 0.4 then
+                    createFlyingFloor(currentPos, false)
+                    lastAirTime = currentTime
+                end
+            end
+            
+            -- Detectar carrera en el suelo (crear camino)
             local distance = (currentPos - lastPosition).Magnitude
-            local velocity = rootPart.VectorVelocity
-            local isMoving = distance > 2 and velocity.Magnitude > 5
+            local isMoving = distance > 1.5 and not isInAir
             
             if isMoving and state == Enum.HumanoidStateType.Running then
                 if currentTime - lastRunTime > CONFIG.RUN_COOLDOWN then
-                    createFloor(currentPos)
+                    createFlyingFloor(currentPos, false)
                     lastRunTime = currentTime
                 end
             end
@@ -155,39 +189,39 @@ local function Main()
             lastPosition = currentPos
         end)
         
-        print("✅ Personaje configurado")
+        print("✅ Personaje configurado para vuelo")
     end
     
-    -- Hub simple y funcional
+    -- Hub de control de alfombra voladora
     local function createHub()
         local screenGui = Instance.new("ScreenGui")
-        screenGui.Name = "RedFloorHub"
+        screenGui.Name = "FlyingCarpetHub"
         screenGui.ResetOnSpawn = false
         
         local mainFrame = Instance.new("Frame")
-        mainFrame.Size = UDim2.new(0, 280, 0, 150)
+        mainFrame.Size = UDim2.new(0, 300, 0, 180)
         mainFrame.Position = UDim2.new(0, 10, 0, 10)
-        mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+        mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
         mainFrame.BorderSizePixel = 0
         mainFrame.Active = true
         mainFrame.Draggable = true
         
-        -- Título
+        -- Título con estilo mágico
         local title = Instance.new("TextLabel")
-        title.Size = UDim2.new(1, 0, 0, 35)
+        title.Size = UDim2.new(1, 0, 0, 40)
         title.BackgroundColor3 = CONFIG.FLOOR_COLOR
-        title.Text = "🔥 SUELO ROJO ACTIVADO"
+        title.Text = "🧙‍♂️ ALFOMBRA VOLADORA ROJA"
         title.TextColor3 = Color3.new(1, 1, 1)
         title.Font = Enum.Font.GothamBold
-        title.TextSize = 14
+        title.TextSize = 16
         title.Parent = mainFrame
         
-        -- Información
+        -- Información de controles
         local info = Instance.new("TextLabel")
-        info.Size = UDim2.new(1, -20, 0, 60)
-        info.Position = UDim2.new(0, 10, 0, 40)
+        info.Size = UDim2.new(1, -20, 0, 80)
+        info.Position = UDim2.new(0, 10, 0, 45)
         info.BackgroundTransparency = 1
-        info.Text = "• SALTA → Crear suelo\n• CORRE → Suelo continuo\n• Suelos duran " .. CONFIG.FLOOR_DURATION .. "s\n• Color: ROJO NEÓN"
+        info.Text = "• SALTA → Crear plataformas aéreas\n• CORRE → Crear camino terrestre\n• EN EL AIRE → Plataformas continuas\n• Duración: " .. CONFIG.FLOOR_DURATION .. " segundos"
         info.TextColor3 = Color3.new(1, 1, 1)
         info.Font = Enum.Font.Gotham
         info.TextSize = 12
@@ -196,30 +230,30 @@ local function Main()
         
         -- Botón toggle
         local toggleBtn = Instance.new("TextButton")
-        toggleBtn.Size = UDim2.new(0, 120, 0, 30)
-        toggleBtn.Position = UDim2.new(0.5, -60, 1, -40)
+        toggleBtn.Size = UDim2.new(0, 140, 0, 35)
+        toggleBtn.Position = UDim2.new(0.5, -70, 1, -45)
         toggleBtn.BackgroundColor3 = CONFIG.FLOOR_COLOR
-        toggleBtn.Text = "DESACTIVAR"
+        toggleBtn.Text = "🪄 DESACTIVAR MAGIA"
         toggleBtn.TextColor3 = Color3.new(1, 1, 1)
         toggleBtn.Font = Enum.Font.GothamBold
-        toggleBtn.TextSize = 12
+        toggleBtn.TextSize = 13
         toggleBtn.Parent = mainFrame
         
         toggleBtn.MouseButton1Click:Connect(function()
             floorEnabled = not floorEnabled
             if floorEnabled then
-                toggleBtn.Text = "DESACTIVAR"
+                toggleBtn.Text = "🪄 DESACTIVAR MAGIA"
                 toggleBtn.BackgroundColor3 = CONFIG.FLOOR_COLOR
-                title.Text = "🔥 SUELO ROJO ACTIVADO"
+                title.Text = "🧙‍♂️ ALFOMBRA VOLADORA ACTIVADA"
             else
-                toggleBtn.Text = "ACTIVAR"
-                toggleBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 100)
-                title.Text = "❌ SUELO ROJO DESACTIVADO"
+                toggleBtn.Text = "✨ ACTIVAR MAGIA"
+                toggleBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+                title.Text = "❌ ALFOMBRA VOLADORA DESACTIVADA"
             end
         end)
         
         screenGui.Parent = localPlayer:WaitForChild("PlayerGui")
-        print("📱 Hub creado exitosamente")
+        print("📱 Hub de alfombra voladora creado")
         return screenGui
     end
     
@@ -238,13 +272,14 @@ local function Main()
         
         -- Reconectar al respawnear
         localPlayer.CharacterAdded:Connect(function(char)
-            wait(1) -- Esperar a que el character esté listo
+            wait(2) -- Esperar a que el character esté completamente listo
             setupCharacter(char)
         end)
         
-        print("🎉 SISTEMA LISTO!")
-        print("🟥 Salta o corre para crear suelos rojos")
-        print("📱 Usa el hub para controlar el sistema")
+        print("🎉 ALFOMBRA VOLADORA LISTA!")
+        print("🪄 Salta para crear escaleras aéreas")
+        print("🏃 Corre para crear caminos terrestres")
+        print("✨ Disfruta de tu alfombra mágica roja!")
     end
     
     -- Ejecutar inicialización
@@ -258,4 +293,6 @@ end
 local success, errorMsg = pcall(Main)
 if not success then
     warn("🚫 Error al cargar el script: " .. tostring(errorMsg))
+else
+    print("✅ Script de alfombra voladora ejecutado correctamente")
 end
