@@ -6,7 +6,7 @@ local TS = game:GetService("TweenService")
 
 -- URLs de imágenes/gifs (cámbialas por las que quieras)
 local URL_MOSTRAR = "https://i.postimg.cc/tJ83q2z3/m-ldpwiqacxt-E-Ai-mh-Ayjfw4-caj-TC2-BM3-31702901b.gif"  -- Rick Roll gif
-local URL_NOMOSTRAR = "http://www.roblox.com/asset/?id=1507946066" -- Otro gif
+local URL_NOMOSTRAR = "https://i.postimg.cc/J7SY4qtw/4402.gif" -- Otro gif
 
 -- GUI
 local gui = Instance.new("ScreenGui")
