@@ -1,10 +1,10 @@
--- nds_predict.lua | Predicción NDS (mobile)
-local RS = game:GetService("ReplicatedStorage")
+-- nds_true_predict.lua | Lee el desastre ANTES del anuncio visible
+local SG = game:GetService("StarterGui")
 local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local pg = lp:WaitForChild("PlayerGui")
 
--- GUI
+-- GUI propia
 local gui = Instance.new("ScreenGui")
 gui.Name = "PredictGui"
 gui.ResetOnSpawn = false
@@ -21,18 +21,18 @@ fr.Parent = gui
 local lbl = Instance.new("TextLabel")
 lbl.Size = UDim2.fromScale(1, 1)
 lbl.BackgroundTransparency = 1
-lbl.Text = "Esperando mapa..."
+lbl.Text = "Buscando desastre..."
 lbl.TextColor3 = Color3.new(1, 1, 1)
 lbl.TextScaled = true
 lbl.Font = Enum.Font.GothamBold
 lbl.Parent = fr
 
--- Sonido de alerta
+-- Sonido
 local sound = Instance.new("Sound", gui)
-sound.SoundId = "rbxassetid://4590657391" -- corto 'alert'
+sound.SoundId = "rbxassetid://4590657391"
 sound.Volume = 0.6
 
--- Tabla colores / nombres
+-- Tabla
 local colors = {
 	Fire = Color3.fromRGB(255, 80, 80),
 	Tornado = Color3.fromRGB(255, 200, 50),
@@ -58,38 +58,33 @@ local spanish = {
 	Volcano = "🌋 Volcán",
 }
 
--- Leer Disaster
-local function readDisaster()
-	local map = RS:FindFirstChild("Map")
-	if not map then return end
-	local dis = map:FindFirstChild("Disaster")
-	if dis and dis:IsA("StringValue") and dis.Value ~= "" then
-		local v = dis.Value
-		local esp = spanish[v] or v
-		lbl.Text = "Próximo: " .. esp
-		fr.BackgroundColor3 = colors[v] or Color3.new(1, 1, 1)
-		sound:Play()
-	end
-end
-
--- Conectar cambios
-local map = RS:WaitForChild("Map", 5)
-if map then
-	local dis = map:FindFirstChild("Disaster")
-	if dis then
-		dis.Changed:Connect(readDisaster)
-		readDisaster() -- inicial
-	else
-		-- Si aún no existe, esperar
-		map.ChildAdded:Connect(function(c)
-			if c.Name == "Disaster" and c:IsA("StringValue") then
-				c.Changed:Connect(readDisaster)
-				readDisaster()
+-- Escanea cuando aparezca el label del servidor
+local function scan(label)
+	label.Changed:Connect(function()
+		local raw = string.lower(label.Text)
+		for eng, esp in pairs(spanish) do
+			if string.find(raw, string.lower(eng)) then
+				lbl.Text = "Próximo: " .. esp
+				fr.BackgroundColor3 = colors[eng] or Color3.new(1, 1, 1)
+				sound:Play()
+				break
 			end
-		end)
-	end
-else
-	lbl.Text = "Map no encontrado"
+		end
+	end)
 end
 
-print("NDS Predict activado – aviso antes del anuncio.")
+-- Detecta cuando el servidor cree la GUI del desastre
+SG.ChildAdded:Connect(function(sc)
+	local lbl = sc:FindFirstChildOfClass("TextLabel") or sc:FindFirstChild("DisasterLabel") or sc:FindFirstChild("Disaster")
+	if lbl and lbl:IsA("TextLabel") then
+		scan(lbl)
+	end
+end)
+
+-- Por si ya existe (mapa reiniciado)
+for _, sc in ipairs(SG:GetChildren()) do
+	local lbl = sc:FindFirstChildOfClass("TextLabel") or sc:FindFirstChild("DisasterLabel") or sc:FindFirstChild("Disaster")
+	if lbl and lbl:IsA("TextLabel") then scan(lbl) end
+end
+
+print("NDS True Predict activado – aviso ANTES del cartel.")
