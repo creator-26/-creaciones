@@ -1,33 +1,38 @@
--- nds_disaster_reader.lua | Mobile NDS Disaster HUD
-local Players = game:GetService("Players")
+-- nds_predict.lua | Predicción NDS (mobile)
 local RS = game:GetService("ReplicatedStorage")
+local Players = game:GetService("Players")
 local lp = Players.LocalPlayer
 local pg = lp:WaitForChild("PlayerGui")
 
--- GUI propia
+-- GUI
 local gui = Instance.new("ScreenGui")
-gui.Name = "DisasterHUD"
+gui.Name = "PredictGui"
 gui.ResetOnSpawn = false
 gui.Parent = pg
 
-local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 220, 0, 70)
-frame.Position = UDim2.new(0.5, -110, 0.9, -35)
-frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-frame.BackgroundTransparency = 0.2
-frame.BorderSizePixel = 0
-frame.Parent = gui
+local fr = Instance.new("Frame")
+fr.Size = UDim2.new(0, 260, 0, 90)
+fr.Position = UDim2.new(0.5, -130, 0.05, 0)
+fr.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+fr.BackgroundTransparency = 0.2
+fr.BorderSizePixel = 0
+fr.Parent = gui
 
 local lbl = Instance.new("TextLabel")
 lbl.Size = UDim2.fromScale(1, 1)
 lbl.BackgroundTransparency = 1
-lbl.Text = "Esperando desastre..."
+lbl.Text = "Esperando mapa..."
 lbl.TextColor3 = Color3.new(1, 1, 1)
 lbl.TextScaled = true
 lbl.Font = Enum.Font.GothamBold
-lbl.Parent = frame
+lbl.Parent = fr
 
--- Colores por tipo
+-- Sonido de alerta
+local sound = Instance.new("Sound", gui)
+sound.SoundId = "rbxassetid://4590657391" -- corto 'alert'
+sound.Volume = 0.6
+
+-- Tabla colores / nombres
 local colors = {
 	Fire = Color3.fromRGB(255, 80, 80),
 	Tornado = Color3.fromRGB(255, 200, 50),
@@ -40,57 +45,51 @@ local colors = {
 	Blizzard = Color3.fromRGB(200, 220, 255),
 	Volcano = Color3.fromRGB(255, 100, 0),
 }
-
--- Traducciones rápidas
 local spanish = {
-	Fire = "Fuego",
-	Tornado = "Tornado",
-	Tsunami = "Tsunami",
-	Earthquake = "Terremoto",
-	Flood = "Inundación",
-	Lightning = "Tormenta",
-	Sandstorm = "Tormenta de arena",
-	Meteor = "Lluvia de meteoritos",
-	Blizzard = "Ventisca",
-	Volcano = "Volcán",
+	Fire = "🔥 Fuego",
+	Tornado = "🌪 Tornado",
+	Tsunami = "🌊 Tsunami",
+	Earthquake = "🌍 Terremoto",
+	Flood = "💧 Inundación",
+	Lightning = "⚡ Tormenta",
+	Sandstorm = "🌫 Tormenta de arena",
+	Meteor = "☄ Meteoritos",
+	Blizzard = "🌨 Ventisca",
+	Volcano = "🌋 Volcán",
 }
 
--- Leer valor que pone el servidor
-local disaster = RS:WaitForChild("Disaster", 5) -- StringValue
-if disaster then
-	disaster.Changed:Connect(function(v)
+-- Leer Disaster
+local function readDisaster()
+	local map = RS:FindFirstChild("Map")
+	if not map then return end
+	local dis = map:FindFirstChild("Disaster")
+	if dis and dis:IsA("StringValue") and dis.Value ~= "" then
+		local v = dis.Value
 		local esp = spanish[v] or v
 		lbl.Text = "Próximo: " .. esp
-		frame.BackgroundColor3 = colors[v] or Color3.new(1, 1, 1)
-	end)
-	-- inicial
-	local v = disaster.Value
-	if v ~= "" then
-		lbl.Text = "Próximo: " .. (spanish[v] or v)
-		frame.BackgroundColor3 = colors[v] or Color3.new(1, 1, 1)
+		fr.BackgroundColor3 = colors[v] or Color3.new(1, 1, 1)
+		sound:Play()
 	end
 end
 
--- Backup: leer el Message oficial (por si el valor tarda)
-local function checkMessage(msg)
-	for eng, esp in pairs(spanish) do
-		if string.find(string.lower(msg), string.lower(eng)) then
-			lbl.Text = "Próximo: " .. esp
-			frame.BackgroundColor3 = colors[eng] or Color3.new(1, 1, 1)
-			break
-		end
+-- Conectar cambios
+local map = RS:WaitForChild("Map", 5)
+if map then
+	local dis = map:FindFirstChild("Disaster")
+	if dis then
+		dis.Changed:Connect(readDisaster)
+		readDisaster() -- inicial
+	else
+		-- Si aún no existe, esperar
+		map.ChildAdded:Connect(function(c)
+			if c.Name == "Disaster" and c:IsA("StringValue") then
+				c.Changed:Connect(readDisaster)
+				readDisaster()
+			end
+		end)
 	end
+else
+	lbl.Text = "Map no encontrado"
 end
 
--- Escuchar mensajes del servidor
-local starterGui = game:GetService("StarterGui")
-local msgConn
-msgConn = starterGui.ChildAdded:Connect(function(child)
-	if child:IsA("Message") then
-		checkMessage(child.Text)
-		task.wait(5)
-		msgConn:Disconnect()
-	end
-end)
-
-print("NDS Disaster HUD activado – mira el botón inferior.")
+print("NDS Predict activado – aviso antes del anuncio.")
