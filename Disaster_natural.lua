@@ -1,4 +1,4 @@
--- nds_mobile_hub.lua | Hub completo Natural Disaster Survival
+-- NDS_MobileHub_v2.lua | Hub Natural Disaster Survival – móvil
 local Players = game:GetService("Players")
 local UIS = game:GetService("UserInputService")
 local RS = game:GetService("RunService")
@@ -7,14 +7,15 @@ local lp = Players.LocalPlayer
 local pg = lp:WaitForChild("PlayerGui")
 
 ---------- UTILIDADES ----------
-local function crearSound(id)
+local function sound(id)
 	local s = Instance.new("Sound", pg)
 	s.SoundId = "rbxassetid://" .. id
-	s.Volume = 0.6
-	return s
+	s.Volume = 0.5
+	s:Play()
+	game:GetService("Debris"):AddItem(s, 2)
 end
 
-local function crearBody(parent, class)
+local function createBody(parent, class)
 	local b = Instance.new(class, parent)
 	b.MaxForce = Vector3.new(1e6, 1e6, 1e6)
 	return b
@@ -48,16 +49,16 @@ titulo.TextScaled = true
 titulo.Font = Enum.Font.GothamBold
 titulo.Parent = frame
 
--- Botón ocultar
-local hideBtn = Instance.new("TextButton")
-hideBtn.Size = UDim2.new(0, 25, 0, 25)
-hideBtn.Position = UDim2.new(1, -27, 0, 2)
-hideBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
-hideBtn.Text = "–"
-hideBtn.TextColor3 = Color3.new(1, 1, 1)
-hideBtn.TextScaled = true
-hideBtn.Font = Enum.Font.SourceSansBold
-hideBtn.Parent = frame
+-- Botón ocultar / mostrar (siempre visible)
+local toggleBtn = Instance.new("TextButton")
+toggleBtn.Size = UDim2.new(0, 25, 0, 25)
+toggleBtn.Position = UDim2.new(1, -27, 0, 2)
+toggleBtn.BackgroundColor3 = Color3.fromRGB(255, 70, 70)
+toggleBtn.Text = "–"
+toggleBtn.TextColor3 = Color3.new(1, 1, 1)
+toggleBtn.TextScaled = true
+toggleBtn.Font = Enum.Font.SourceSansBold
+toggleBtn.Parent = frame
 
 -- Panel de switches
 local list = Instance.new("ScrollingFrame")
@@ -71,13 +72,17 @@ list.Parent = frame
 local uiList = Instance.new("UIListLayout")
 uiList.Padding = UDim.new(0, 5)
 uiList.Parent = list
+uiList:GetPropertyChangedSignal("AbsoluteContentSize"):Connect(function()
+	list.CanvasSize = UDim2.new(0, 0, 0, uiList.AbsoluteContentSize.Y + 10)
+end
+
+---------- ESTADOS ----------
+local estados = {}
 
 ---------- FUNCIONES ----------
-local estados = {} -- guarda estados
-
 -- 1) Alerta instantánea
-local function alertaIns(t)
-	if t then
+local function alertaIns(on)
+	if on then
 		estados.alertaCon = SG.DescendantAdded:Connect(function(d)
 			if d:IsA("TextLabel") and d.Text ~= "" then
 				local raw = string.lower(d.Text)
@@ -94,7 +99,7 @@ local function alertaIns(t)
 					Volcano = "🌋 VOLCÁN – dentro, lejos LAVA"
 				}) do
 					if raw:find(string.lower(eng)) then
-						crearSound(4590657391):Play()
+						sound(4590657391)
 						local aviso = Instance.new("TextLabel")
 						aviso.Size = UDim2.new(0.9, 0, 0.08, 0)
 						aviso.Position = UDim2.new(0.05, 0, 0.05, 0)
@@ -117,13 +122,13 @@ local function alertaIns(t)
 end
 
 -- 2) No-Fall Parachute
-local function noFall(t)
-	estados.noFall = t
-	if t then
+local function noFall(on)
+	estados.noFall = on
+	if on then
 		estados.noFallCon = lp.CharacterAdded:Connect(function(char)
 			local root = char:WaitForChild("HumanoidRootPart")
 			local hum = char:WaitForChild("Humanoid")
-			local con; con = game:GetService("RunService").Heartbeat:Connect(function()
+			local con; con = RS.Heartbeat:Connect(function()
 				if not estados.noFall then con:Disconnect() return end
 				if hum:GetState() == Enum.HumanoidStateType.Freefall and root.Velocity.Y < -50 then
 					local bv = Instance.new("BodyVelocity", root)
@@ -138,12 +143,12 @@ local function noFall(t)
 	end
 end
 
--- 3) Speed Slider
-local function speedCtrl(t)
-	estados.speed = t and 30 or 16
+-- 3) Speed x1.8
+local function speedCtrl(on)
+	estados.speed = on and 30 or 16
 	local hum = lp.Character and lp.Character:FindFirstChildOfClass("Humanoid")
 	if hum then hum.WalkSpeed = estados.speed end
-	if t then
+	if on then
 		estados.speedCon = lp.CharacterAdded:Connect(function(char)
 			char:WaitForChild("Humanoid").WalkSpeed = estados.speed
 		end)
@@ -155,13 +160,13 @@ local function speedCtrl(t)
 end
 
 -- 4) ESP Players
-local function espPlayers(t)
-	if t then
-		estados.espCon = lp.CharacterAdded:Connect(function(char)
+local function espPlayers(on)
+	if on then
+		estados.espCon = lp.CharacterAdded:Connect(function()
 			for _, p in ipairs(Players:GetPlayers()) do
 				if p ~= lp and p.Character then
 					local head = p.Character:FindFirstChild("Head")
-					if head then
+					if head and not head:FindFirstChildOfClass("BillboardGui") then
 						local bill = Instance.new("BillboardGui", head)
 						bill.Size = UDim2.new(0, 200, 0, 50)
 						bill.StudsOffset = Vector3.yAxis * 3
@@ -187,13 +192,13 @@ local function espPlayers(t)
 	end
 end
 
--- 5) Tornado Anti-Pull
-local function antiTornado(t)
-	estados.antiTor = t
-	if t then
+-- 5) Anti-Tornado
+local function antiTornado(on)
+	estados.antiTor = on
+	if on then
 		estados.torCon = lp.CharacterAdded:Connect(function(char)
 			local root = char:WaitForChild("HumanoidRootPart")
-			local bv = crearBody(root, "BodyVelocity")
+			local bv = createBody(root, "BodyVelocity")
 			local con; con = RS.Heartbeat:Connect(function()
 				if not estados.antiTor then con:Disconnect() bv:Destroy() return end
 				bv.Velocity = Vector3.zero
@@ -206,9 +211,9 @@ local function antiTornado(t)
 	end
 end
 
--- 6) Auto-Shelter TP (teleport a edificio seguro)
-local refugios = { -- aprox
-	Fire = CFrame.new(0, 5, 0),       -- ejemplo centro
+-- 6) TP a refugio (botón rápido)
+local refugios = {
+	Fire = CFrame.new(0, 5, 0),
 	Tornado = CFrame.new(50, 5, 50),
 	Tsunami = CFrame.new(0, 30, 0),
 	Earthquake = CFrame.new(-50, 5, -50),
@@ -220,7 +225,6 @@ local refugios = { -- aprox
 	Volcano = CFrame.new(0, 5, 0),
 }
 local function autoShelter()
-	-- lee desastre actual
 	for _, d in ipairs(SG:GetDescendants()) do
 		if d:IsA("TextLabel") and d.Text ~= "" then
 			local raw = string.lower(d.Text)
@@ -228,7 +232,7 @@ local function autoShelter()
 				if raw:find(string.lower(eng)) then
 					local root = lp.Character and lp.Character:FindFirstChild("HumanoidRootPart")
 					if root then root.CFrame = cf end
-					crearSound(138186576):Play()
+					sound(138186576)
 					break
 				end
 			end
@@ -236,7 +240,7 @@ local function autoShelter()
 	end
 end
 
----------- CONSTRUIR SWITCHES ----------
+---------- SWITCHES ----------
 local function crearSwitch(nombre, y, fn)
 	local btn = Instance.new("TextButton")
 	btn.Size = UDim2.new(1, -10, 0, 40)
@@ -253,6 +257,7 @@ local function crearSwitch(nombre, y, fn)
 		on = not on
 		btn.BackgroundColor3 = on and Color3.fromRGB(0, 170, 0) or Color3.fromRGB(60, 60, 60)
 		btn.Text = "  " .. nombre .. "  (" .. (on and "ON" or "OFF") .. ")"
+		sound(on and 138186576 or 138186577)
 		fn(on)
 	end)
 end
@@ -263,7 +268,7 @@ crearSwitch("Speed x1.8", 90, speedCtrl)
 crearSwitch("ESP Jugadores", 135, espPlayers)
 crearSwitch("Anti-Tornado", 180, antiTornado)
 
--- Botón rápido TP refugio
+-- Botón TP refugio
 local tpBtn = Instance.new("TextButton")
 tpBtn.Size = UDim2.new(1, -10, 0, 40)
 tpBtn.Position = UDim2.new(0, 5, 225, 0)
@@ -273,14 +278,32 @@ tpBtn.TextColor3 = Color3.new(1, 1, 1)
 tpBtn.TextScaled = true
 tpBtn.Font = Enum.Font.GothamBold
 tpBtn.Parent = list
-tpBtn.MouseButton1Click:Connect(autoShelter)
+tpBtn.MouseButton1Click:Connect(function()
+	autoShelter()
+	sound(138186576)
+end)
 
 ---------- OCULTAR / MOSTRAR ----------
 local oculto = false
-hideBtn.MouseButton1Click:Connect(function()
+local miniBtn = Instance.new("TextButton") -- botón que queda cuando se oculta
+miniBtn.Size = UDim2.new(0, 30, 0, 30)
+miniBtn.Position = UDim2.new(1, -35, 1, -35)
+miniBtn.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
+miniBtn.Text = "+"
+miniBtn.TextColor3 = Color3.new(1, 1, 1)
+miniBtn.TextScaled = true
+miniBtn.Visible = false
+miniBtn.Parent = gui
+
+local function actualizarVisibilidad()
 	oculto = not oculto
 	frame.Visible = not oculto
-	hideBtn.Text = oculto and "+" or "–"
-end)
+	miniBtn.Visible = oculto
+	toggleBtn.Text = oculto and "+" or "–"
+	sound(oculto and 138186577 or 138186576)
+end
+toggleBtn.MouseButton1Click:Connect(actualizarVisibilidad)
+miniBtn.MouseButton1Click:Connect(actualizarVisibilidad)
 
-print("NDS Mobile Hub cargado – arrastra y activa lo que necesites.")
+print("NDS Mobile Hub v2 cargado – arrastra, activa y oculta sin perder el botón.")
+	
