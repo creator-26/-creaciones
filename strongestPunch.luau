@@ -1,6 +1,6 @@
 -- ===================================================================
---  No-Limit Orb Farm 2.2  |  GUI idéntica al original
---  Solo más rápido y sin congelos
+--  No-Limit Orb Farm 2.5  |  SIN MOVER TU PERSONAJE
+--  Igual que el original: activas → farmea solo → tú quieto
 -- ===================================================================
 local gui = Instance.new("ScreenGui")
 gui.Name = "OrbFarmV2"
@@ -10,16 +10,14 @@ gui.ResetOnSpawn = false
 
 local svcs = {
     pls = game:GetService("Players"),
-    sg = game:GetService("StarterGui"),
-    Tween = game:GetService("TweenService")
+    sg = game:GetService("StarterGui")
 }
 
 local plr = svcs.pls.LocalPlayer
 local stage, running = 1, false
 local max = 30
-local claimed = {}
 
--- GUI exactamente igual que el original (no se toca nada)
+-- GUI exacta (copia literal del original)
 local mframe = Instance.new("Frame")
 mframe.BackgroundColor3 = Color3.fromRGB(20,20,20)
 mframe.BackgroundTransparency = 0.1
@@ -142,33 +140,13 @@ rbtn.MouseButton1Click:Connect(function()
 end)
 
 -- ===================================================================
---  Utilidades (mismas que original, solo añadimos tween y antiFreeze)
+--  RECOLECCIÓN SIN MOVER AL JUGADOR (original)
 -- ===================================================================
 local function hrp()
     local char=plr.Character or plr.CharacterAdded:Wait()
     return char:WaitForChild("HumanoidRootPart")
 end
 
-local function antiFreeze()
-    local char = plr.Character or plr.CharacterAdded:Wait()
-    local hum  = char:WaitForChild("Humanoid")
-    hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
-    hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
-    hum:ChangeState(Enum.HumanoidStateType.Running)
-end
-
-local function tp(cf)
-    local root=hrp()
-    antiFreeze()
-    -- Tween suave en lugar de teleport brusco
-    local goal = {CFrame = cf}
-    local ti = TweenInfo.new((root.Position-cf.Position).Magnitude/120, Enum.EasingStyle.Linear)
-    game:GetService("TweenService"):Create(root,ti,goal):Play()
-end
-
--- ===================================================================
---  Recolección rápida (mismo recorrido, solo más rápido y sin congelos)
--- ===================================================================
 local function collect()
     local boosts=workspace:WaitForChild("Map"):WaitForChild("Stages"):WaitForChild("Boosts")
     local stage_folder=boosts:FindFirstChild(tostring(stage))
@@ -177,14 +155,11 @@ local function collect()
         for _,orb in ipairs(model:GetDescendants()) do
             if not running then return end
             if orb:IsA("BasePart") then
-                -- Hitbox gorda: si ya estamos cerca, solo esperamos a que desaparezca
-                local dist = (hrp().Position - orb.Position).Magnitude
-                if dist <= 8 then
-                    repeat task.wait(0.05) until not orb.Parent or not running
-                    continue
-                end
-                tp(orb.CFrame)
-                task.wait(0.15)
+                -- Simula toque sin mover al jugador
+                local root = hrp()
+                firetouchinterest(root, orb, 0)
+                firetouchinterest(root, orb, 1)
+                task.wait(0.08) -- rápido pero seguro
             end
         end
     end
@@ -198,7 +173,7 @@ toggle_btn.MouseButton1Click:Connect(function()
         task.spawn(function()
             while running do
                 collect()
-                task.wait(0.25)
+                task.wait(0.08)
             end
         end)
     else
@@ -209,6 +184,6 @@ end)
 
 svcs.sg:SetCore("SendNotification",{
     Title="Tip",
-    Text="teleport to your world, then input your stage",
+    Text="Activate → quieto → orbes entrarán solos",
     Duration=5
 })
