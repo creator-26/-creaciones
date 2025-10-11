@@ -1,7 +1,7 @@
--- ======================================================================
---  No-Limit Orb Farm 2.0  |  Delta-Executor Ready
---  Copiar → Pegar en Delta → Inject → Execute → Listo
--- ======================================================================
+-- ===================================================================
+--  No-Limit Orb Farm 2.2  |  GUI idéntica al original
+--  Solo más rápido y sin congelos
+-- ===================================================================
 local gui = Instance.new("ScreenGui")
 gui.Name = "OrbFarmV2"
 gui.Parent = game:GetService("CoreGui")
@@ -9,76 +9,66 @@ gui.IgnoreGuiInset = true
 gui.ResetOnSpawn = false
 
 local svcs = {
-    Players = game:GetService("Players"),
-    Tween   = game:GetService("TweenService"),
-    UIS     = game:GetService("UserInputService"),
-    Run     = game:GetService("RunService")
+    pls = game:GetService("Players"),
+    sg = game:GetService("StarterGui"),
+    Tween = game:GetService("TweenService")
 }
 
-local plr     = svcs.Players.LocalPlayer
-local stage   = 1
-local MAX_STAGE = 30
-local running = false
+local plr = svcs.pls.LocalPlayer
+local stage, running = 1, false
+local max = 30
 local claimed = {}
-local CPS_MAX = 6
-local lastAfk = tick()
 
--- ===================================================================
---  GUI rápida (compacta)
--- ===================================================================
+-- GUI exactamente igual que el original (no se toca nada)
 local mframe = Instance.new("Frame")
-mframe.Size = UDim2.fromOffset(220,130)
-mframe.Position = UDim2.new(0.5,-110,0.5,-65)
 mframe.BackgroundColor3 = Color3.fromRGB(20,20,20)
+mframe.BackgroundTransparency = 0.1
+mframe.Size = UDim2.new(0,220,0,130)
+mframe.Position = UDim2.new(0.5,-110,0.5,-65)
+local mcorner = Instance.new("UICorner",mframe)
+mcorner.CornerRadius = UDim.new(0,6)
 mframe.Parent = gui
-Instance.new("UICorner",mframe).CornerRadius = UDim.new(0,6)
 
-local tbar = Instance.new("Frame")
-tbar.Size = UDim2.new(1,0,0,28)
+local tbar = Instance.new("Frame",mframe)
 tbar.BackgroundColor3 = Color3.fromRGB(25,25,25)
-tbar.Parent = mframe
-Instance.new("UICorner",tbar).CornerRadius = UDim.new(0,4)
+tbar.BackgroundTransparency = 0.1
+tbar.Size = UDim2.new(1,0,0,28)
+local tcorner = Instance.new("UICorner",tbar)
+tcorner.CornerRadius = UDim.new(0,4)
 
-local xb = Instance.new("TextButton")
-xb.Size = UDim2.new(0,20,1,0)
-xb.Position = UDim2.new(1,-20,0,0)
-xb.Text = "×"
-xb.TextColor3 = Color3.fromRGB(255,0,0)
-xb.BackgroundTransparency = 1
-xb.Font = Enum.Font.Code
-xb.TextSize = 14
-xb.Parent = tbar
-xb.MouseButton1Click:Connect(function() gui:Destroy() end)
-
-local tlb = Instance.new("TextLabel")
-tlb.Size = UDim2.new(1,-26,1,0)
-tlb.Position = UDim2.new(0,8,0,0)
-tlb.Text = "No-Limit Orb Farm 2.0"
-tlb.TextColor3 = Color3.white
-tlb.Font = Enum.Font.Code
-tlb.TextSize = 13
-tlb.BackgroundTransparency = 1
-tlb.TextXAlignment = Enum.TextXAlignment.Left
-tlb.Parent = tbar
+local xbtn = Instance.new("TextButton",tbar)
+xbtn.BackgroundTransparency = 1
+xbtn.Position = UDim2.new(1,-20,0,0)
+xbtn.Size = UDim2.new(0,20,1,0)
+xbtn.Font = Enum.Font.Code
+xbtn.Text = "×"
+xbtn.TextColor3 = Color3.fromRGB(255,0,0)
+xbtn.TextSize = 14
+xbtn.AutoButtonColor = false
+xbtn.MouseButton1Click:Connect(function() gui:Destroy() end)
+xbtn.TouchTap:Connect(function() gui:Destroy() end)
 
 local function drag(f,b)
-    local uis,conn,dragging,startPos,dragStart = svcs.UIS
+    local uis = game:GetService("UserInputService")
+    local dragging, startPos, dragStart, conn
     b.InputBegan:Connect(function(i)
         if i.UserInputType==Enum.UserInputType.MouseButton1 or i.UserInputType==Enum.UserInputType.Touch then
             dragging = true
             dragStart = i.Position
-            startPos = f.AbsolutePosition
+            startPos = Vector2.new(f.AbsolutePosition.X,f.AbsolutePosition.Y)
             conn = uis.InputChanged:Connect(function(ch)
-                if dragging then
+                if dragging and (ch.UserInputType==Enum.UserInputType.MouseMovement or ch.UserInputType==Enum.UserInputType.Touch) then
                     local delta = ch.Position-dragStart
                     local vs = workspace.CurrentCamera.ViewportSize
                     f.Position=UDim2.new(0,math.clamp(startPos.X+delta.X,0,vs.X-f.AbsoluteSize.X),0,math.clamp(startPos.Y+delta.Y,0,vs.Y-f.AbsoluteSize.Y))
                 end
             end)
-            uis.InputEnded:Connect(function(e)
+            local endConn
+            endConn=uis.InputEnded:Connect(function(e)
                 if e.UserInputType==Enum.UserInputType.MouseButton1 or e.UserInputType==Enum.UserInputType.Touch then
                     dragging=false
                     if conn then conn:Disconnect() conn=nil end
+                    endConn:Disconnect()
                 end
             end)
         end
@@ -86,155 +76,139 @@ local function drag(f,b)
 end
 drag(mframe,tbar)
 
-local stageBox = Instance.new("TextBox")
-stageBox.Size = UDim2.fromOffset(50,22)
-stageBox.Position = UDim2.new(0.5,-25,0,40)
-stageBox.Text = tostring(stage)
-stageBox.ClearTextOnFocus = false
-stageBox.BackgroundColor3 = Color3.fromRGB(25,25,25)
-stageBox.TextColor3 = Color3.white
-stageBox.Font = Enum.Font.Code
-stageBox.TextSize = 13
-stageBox.Parent = mframe
+local slabel=Instance.new("TextLabel",mframe)
+slabel.Size=UDim2.new(0,70,0,18)
+slabel.Position=UDim2.new(0,10,0,40)
+slabel.BackgroundTransparency=1
+slabel.Font=Enum.Font.Code
+slabel.TextSize=13
+slabel.TextColor3=Color3.fromRGB(255,255,255)
+slabel.Text="Stage:"
 
-local toggleBtn = Instance.new("TextButton")
-toggleBtn.Size = UDim2.new(0,200,0,25)
-toggleBtn.Position = UDim2.new(0.5,-100,0,85)
-toggleBtn.Text = "Start"
-toggleBtn.Font = Enum.Font.Code
-toggleBtn.TextSize = 13
-toggleBtn.TextColor3 = Color3.white
-toggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
-toggleBtn.Parent = mframe
+local lbtn=Instance.new("TextButton",mframe)
+lbtn.Size=UDim2.new(0,25,0,22)
+lbtn.Position=UDim2.new(0,85,0,38)
+lbtn.Text="<"
+lbtn.Font=Enum.Font.Code
+lbtn.TextColor3=Color3.fromRGB(255,255,255)
+lbtn.TextSize=13
+lbtn.BackgroundColor3=Color3.fromRGB(25,25,25)
 
-stageBox.FocusLost:Connect(function()
-    local v = tonumber(stageBox.Text)
-    if v and v>=1 and v<=MAX_STAGE then stage = v else stageBox.Text = tostring(stage) end
+local sbox=Instance.new("TextBox",mframe)
+sbox.Size=UDim2.new(0,50,0,22)
+sbox.Position=UDim2.new(0,115,0,38)
+sbox.Text="1"
+sbox.ClearTextOnFocus=false
+sbox.BackgroundColor3=Color3.fromRGB(25,25,25)
+sbox.TextColor3=Color3.fromRGB(255,255,255)
+sbox.Font=Enum.Font.Code
+sbox.TextSize=13
+
+local rbtn=lbtn:Clone()
+rbtn.Text=">"
+rbtn.Position=UDim2.new(0,175,0,38)
+rbtn.Parent=mframe
+
+local toggle_btn=Instance.new("TextButton",mframe)
+toggle_btn.Size=UDim2.new(0,200,0,25)
+toggle_btn.Position=UDim2.new(0,10,0,85)
+toggle_btn.Text="Start"
+toggle_btn.Font=Enum.Font.Code
+toggle_btn.TextSize=13
+toggle_btn.TextColor3=Color3.fromRGB(255,255,255)
+toggle_btn.BackgroundColor3=Color3.fromRGB(0,170,0)
+
+sbox.FocusLost:Connect(function()
+    local v=tonumber(sbox.Text)
+    if v and v>=1 and v<=max then
+        stage=v
+    else
+        sbox.Text=tostring(stage)
+    end
+end)
+
+lbtn.MouseButton1Click:Connect(function()
+    if stage>1 then
+        stage=stage-1
+        sbox.Text=tostring(stage)
+    end
+end)
+
+rbtn.MouseButton1Click:Connect(function()
+    if stage<max then
+        stage=stage+1
+        sbox.Text=tostring(stage)
+    end
 end)
 
 -- ===================================================================
---  Utilidades
+--  Utilidades (mismas que original, solo añadimos tween y antiFreeze)
 -- ===================================================================
-local function getRoot()
-    local c = plr.Character or plr.CharacterAdded:Wait()
-    return c:WaitForChild("HumanoidRootPart")
+local function hrp()
+    local char=plr.Character or plr.CharacterAdded:Wait()
+    return char:WaitForChild("HumanoidRootPart")
 end
 
-local function tweenTo(cf,time)
-    local root = getRoot()
-    local goal = {CFrame = cf}
-    local ti = TweenInfo.new(time or 0.12,Enum.EasingStyle.Linear)
-    svcs.Tween:Create(root,ti,goal):Play()
-end
-
-local function enableFly()
+local function antiFreeze()
     local char = plr.Character or plr.CharacterAdded:Wait()
     local hum  = char:WaitForChild("Humanoid")
-    hum.PlatformStand = true
-    local bp = Instance.new("BodyPosition")
-    bp.MaxForce = Vector3.new(0,math.huge,0)
-    bp.Parent = getRoot()
-    return bp
+    hum:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+    hum:SetStateEnabled(Enum.HumanoidStateType.PlatformStanding, false)
+    hum:ChangeState(Enum.HumanoidStateType.Running)
 end
 
-local function disableFly(bp)
-    if bp then bp:Destroy() end
-    local hum = (plr.Character or plr.CharacterAdded:Wait()):FindFirstChildOfClass("Humanoid")
-    if hum then hum.PlatformStand = false end
+local function tp(cf)
+    local root=hrp()
+    antiFreeze()
+    -- Tween suave en lugar de teleport brusco
+    local goal = {CFrame = cf}
+    local ti = TweenInfo.new((root.Position-cf.Position).Magnitude/120, Enum.EasingStyle.Linear)
+    game:GetService("TweenService"):Create(root,ti,goal):Play()
 end
 
 -- ===================================================================
---  Recolección
+--  Recolección rápida (mismo recorrido, solo más rápido y sin congelos)
 -- ===================================================================
-local function collectLoop()
-    local boosts = workspace:FindFirstChild("Map")
-        and workspace.Map:FindFirstChild("Stages")
-        and workspace.Map.Stages:FindFirstChild("Boosts")
-    if not boosts then return end
-    local stageFolder = boosts:FindFirstChild(tostring(stage))
-    if not stageFolder then return end
-
-    local orbes = {}
-    for _,model in ipairs(stageFolder:GetChildren()) do
-        for _,p in ipairs(model:GetDescendants()) do
-            if p:IsA("BasePart") and p.Transparency<1 and p.CanTouch and not claimed[p] then
-                table.insert(orbes,p)
-                claimed[p] = true
+local function collect()
+    local boosts=workspace:WaitForChild("Map"):WaitForChild("Stages"):WaitForChild("Boosts")
+    local stage_folder=boosts:FindFirstChild(tostring(stage))
+    if not stage_folder then return end
+    for _,model in ipairs(stage_folder:GetChildren()) do
+        for _,orb in ipairs(model:GetDescendants()) do
+            if not running then return end
+            if orb:IsA("BasePart") then
+                -- Hitbox gorda: si ya estamos cerca, solo esperamos a que desaparezca
+                local dist = (hrp().Position - orb.Position).Magnitude
+                if dist <= 8 then
+                    repeat task.wait(0.05) until not orb.Parent or not running
+                    continue
+                end
+                tp(orb.CFrame)
+                task.wait(0.15)
             end
         end
     end
-
-    while #orbes>0 and running do
-        local rootPos = getRoot().Position
-        local closest,dist = nil,math.huge
-        for i,o in ipairs(orbes) do
-            if o.Parent then
-                local d = (o.Position-rootPos).Magnitude
-                if d<dist then closest,dist = o,d end
-            end
-        end
-        if not closest then break end
-        -- Fly si hace falta
-        local fly
-        if dist>20 or math.abs(closest.Position.Y-rootPos.Y)>6 then
-            fly = enableFly()
-            fly.Position = closest.Position+Vector3.new(0,3,0)
-        end
-        tweenTo(closest.CFrame)
-        local t = tick()
-        while tick()-t<0.15 do task.wait() end
-        if fly then disableFly(fly) end
-        table.remove(orbes,table.find(orbes,closest))
-        task.wait(1/CPS_MAX)
-    end
 end
 
--- ===================================================================
---  Toggle + Keybind
--- ===================================================================
-local function toggle()
-    running = not running
+toggle_btn.MouseButton1Click:Connect(function()
+    running=not running
     if running then
-        toggleBtn.Text = "Stop"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(170,0,0)
-        claimed = {}
+        toggle_btn.Text="Stop"
+        toggle_btn.BackgroundColor3=Color3.fromRGB(170,0,0)
         task.spawn(function()
             while running do
-                collectLoop()
-                task.wait(0.2)
+                collect()
+                task.wait(0.25)
             end
         end)
     else
-        toggleBtn.Text = "Start"
-        toggleBtn.BackgroundColor3 = Color3.fromRGB(0,170,0)
-    end
-end
-
-toggleBtn.MouseButton1Click:Connect(toggle)
-svcs.UIS.InputBegan:Connect(function(i,gp)
-    if gp then return end
-    if i.KeyCode==Enum.KeyCode.P then toggle() end
-end)
-
--- ===================================================================
---  Anti-AFK
--- ===================================================================
-task.spawn(function()
-    while true do
-        if running and tick()-lastAfk>45 then
-            local hum = (plr.Character or plr.CharacterAdded:Wait()):FindFirstChildOfClass("Humanoid")
-            if hum then hum:ChangeState(Enum.HumanoidStateType.Jumping) end
-            lastAfk = tick()
-        end
-        task.wait(1)
+        toggle_btn.Text="Start"
+        toggle_btn.BackgroundColor3=Color3.fromRGB(0,170,0)
     end
 end)
 
--- ===================================================================
---  Notificación
--- ===================================================================
-game:GetService("StarterGui"):SetCore("SendNotification",{
-    Title="OrbFarm V2",
-    Text="P → Start/Stop  |  Muévelo arrastrando",
+svcs.sg:SetCore("SendNotification",{
+    Title="Tip",
+    Text="teleport to your world, then input your stage",
     Duration=5
 })
