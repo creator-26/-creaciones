@@ -100,6 +100,8 @@
       }
     }
   </style>
+  <link rel="manifest" href="/manifest (3).json">
+<link rel="icon" href="/icon.png">
 </head>
 <body>
   <div class="wrap">
@@ -333,6 +335,10 @@
       addItem('Ejemplo: Juan - préstamo', 50);
       items[0].paid=false; save();
     } else { render(); }
+  </script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/sw.js');
+}
   </script>
 </body>
 </html>
