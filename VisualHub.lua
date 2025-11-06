@@ -1,0 +1,78 @@
+
+-- VisualHub.lua : GUI Modular sin dependencias externas, para Roblox
+local VisualHub = {}
+local CoreGui = game:GetService("CoreGui")
+local StarterGui = game:GetService("StarterGui")
+
+function VisualHub:Create(title)
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "VisualHub" .. tostring(math.random(1,10000))
+    gui.Parent = CoreGui
+    local frame = Instance.new("Frame", gui)
+    frame.Position = UDim2.new(0.1, 0, 0.1, 0)
+    frame.Size = UDim2.new(0, 330, 0, 400)
+    frame.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    frame.BorderSizePixel = 2
+    frame.Name = "MainFrame"
+    local titleLbl = Instance.new("TextLabel", frame)
+    titleLbl.Text = title or "Visual Hub"
+    titleLbl.Size = UDim2.new(1, 0, 0, 40)
+    titleLbl.TextSize = 25
+    titleLbl.Font = Enum.Font.GothamBold
+    titleLbl.TextColor3 = Color3.new(1,1,1)
+    titleLbl.BackgroundTransparency = 1
+    titleLbl.Name = "TitleBar"
+    return frame
+end
+function VisualHub:AddButton(frame, btntext, callback, ypos)
+    local btn = Instance.new("TextButton", frame)
+    btn.Text = btntext or "Botón"
+    btn.Position = UDim2.new(0, 15, 0, ypos)
+    btn.Size = UDim2.new(0, 300, 0, 35)
+    btn.BackgroundColor3 = Color3.fromRGB(65, 113, 175)
+    btn.TextSize = 18
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.Font = Enum.Font.Gotham
+    btn.MouseButton1Click:Connect(function()
+        if typeof(callback)=="function" then pcall(callback) end
+    end)
+    return btn
+end
+function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
+    local back = Instance.new("TextLabel", frame)
+    back.Text = lbltext
+    back.Font = Enum.Font.Gotham
+    back.TextSize = 18
+    back.TextColor3 = Color3.new(1,1,1)
+    back.BackgroundColor3 = Color3.fromRGB(70,70,80)
+    back.Position = UDim2.new(0, 15, 0, ypos)
+    back.Size = UDim2.new(0, 220, 0, 32)
+    local sw = Instance.new("TextButton", frame)
+    sw.Text = "OFF"
+    sw.Position = UDim2.new(0, 250, 0, ypos)
+    sw.Size = UDim2.new(0, 65, 0, 32)
+    sw.BackgroundColor3 = Color3.fromRGB(100,30,30)
+    sw.TextColor3 = Color3.new(1,1,1)
+    sw.Font = Enum.Font.GothamBold
+    local active = false
+    sw.MouseButton1Click:Connect(function()
+        active = not active
+        sw.Text = active and "ON" or "OFF"
+        sw.BackgroundColor3 = active and Color3.fromRGB(30, 130, 30) or Color3.fromRGB(100,30,30)
+        if typeof(callback)=="function" then pcall(callback, active) end
+    end)
+    return back, sw
+end
+
+function VisualHub:AddLabel(frame, text, ypos)
+    local label = Instance.new("TextLabel", frame)
+    label.Text = text or "Label"
+    label.Position = UDim2.new(0,20,0,ypos)
+    label.Size = UDim2.new(0, 290, 0, 24)
+    label.TextSize = 18
+    label.Font = Enum.Font.GothamSemibold
+    label.TextColor3 = Color3.new(1,1,1)
+    label.BackgroundTransparency = 1
+    return label
+end
+return VisualHub
