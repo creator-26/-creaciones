@@ -10,63 +10,63 @@ local main = VisualHub:Create('ML-Hub Completo')
 local ypos = 50
 --[[ Deobfuscated by MLRTAKEN | Full Source Leak ]]
 
--- FUNC -- local Lighting = game:GetService("Lighting")
+ local Lighting = game:GetService("Lighting")
 
 
 
--- FUNC -- LocalPlayersFolder:AddSwitch("Auto Eat Protein Egg Every 30 Minutes", function(state)
--- FUNC --     getgenv().autoEatProteinEggActive = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().autoEatProteinEggActive and LocalPlayer.Character do
--- FUNC --             local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("rep")
--- FUNC -- LocalPlayersFolder:AddSwitch("Auto Eat Protein Egg Every 1 hour", function(state)
--- FUNC --     getgenv().autoEatProteinEggHourly = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().autoEatProteinEggHourly and LocalPlayer.Character do
--- FUNC --             local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("rep")
--- FUNC -- local MiscFolder = MainTab:AddFolder("Misc")
--- FUNC -- MiscFolder:AddSwitch("Auto Farm (Equip Any tool)", function(state)
--- FUNC --     task.spawn(function()
--- FUNC --                     ReplicatedStorage.muscleEvent:FireServer("rep")
--- FUNC -- MiscFolder:AddLabel("---Script Hub---")
--- FUNC -- MiscFolder:AddButton("Permanent ShiftLock", function()
--- FUNC -- MiscFolder:AddLabel("---Time---")
--- FUNC -- MiscFolder:AddButton("Night", function()
--- FUNC --     Lighting.ClockTime = 0
--- FUNC -- MiscFolder:AddButton("Morning", function()
--- FUNC --     Lighting.ClockTime = 6
--- FUNC -- MiscFolder:AddButton("Day", function()
--- FUNC --     Lighting.ClockTime = 12
--- FUNC -- MiscFolder:AddLabel("----Farming----")
--- FUNC -- AutoBrawlFolder:AddSwitch("Auto Win Brawl", function(state)
--- FUNC --     task.spawn(function()
--- FUNC --             ReplicatedStorage.rEvents.joinBrawl:FireServer("Win")
--- FUNC -- AutoBrawlFolder:AddSwitch("Auto Join Brawl (For Farming)", function(state)
--- FUNC --     task.spawn(function()
--- FUNC --             ReplicatedStorage.rEvents.joinBrawl:FireServer("Farm")
--- FUNC -- OpStuffFolder:AddSwitch("Anti Knockback", function(state)
--- FUNC --     getgenv().antiKnockback = state
--- FUNC --     LocalPlayer.CharacterAdded:Connect(function(char)
--- FUNC --         if getgenv().antiKnockback then
--- FUNC -- OpStuffFolder:AddSwitch("Auto Pushups with Rock (10M) and Auto Punch", function(state)
--- FUNC --     getgenv().autoPushups10M = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().autoPushups10M and LocalPlayer.Character do
--- FUNC --             local punch = LocalPlayer.Backpack:FindFirstChild("Pushups") or LocalPlayer.Character:FindFirstChild("Pushups")
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
--- FUNC --                 local rock = Workspace.machinesFolder:FindFirstChild("King Rock")
--- FUNC --                 if rock and LocalPlayer:FindFirstChild("Durability") and LocalPlayer.Durability.Value >= 10000000 then
--- FUNC --                     firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 0)
--- FUNC --                     firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 0)
--- FUNC --                     firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 1)
--- FUNC --                     firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 1)
--- FUNC -- OpStuffFolder:AddSwitch("Free AutoLift Gamepass", function(state)
--- FUNC --     task.spawn(function()
--- FUNC -- OpStuffFolder:AddSwitch("Walk on Water", function(state)
--- FUNC -- OpStuffFolder:AddButton("Remove Ad Portal", function()
+ LocalPlayersFolder:AddSwitch("Auto Eat Protein Egg Every 30 Minutes", function(state)
+     getgenv().autoEatProteinEggActive = state
+     task.spawn(function()
+         while getgenv().autoEatProteinEggActive and LocalPlayer.Character do
+             local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
+                 ReplicatedStorage.muscleEvent:FireServer("rep")
+ LocalPlayersFolder:AddSwitch("Auto Eat Protein Egg Every 1 hour", function(state)
+     getgenv().autoEatProteinEggHourly = state
+     task.spawn(function()
+         while getgenv().autoEatProteinEggHourly and LocalPlayer.Character do
+             local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
+                 ReplicatedStorage.muscleEvent:FireServer("rep")
+ local MiscFolder = MainTab:AddFolder("Misc")
+ MiscFolder:AddSwitch("Auto Farm (Equip Any tool)", function(state)
+     task.spawn(function()
+                     ReplicatedStorage.muscleEvent:FireServer("rep")
+ MiscFolder:AddLabel("---Script Hub---")
+ MiscFolder:AddButton("Permanent ShiftLock", function()
+ MiscFolder:AddLabel("---Time---")
+ MiscFolder:AddButton("Night", function()
+     Lighting.ClockTime = 0
+ MiscFolder:AddButton("Morning", function()
+     Lighting.ClockTime = 6
+ MiscFolder:AddButton("Day", function()
+     Lighting.ClockTime = 12
+ MiscFolder:AddLabel("----Farming----")
+ AutoBrawlFolder:AddSwitch("Auto Win Brawl", function(state)
+     task.spawn(function()
+             ReplicatedStorage.rEvents.joinBrawl:FireServer("Win")
+ AutoBrawlFolder:AddSwitch("Auto Join Brawl (For Farming)", function(state)
+     task.spawn(function()
+             ReplicatedStorage.rEvents.joinBrawl:FireServer("Farm")
+ OpStuffFolder:AddSwitch("Anti Knockback", function(state)
+     getgenv().antiKnockback = state
+     LocalPlayer.CharacterAdded:Connect(function(char)
+         if getgenv().antiKnockback then
+OpStuffFolder:AddSwitch("Auto Pushups with Rock (10M) and Auto Punch", function(state)
+     getgenv().autoPushups10M = state
+     task.spawn(function()
+         while getgenv().autoPushups10M and LocalPlayer.Character do
+             local punch = LocalPlayer.Backpack:FindFirstChild("Pushups") or LocalPlayer.Character:FindFirstChild("Pushups")
+                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+                 local rock = Workspace.machinesFolder:FindFirstChild("King Rock")
+                 if rock and LocalPlayer:FindFirstChild("Durability") and LocalPlayer.Durability.Value >= 10000000 then
+                     firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 0)
+                     firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 0)
+                     firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 1)
+                     firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 1) 
+ OpStuffFolder:AddSwitch("Free AutoLift Gamepass", function(state)
+     task.spawn(function()
+ OpStuffFolder:AddSwitch("Walk on Water", function(state)
+ OpStuffFolder:AddButton("Remove Ad Portal", function()
 
 -- FUNC -- local KillingTab = Window:AddTab("Killing")
 -- FUNC -- KillingTab:AddSwitch("Auto Equip Punch", function(state)
