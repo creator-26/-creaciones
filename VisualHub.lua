@@ -1,16 +1,14 @@
-
--- VisualHub.lua : GUI Modular sin dependencias externas, para Roblox
+-- VisualHub.lua : GUI Modular con toggle ocultar/mostrar (RightShift)
 local VisualHub = {}
 local CoreGui = game:GetService("CoreGui")
-local StarterGui = game:GetService("StarterGui")
-
+local UIS = game:GetService("UserInputService")
 function VisualHub:Create(title)
     local gui = Instance.new("ScreenGui")
     gui.Name = "VisualHub" .. tostring(math.random(1,10000))
     gui.Parent = CoreGui
     local frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.1, 0, 0.1, 0)
-    frame.Size = UDim2.new(0, 330, 0, 400)
+    frame.Position = UDim2.new(0.1, 0, 0.12, 0)
+    frame.Size = UDim2.new(0, 340, 0, 440)
     frame.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
     frame.BorderSizePixel = 2
     frame.Name = "MainFrame"
@@ -22,6 +20,12 @@ function VisualHub:Create(title)
     titleLbl.TextColor3 = Color3.new(1,1,1)
     titleLbl.BackgroundTransparency = 1
     titleLbl.Name = "TitleBar"
+    -- Toggle por tecla (RightShift)
+    UIS.InputBegan:Connect(function(input, processed)
+      if input.KeyCode == Enum.KeyCode.RightShift and not processed then
+        gui.Enabled = not gui.Enabled
+      end
+    end)
     return frame
 end
 function VisualHub:AddButton(frame, btntext, callback, ypos)
@@ -63,7 +67,6 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     end)
     return back, sw
 end
-
 function VisualHub:AddLabel(frame, text, ypos)
     local label = Instance.new("TextLabel", frame)
     label.Text = text or "Label"
