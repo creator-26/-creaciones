@@ -1,0 +1,35 @@
+{
+  "background_color": "#ffffff",
+  "dir": "ltr",
+  "display": "standalone",
+  "name": "CobróList",
+  "orientation": "any",
+  "scope": "/",
+  "short_name": "CobróList",
+  "start_url": "/https://creator-26.github.io/-creaciones/index.html",
+  "theme_color": "#ffffff",
+  "icons": [
+    {
+      "src": "https://creator-26.github.io/icon.png",
+      "isSquare": false,
+      "isPng": true,
+      "isWebp": false,
+      "isJpg": false,
+      "width": 0,
+      "is512x512": false,
+      "is256x256": false,
+      "is192x192": false
+    }
+  ],
+  "categories": [
+    "finance"
+  ],
+  "related_applications": [
+    {
+      "platform": "webapp",
+      "url": "https://creator-26.github.io/-creaciones/index.html",
+      "id": ""
+    }
+  ],
+  "id": "1"
+}
