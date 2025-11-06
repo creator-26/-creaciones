@@ -8,7 +8,7 @@ local Workspace = game:GetService('Workspace')
 local Lighting = game:GetService('Lighting')
 local main = VisualHub:Create('ML-Hub Completo')
 local ypos = 50
---[[ Deobfuscated by MLRTAKEN | Full Source Leak ]]
+[[ Deobfuscated by MLRTAKEN | Full Source Leak ]]
 
  local Lighting = game:GetService("Lighting")
 
@@ -68,202 +68,201 @@ OpStuffFolder:AddSwitch("Auto Pushups with Rock (10M) and Auto Punch", function(
  OpStuffFolder:AddSwitch("Walk on Water", function(state)
  OpStuffFolder:AddButton("Remove Ad Portal", function()
 
--- FUNC -- local KillingTab = Window:AddTab("Killing")
--- FUNC -- KillingTab:AddSwitch("Auto Equip Punch", function(state)
--- FUNC --     getgenv().autoEquipPunch = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().autoEquipPunch and LocalPlayer.Character do
--- FUNC --                 LocalPlayer.Character.Humanoid:UnequipTools()
--- FUNC -- KillingTab:AddSwitch("Auto Punch {With Movement}", function(state)
--- FUNC --     task.spawn(function()
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
--- FUNC --                 LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + LocalPlayer.Character.Humanoid.MoveDirection * 0.5
--- FUNC -- KillingTab:AddSwitch("Auto Punch", function(state)
--- FUNC --     task.spawn(function()
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
--- FUNC -- KillingTab:AddSwitch("Unlock Fast Punch", function(state)
--- FUNC --     getgenv().fastPunch = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().fastPunch and LocalPlayer.Character do
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
--- FUNC -- KillingTab:AddTextBox("Whitelist Player", function(name)
--- FUNC -- KillingTab:AddButton("Clear Whitelist", function()
--- FUNC -- KillingTab:AddSwitch("Auto Kill", function(state)
--- FUNC --     getgenv().autokill = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().autokill and LocalPlayer.Character do
--- FUNC --                         LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
--- FUNC --                         ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
--- FUNC --                         ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
--- FUNC -- KillingTab:AddSwitch("Auto Kill Players", function(state)
--- FUNC --     getgenv().autoKillPlayers = state
--- FUNC --             task.spawn(function()
--- FUNC --                 while getgenv().autoKillPlayers and player.Character and LocalPlayer.Character do
--- FUNC --                         LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
--- FUNC --                         ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
--- FUNC --                         ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
--- FUNC --     Players.PlayerRemoving:Connect(function(player)
--- FUNC --         if getgenv().autoKillPlayers then
--- FUNC -- KillingTab:AddDropdown("Players", function()
--- FUNC -- KillingTab:AddTextBox("Kill Player", function(name)
--- FUNC --         task.spawn(function()
--- FUNC --                 LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(target.Character.HumanoidRootPart.Position)
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
--- FUNC --                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
--- FUNC -- KillingTab:AddLabel("---------------")
--- FUNC -- KillingTab:AddTextBox("View Player", function(name)
--- FUNC --         Workspace.CurrentCamera.CameraSubject = target.Character.Humanoid
--- FUNC -- KillingTab:AddButton("Unview Player", function()
--- FUNC --         Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
+ local KillingTab = Window:AddTab("Killing")
+ KillingTab:AddSwitch("Auto Equip Punch", function(state)
+     getgenv().autoEquipPunch = state
+     task.spawn(function()
+         while getgenv().autoEquipPunch and LocalPlayer.Character do
+                 LocalPlayer.Character.Humanoid:UnequipTools()
+ KillingTab:AddSwitch("Auto Punch {With Movement}", function(state)
+     task.spawn(function()
+                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+                 LocalPlayer.Character.HumanoidRootPart.CFrame = LocalPlayer.Character.HumanoidRootPart.CFrame + LocalPlayer.Character.Humanoid.MoveDirection * 0.5
+ KillingTab:AddSwitch("Auto Punch", function(state)
+     task.spawn(function()
+                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+ KillingTab:AddSwitch("Unlock Fast Punch", function(state)
+     getgenv().fastPunch = state
+     task.spawn(function()
+         while getgenv().fastPunch and LocalPlayer.Character do
+                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+ KillingTab:AddTextBox("Whitelist Player", function(name)
+ KillingTab:AddButton("Clear Whitelist", function()
+ KillingTab:AddSwitch("Auto Kill", function(state)
+     getgenv().autokill = state
+     task.spawn(function()
+         while getgenv().autokill and LocalPlayer.Character do
+                         LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
+                         ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                         ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+ KillingTab:AddSwitch("Auto Kill Players", function(state)
+     getgenv().autoKillPlayers = state
+             task.spawn(function()
+                 while getgenv().autoKillPlayers and player.Character and LocalPlayer.Character do
+                         LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
+                         ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                         ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+     Players.PlayerRemoving:Connect(function(player)
+         if getgenv().autoKillPlayers then
+ KillingTab:AddDropdown("Players", function()
+ KillingTab:AddTextBox("Kill Player", function(name)
+         task.spawn(function()
+                 LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(target.Character.HumanoidRootPart.Position)
+                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+ KillingTab:AddLabel("---------------")
+ KillingTab:AddTextBox("View Player", function(name)
+         Workspace.CurrentCamera.CameraSubject = target.Character.Humanoid
+ KillingTab:AddButton("Unview Player", function()
+         Workspace.CurrentCamera.CameraSubject = LocalPlayer.Character.Humanoid
 
--- FUNC -- local StatsTab = Window:AddTab("Stats")
--- FUNC -- local StatsFolder = StatsTab:AddFolder("Stats")
--- FUNC -- StatsFolder:AddButton("Show Kills Gui", function()
--- FUNC --     local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
--- FUNC --     if leaderstats then
--- FUNC --         local killsLabel = StatsFolder:AddLabel("Kills: " .. (leaderstats.Kills and leaderstats.Kills.Value or 0))
--- FUNC --         local strengthLabel = StatsFolder:AddLabel("Strength: " .. (leaderstats.Strength and leaderstats.Strength.Value or 0))
--- FUNC --         local durabilityLabel = StatsFolder:AddLabel("Durability: " .. (leaderstats.Durability and leaderstats.Durability.Value or 0))
--- FUNC --         if leaderstats.Kills then
--- FUNC --             leaderstats.Kills.Changed:Connect(function(value)
--- FUNC --                 killsLabel.Text = "Kills: " .. value
--- FUNC --         if leaderstats.Strength then
--- FUNC --             leaderstats.Strength.Changed:Connect(function(value)
--- FUNC --                 strengthLabel.Text = "Strength: " .. math.ceil(value)
--- FUNC --         if leaderstats.Durability then
--- FUNC --             leaderstats.Durability.Changed:Connect(function(value)
--- FUNC --                 durabilityLabel.Text = "Durability: " .. value
--- FUNC --         LocalPlayer.CharacterAdded:Connect(function()
--- FUNC --             killsLabel:Destroy()
--- FUNC --             strengthLabel:Destroy()
--- FUNC --             durabilityLabel:Destroy()
--- FUNC --         LocalPlayer.CharacterRemoving:Connect(function()
--- FUNC --             killsLabel:Destroy()
--- FUNC --             strengthLabel:Destroy()
--- FUNC --             durabilityLabel:Destroy()
--- FUNC -- StatsTab:AddFolder("Stats Gained")
--- FUNC -- Players.PlayerAdded:Connect(function() end)
--- FUNC -- Players.PlayerRemoving:Connect(function() end)
+ local StatsTab = Window:AddTab("Stats")
+ local StatsFolder = StatsTab:AddFolder("Stats")
+ StatsFolder:AddButton("Show Kills Gui", function()
+     local leaderstats = LocalPlayer:FindFirstChild("leaderstats")
+     if leaderstats then
+         local killsLabel = StatsFolder:AddLabel("Kills: " .. (leaderstats.Kills and leaderstats.Kills.Value or 0))
+         local strengthLabel = StatsFolder:AddLabel("Strength: " .. (leaderstats.Strength and leaderstats.Strength.Value or 0))
+         local durabilityLabel = StatsFolder:AddLabel("Durability: " .. (leaderstats.Durability and leaderstats.Durability.Value or 0))
+         if leaderstats.Kills then
+             leaderstats.Kills.Changed:Connect(function(value)
+                 killsLabel.Text = "Kills: " .. value
+         if leaderstats.Strength then
+             leaderstats.Strength.Changed:Connect(function(value)
+                 strengthLabel.Text = "Strength: " .. math.ceil(value)
+         if leaderstats.Durability then
+             leaderstats.Durability.Changed:Connect(function(value)
+                 durabilityLabel.Text = "Durability: " .. value
+         LocalPlayer.CharacterAdded:Connect(function()
+             killsLabel:Destroy()
+             strengthLabel:Destroy()
+             durabilityLabel:Destroy()
+         LocalPlayer.CharacterRemoving:Connect(function()
+             killsLabel:Destroy()
+             strengthLabel:Destroy()
+             durabilityLabel:Destroy()
+ StatsTab:AddFolder("Stats Gained")
+ Players.PlayerAdded:Connect(function() end)
+ Players.PlayerRemoving:Connect(function() end)
 
--- FUNC -- AutoGymFolder:AddLabel("Jungle Gym")
--- FUNC --     ["Jungle Bench"] = "autoJungleBench",
--- FUNC --     AutoGymFolder:AddSwitch("Auto " .. machineName, function(state)
--- FUNC --         task.spawn(function()
--- FUNC --                     LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(machine.interactSeat.Position)
--- FUNC --                     ReplicatedStorage.muscleEvent:FireServer("rep")
--- FUNC -- local AutoEquipFolder = FarmPlusTab:AddFolder("Auto Equip Weight Tools")
--- FUNC --     ["Auto Pushups"] = "Pushups",
--- FUNC -- for label, toolName in pairs(toolSwitches) do
--- FUNC --     AutoEquipFolder:AddSwitch(label, function(state)
--- FUNC --         getgenv()[label] = state
--- FUNC --         task.spawn(function()
--- FUNC --             while getgenv()[label] and LocalPlayer.Character do
--- FUNC --                     ReplicatedStorage.muscleEvent:FireServer("rep")
+ AutoGymFolder:AddLabel("Jungle Gym")
+     ["Jungle Bench"] = "autoJungleBench",
+     AutoGymFolder:AddSwitch("Auto " .. machineName, function(state)
+         task.spawn(function()
+                     LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(machine.interactSeat.Position)
+                     ReplicatedStorage.muscleEvent:FireServer("rep")
+ local AutoEquipFolder = FarmPlusTab:AddFolder("Auto Equip Weight Tools")
+     ["Auto Pushups"] = "Pushups",
+ for label, toolName in pairs(toolSwitches) do
+     AutoEquipFolder:AddSwitch(label, function(state)
+         getgenv()[label] = state
+         task.spawn(function()
+             while getgenv()[label] and LocalPlayer.Character do
+                     ReplicatedStorage.muscleEvent:FireServer("rep")
 
--- FUNC -- EggsTab:AddTextBox("Select Pet", function(petName)
--- FUNC --     getgenv().selectedPet = petName
--- FUNC -- EggsTab:AddSwitch("Auto Buy Pet", function(state)
--- FUNC --     getgenv().autoBuyPet = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().autoBuyPet and LocalPlayer.Character do
--- FUNC --             if getgenv().selectedPet then
--- FUNC --                 ReplicatedStorage.rEvents.equipPetEvent:FireServer("unequipPet")
--- FUNC --                 ReplicatedStorage.rEvents.buyPetEvent:FireServer(getgenv().selectedPet)
--- FUNC -- EggsTab:AddDropdown("Select Crystal", crystals, function(crystal)
--- FUNC -- EggsTab:AddSwitch("Auto Hatch Crystal", function(state)
--- FUNC --     getgenv().autoHatchCrystal = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().autoHatchCrystal and LocalPlayer.Character do
--- FUNC --                 ReplicatedStorage.rEvents.openCrystalRemote:InvokeServer("openCrystal", getgenv().crystal)
+ EggsTab:AddTextBox("Select Pet", function(petName)
+     getgenv().selectedPet = petName
+ EggsTab:AddSwitch("Auto Buy Pet", function(state)
+     getgenv().autoBuyPet = state
+     task.spawn(function()
+         while getgenv().autoBuyPet and LocalPlayer.Character do
+           if getgenv().selectedPet then 
+                 ReplicatedStorage.rEvents.equipPetEvent:FireServer("unequipPet")
+                 ReplicatedStorage.rEvents.buyPetEvent:FireServer(getgenv().selectedPet)
+ EggsTab:AddDropdown("Select Crystal", crystals, function(crystal)
+ EggsTab:AddSwitch("Auto Hatch Crystal", function(state)
+     getgenv().autoHatchCrystal = state
+     task.spawn(function()
+         while getgenv().autoHatchCrystal and LocalPlayer.Character do
+                 ReplicatedStorage.rEvents.openCrystalRemote:InvokeServer("openCrystal", getgenv().crystal)
 
--- FUNC -- PlayersTab:AddTextBox("Walkspeed", function(value)
--- FUNC --     getgenv().ws = tonumber(value)
--- FUNC -- PlayersTab:AddSwitch("Set Walkspeed", function(state)
--- FUNC --     getgenv().setws = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().setws and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") do
--- FUNC --             local ws = getgenv().ws or 16
--- FUNC --             LocalPlayer.Character.Humanoid.WalkSpeed = ws
--- FUNC -- PlayersTab:AddTextBox("JumpPower", function(value)
--- FUNC -- PlayersTab:AddTextBox("HipHeight", function(value)
--- FUNC -- PlayersTab:AddTextBox("Max Zoom Distance", function(value)
--- FUNC --     LocalPlayer.CameraMaxZoomDistance = tonumber(value) or 128
--- FUNC -- PlayersTab:AddLabel("--------")
--- FUNC -- PlayersTab:AddSwitch("Lock Client Position", function(state)
--- FUNC --         getgenv().lockedPos = LocalPlayer.Character.HumanoidRootPart.CFrame
--- FUNC --         getgenv().lockConnection = RunService.Heartbeat:Connect(function()
--- FUNC --                 LocalPlayer.Character.HumanoidRootPart.CFrame = getgenv().lockedPos
--- FUNC -- PlayersTab:AddButton("Remove Punch", function()
--- FUNC -- PlayersTab:AddButton("Recover Punch", function()
--- FUNC -- PlayersTab:AddSwitch("Infinite Jump", function(state)
--- FUNC --     game:GetService("UserInputService").JumpRequest:Connect(function()
--- FUNC -- PlayersTab:AddSwitch("Noclip", function(state)
--- FUNC --     getgenv().noclip = state
--- FUNC --         StarterGui:SetCore("SendNotification", {Title = "Player", Text = "Noclip enabled", Duration = 5})
--- FUNC --         getgenv().noclipConnection = RunService.Stepped:Connect(function()
--- FUNC --         StarterGui:SetCore("SendNotification", {Title = "Player", Text = "Noclip disabled", Duration = 5})
--- FUNC --         if getgenv().noclipConnection then
--- FUNC --             getgenv().noclipConnection:Disconnect()
--- FUNC -- PlayersTab:AddButton("Anti AFK", function()
--- FUNC --     game:GetService("VirtualUser").CaptureController:ClickButton2(Vector2.new())
--- FUNC --     game:GetService("VirtualUser").Idled:Connect(function()
--- FUNC --         game:GetService("VirtualUser").CaptureController:ClickButton2(Vector2.new())
--- FUNC -- PlayersTab:AddButton("Anti Lag", function()
--- FUNC -- PlayersTab:AddButton("ChatSpy", function()
+ PlayersTab:AddTextBox("Walkspeed", function(value)
+     getgenv().ws = tonumber(value)
+ PlayersTab:AddSwitch("Set Walkspeed", function(state)
+     getgenv().setws = state
+     task.spawn(function()         while getgenv().setws and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("Humanoid") do
+             local ws = getgenv().ws or 16
+             LocalPlayer.Character.Humanoid.WalkSpeed = ws
+ PlayersTab:AddTextBox("JumpPower", function(value)
+ PlayersTab:AddTextBox("HipHeight", function(value)
+ PlayersTab:AddTextBox("Max Zoom Distance", function(value)
+     LocalPlayer.CameraMaxZoomDistance = tonumber(value) or 128
+ PlayersTab:AddLabel("--------")
+ PlayersTab:AddSwitch("Lock Client Position", function(state)
+         getgenv().lockedPos = LocalPlayer.Character.HumanoidRootPart.CFrame
+         getgenv().lockConnection = RunService.Heartbeat:Connect(function()
+                 LocalPlayer.Character.HumanoidRootPart.CFrame = getgenv().lockedPos
+ PlayersTab:AddButton("Remove Punch", function()
+ PlayersTab:AddButton("Recover Punch", function()
+ PlayersTab:AddSwitch("Infinite Jump", function(state)
+     game:GetService("UserInputService").JumpRequest:Connect(function()
+ PlayersTab:AddSwitch("Noclip", function(state)
+     getgenv().noclip = state
+         StarterGui:SetCore("SendNotification", {Title = "Player", Text = "Noclip enabled", Duration = 5})
+         getgenv().noclipConnection = RunService.Stepped:Connect(function()
+         StarterGui:SetCore("SendNotification", {Title = "Player", Text = "Noclip disabled", Duration = 5})
+         if getgenv().noclipConnection then
+             getgenv().noclipConnection:Disconnect()
+ PlayersTab:AddButton("Anti AFK", function()
+     game:GetService("VirtualUser").CaptureController:ClickButton2(Vector2.new())
+     game:GetService("VirtualUser").Idled:Connect(function()
+         game:GetService("VirtualUser").CaptureController:ClickButton2(Vector2.new())
+ PlayersTab:AddButton("Anti Lag", function()
+ PlayersTab:AddButton("ChatSpy", function()
 
--- FUNC -- local CreditsTab = Window:AddTab("Credits")
--- FUNC -- CreditsTab:AddLabel("This Script made by Doca")
--- FUNC -- CreditsTab:AddLabel("Roblox: Xx_GPWArka")
--- FUNC -- CreditsTab:AddLabel("Discord: itsdocas_60003")
--- FUNC -- CreditsTab:AddButton("Copy Discord Invite link", function()
+ local CreditsTab = Window:AddTab("Credits")
+ CreditsTab:AddLabel("This Script made by Doca")
+ CreditsTab:AddLabel("Roblox: Xx_GPWArka")
+ CreditsTab:AddLabel("Discord: itsdocas_60003")
+ CreditsTab:AddButton("Copy Discord Invite link", function()
 
--- FUNC -- BoostTab:AddSwitch("Auto Kill Good Karma", function(state)
--- FUNC --     getgenv().autoKillGoodKarma = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().autoKillGoodKarma and LocalPlayer.Character do
--- FUNC --                     LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
--- FUNC --                     ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
--- FUNC --                     ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
--- FUNC -- BoostTab:AddSwitch("Auto Kill Evil Karma", function(state)
--- FUNC --     getgenv().autoKillEvilKarma = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().autoKillEvilKarma and LocalPlayer.Character do
--- FUNC --                     LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
--- FUNC --                     ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
--- FUNC --                     ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
--- FUNC -- BoostTab:AddLabel("Ring Aura")
--- FUNC -- BoostTab:AddTextBox("Whitelist Player", function(name)
--- FUNC -- BoostTab:AddButton("Clear Whitelist", function()
--- FUNC -- BoostTab:AddTextBox("Ring Aura Radius", function(value)
--- FUNC --     getgenv().ringAuraRadius = tonumber(value) or 10
--- FUNC -- BoostTab:AddSwitch("Ring Aura", function(state)
--- FUNC --     getgenv().ringAura = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().ringAura and LocalPlayer.Character do
--- FUNC --                     if distance <= (getgenv().ringAuraRadius or 10) then
--- FUNC --                         ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
--- FUNC --                         ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
--- FUNC -- BoostTab:AddLabel("Fast Rebirths")
--- FUNC -- BoostTab:AddSwitch("Fast Rebirths | Required New Packs |", function(state)
--- FUNC --     getgenv().fastRebirths = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().fastRebirths and LocalPlayer.Character do
--- FUNC -- BoostTab:AddSwitch("Fast Gain", function(state)
--- FUNC --     getgenv().fastGain = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().fastGain and LocalPlayer.Character do
--- FUNC --             ReplicatedStorage.muscleEvent:FireServer("rep")
--- FUNC -- BoostTab:AddSwitch("Hide Frames", function(state)
--- FUNC --     getgenv().hideFrames = state
--- FUNC --     task.spawn(function()
--- FUNC --         while getgenv().hideFrames do
--- FUNC --             for _, frame in pairs(game:GetService("CoreGui"):GetDescendants()) do
--- FUNC --                 if frame:IsA("Frame") then
--- FUNC --                     frame.Visible = false
+ BoostTab:AddSwitch("Auto Kill Good Karma", function(state)
+     getgenv().autoKillGoodKarma = state
+     task.spawn(function()
+         while getgenv().autoKillGoodKarma and LocalPlayer.Character do
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
+                     ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                     ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+ BoostTab:AddSwitch("Auto Kill Evil Karma", function(state)
+     getgenv().autoKillEvilKarma = state
+     task.spawn(function()
+         while getgenv().autoKillEvilKarma and LocalPlayer.Character do
+                     LocalPlayer.Character.HumanoidRootPart.CFrame = CFrame.new(player.Character.HumanoidRootPart.Position)
+                     ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                     ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+ BoostTab:AddLabel("Ring Aura")
+ BoostTab:AddTextBox("Whitelist Player", function(name)
+ BoostTab:AddButton("Clear Whitelist", function()
+ BoostTab:AddTextBox("Ring Aura Radius", function(value)
+     getgenv().ringAuraRadius = tonumber(value) or 10
+ BoostTab:AddSwitch("Ring Aura", function(state)
+     getgenv().ringAura = state
+     task.spawn(function()
+         while getgenv().ringAura and LocalPlayer.Character do
+                     if distance <= (getgenv().ringAuraRadius or 10) then
+                         ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                         ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+ BoostTab:AddLabel("Fast Rebirths")
+ BoostTab:AddSwitch("Fast Rebirths | Required New Packs |", function(state)
+     getgenv().fastRebirths = state
+     task.spawn(function()
+         while getgenv().fastRebirths and LocalPlayer.Character do
+ BoostTab:AddSwitch("Fast Gain", function(state)
+     getgenv().fastGain = state
+     task.spawn(function()
+         while getgenv().fastGain and LocalPlayer.Character do
+             ReplicatedStorage.muscleEvent:FireServer("rep")
+ BoostTab:AddSwitch("Hide Frames", function(state)
+     getgenv().hideFrames = state
+     task.spawn(function()
+         while getgenv().hideFrames do
+             for _, frame in pairs(game:GetService("CoreGui"):GetDescendants()) do
+                 if frame:IsA("Frame") then
+                     frame.Visible = false
 
--- FUNC -- LocalPlayer.CharacterAdded:Connect(function(char)
--- FUNC --     if getgenv().setws and char:FindFirstChild("Humanoid") then
--- FUNC --         char.Humanoid.WalkSpeed = getgenv().ws or 16
+ LocalPlayer.CharacterAdded:Connect(function(char)
+     if getgenv().setws and char:FindFirstChild("Humanoid") then
+         char.Humanoid.WalkSpeed = getgenv().ws or 16
