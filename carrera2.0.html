@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Juego de Carreras Pro</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            -webkit-touch-callout: none;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+        
+        body { 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            height: 100vh; 
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            overflow: hidden; 
+            font-family: 'Arial', sans-serif;
+        }
+        
+        .game-container { 
+            position: relative; 
+            width: 320px; 
+            height: 560px; 
+            background: linear-gradient(to bottom, #444, #222);
+            overflow: hidden; 
+            border: 5px solid white; 
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        
+        #startScreen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(0,0,0,0.9), rgba(0,0,0,0.7));
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            padding: 20px;
+        }
+        
+        #startButton {
+            padding: 20px 40px;
+            font-size: 28px;
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: 0 6px 0 rgba(0,0,0,0.2);
+            transition: all 0.1s ease;
+            margin-top: 20px;
+            font-weight: bold;
+        }
+        
+        #startButton:active {
+            transform: translateY(4px);
+            box-shadow: 0 2px 0 rgba(0,0,0,0.2);
+        }
+        
+        .game-title {
+            color: white;
+            font-size: 36px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            margin-bottom: 10px;
+        }
+        
+        .high-score {
+            color: #ffd700;
+            font-size: 18px;
+            margin-bottom: 30px;
+        }
+        
+        .pista { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            background: linear-gradient(to bottom, #555, #333);
+            will-change: transform;
+        }
+        
+        .pista::before {
+            content: '';
+            position: absolute;
+            width: 4px;
+            height: 100%;
+            left: 50%;
+            margin-left: -2px;
+            background: repeating-linear-gradient(
+                to bottom,
+                transparent 0,
+                transparent 15px,
+                white 15px,
+                white 25px
+            );
+            animation: lineMove 0.3s linear infinite;
+        }
+        
+        @keyframes lineMove {
+            0% { transform: translateY(0); }
+            100% { transform: translateY(25px); }
+        }
+        
+        .auto { 
+            position: absolute; 
+            width: 44px; 
+            height: 70px; 
+            bottom: 60px; 
+            left: 138px;
+            background-image: url('https://i.postimg.cc/B63tydMn/auto.jpg');
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+            will-change: transform;
+            z-index: 10;
+        }
+        
+        .obstaculo { 
+            position: absolute; 
+            width: 40px; 
+            height: 40px; 
+            top: -50px;
+            font-size: 32px;
+            text-align: center;
+            line-height: 40px;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+            will-change: transform;
+        }
+        
+        .controles { 
+            display: flex; 
+            justify-content: space-between; 
+            width: 100%; 
+            position: absolute; 
+            bottom: 0;
+            padding: 10px;
+            background: rgba(0,0,0,0.3);
+        }
+        
+        .controles button {
+            width: 48%;
+            height: 70px;
+            padding: 10px;
+            font-size: 32px;
+            font-weight: bold;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            -webkit-tap-highlight-color: transparent;
+            transition: all 0.1s ease;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .controles button::active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+        }
+        
+        .controles button.pressed {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.3);
+        }
+        
+        .controles button::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            background: rgba(255,255,255,0.3);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            transition: width 0.3s, height 0.3s;
+        }
+        
+        .controles button.pressed::before {
+            width: 200px;
+            height: 200px;
+        }
+        
+        #btnIzquierda {
+            background: linear-gradient(145deg, #e74c3c, #c0392b);
+            margin-right: 4px;
+        }
+        
+        #btnDerecha {
+            background: linear-gradient(145deg, #3498db, #2980b9);
+        }
+        
+        .pantalla { 
+            position: absolute; 
+            width: 100%; 
+            height: 100%; 
+            background: rgba(0, 0, 0, 0.85); 
+            color: white; 
+            font-size: 28px; 
+            display: flex; 
+            flex-direction: column;
+            justify-content: center; 
+            align-items: center; 
+            display: none; 
+            z-index: 100;
+            padding: 20px;
+        }
+        
+        .pantalla p {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        
+        .pantalla button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 20px;
+            background: linear-gradient(145deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+        }
+        
+        .pantalla button:active {
+            transform: translateY(4px);
+            box-shadow: 0 1px 0 rgba(0,0,0,0.2);
+        }
+        
+        .puntaje { 
+            position: absolute; 
+            top: 15px; 
+            left: 15px; 
+            color: white; 
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 5;
+        }
+        
+        .stats {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            color: white;
+            font-size: 18px;
+            z-index: 5;
+        }
+        
+        .vida {
+            display: inline-block;
+            margin-left: 5px;
+            font-size: 24px;
+        }
+        
+        .power-up {
+            position: absolute;
+            width: 40px;
+            height: 40px;
+            top: -50px;
+            font-size: 28px;
+            text-align: center;
+            line-height: 40px;
+            filter: drop-shadow(2px 2px 4px rgba(0,0,0,0.5));
+            animation: pulse 1s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+        
+        .explosion {
+            position: absolute;
+            font-size: 48px;
+            pointer-events: none;
+            animation: explode 0.5s ease-out forwards;
+        }
+        
+        @keyframes explode {
+            0% { transform: scale(0) rotate(0deg); opacity: 1; }
+            100% { transform: scale(2) rotate(180deg); opacity: 0; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="startScreen">
+    <div class="game-title">🏁 CARRERAS PRO 🏁</div>
+    <div class="high-score" id="highScoreDisplay">Mejor puntuación: 0</div>
+    <button id="startButton">▶ Iniciar Juego</button>
+</div>
+
+<audio id="gameAudio" loop>
+    <source src="https://files.catbox.moe/1sp9sh.mp3" type="audio/mpeg">
+</audio>
+<audio id="collisionSound">
+    <source src="https://www.soundjay.com/misc/sounds/bell-ringing-05.wav" type="audio/wav">
+</audio>
+<audio id="powerupSound">
+    <source src="https://www.soundjay.com/misc/sounds/bell-ringing-04.wav" type="audio/wav">
+</audio>
+
+<div class="game-container">
+    <div class="pista"></div>
+    <div class="puntaje" id="puntaje">Puntos: 0</div>
+    <div class="stats">
+        <span id="nivel">Nivel: 1</span>
+        <span class="vida" id="vidas">❤️❤️❤️</span>
+    </div>
+    <div class="auto" id="auto"></div>
+
+    <div class="pantalla" id="pantallaPerdiste">
+        <p>💥 ¡CHOQUE! 💥</p>
+        <p id="finalScore"></p>
+        <p id="newRecord" style="color: #ffd700; display: none;">¡NUEVO RÉCORD! 🏆</p>
+        <button onclick="reiniciarJuego()">🔄 Jugar de nuevo</button>
+    </div>
+
+    <div class="pantalla" id="pantallaGanaste">
+        <p>🏆 ¡VICTORIA! 🏆</p>
+        <p id="finalScoreWin"></p>
+        <button onclick="reiniciarJuego()">🔄 Jugar de nuevo</button>
+    </div>
+
+    <div class="controles">
+        <button id="btnIzquierda">⬅</button>
+        <button id="btnDerecha">➡</button>
+    </div>
+</div>
+
+<script>
+    // Sistema de High Score con localStorage
+    let highScore = localStorage.getItem('carrerasHighScore') || 0;
+    document.getElementById('highScoreDisplay').innerText = `Mejor puntuación: ${highScore}`;
+
+    // Variables mejoradas
+    const gameAudio = document.getElementById('gameAudio');
+    const collisionSound = document.getElementById('collisionSound');
+    const powerupSound = document.getElementById('powerupSound');
+    const auto = document.getElementById("auto");
+    const gameContainer = document.querySelector(".game-container");
+    const pantallaPerdiste = document.getElementById("pantallaPerdiste");
+    const pantallaGanaste = document.getElementById("pantallaGanaste");
+    const finalScore = document.getElementById("finalScore");
+    const finalScoreWin = document.getElementById("finalScoreWin");
+    const puntajeTexto = document.getElementById("puntaje");
+    const nivelTexto = document.getElementById("nivel");
+    const vidasTexto = document.getElementById("vidas");
+
+    let autoPos = 138;
+    let velocidadBase = 3;
+    let velocidadActual = 3;
+    let puntuacion = 0;
+    let nivel = 1;
+    let vidas = 3;
+    let jugando = false;
+    let moviendoIzquierda = false;
+    let moviendoDerecha = false;
+    let obstaculos = [];
+    let powerUps = [];
+    let frames = 0;
+    let animacionId = null;
+    let invulnerable = false;
+    let invulnerableTime = 0;
+
+    // Sistema de partículas
+    function crearExplosion(x, y) {
+        const explosion = document.createElement('div');
+        explosion.className = 'explosion';
+        explosion.innerHTML = '💥';
+        explosion.style.left = x + 'px';
+        explosion.style.top = y + 'px';
+        gameContainer.appendChild(explosion);
+        setTimeout(() => explosion.remove(), 500);
+    }
+
+    function crearObstaculos() {
+        obstaculos.forEach(obs => obs.remove());
+        obstaculos = [];
+        
+        for (let i = 0; i < 3; i++) {
+            const obs = document.createElement("div");
+            obs.className = "obstaculo";
+            obs.innerHTML = "🚧";
+            obs.style.left = Math.random() * 240 + "px";
+            obs.style.top = (-60 - (i * 180)) + "px";
+            gameContainer.appendChild(obs);
+            obstaculos.push(obs);
+        }
+    }
+
+    function crearPowerUp() {
+        if (Math.random() < 0.3 && powerUps.length === 0) {
+            const powerUp = document.createElement("div");
+            powerUp.className = "power-up";
+            powerUp.innerHTML = "⭐";
+            powerUp.style.left = Math.random() * 240 + "px";
+            powerUp.style.top = "-60px";
+            gameContainer.appendChild(powerUp);
+            powerUps.push(powerUp);
+        }
+    }
+
+    function moverAuto() {
+        if (!jugando) return;
+        
+        const velocidad = 4;
+        
+        if (moviendoIzquierda && autoPos > 5) {
+            autoPos -= velocidad;
+            auto.style.transform = "rotate(-8deg) translateZ(0)";
+        }
+        if (moviendoDerecha && autoPos < 265) {
+            autoPos += velocidad;
+            auto.style.transform = "rotate(8deg) translateZ(0)";
+        }
+        if (!moviendoIzquierda && !moviendoDerecha) {
+            auto.style.transform = "rotate(0deg) translateZ(0)";
+        }
+        
+        auto.style.left = autoPos + "px";
+    }
+
+    function actualizarNivel() {
+        nivel = Math.floor(puntuacion / 20) + 1;
+        nivelTexto.innerText = `Nivel: ${nivel}`;
+        velocidadActual = velocidadBase + (nivel * 0.5);
+    }
+
+    function detectarColision(elemento, esPowerUp = false) {
+        const autoRect = auto.getBoundingClientRect();
+        const elementRect = elemento.getBoundingClientRect();
+        const margen = esPowerUp ? 10 : 5; // Más margen para power-ups
+        
+        const colision = autoRect.left < elementRect.right - margen &&
+                       autoRect.right > elementRect.left + margen &&
+                       autoRect.top < elementRect.bottom - margen &&
+                       autoRect.bottom > elementRect.top + margen;
+        
+        return colision;
+    }
+
+    function gameLoop() {
+        if (!jugando) return;
+        
+        animacionId = requestAnimationFrame(gameLoop);
+        frames++;
+        
+        // Mover auto
+        moverAuto();
+        
+        // Actualizar invulnerabilidad
+        if (invulnerable) {
+            invulnerableTime--;
+            auto.style.opacity = invulnerableTime % 10 < 5 ? '0.5' : '1';
+            if (invulnerableTime <= 0) {
+                invulnerable = false;
+                auto.style.opacity = '1';
+            }
+        }
+        
+        // Mover y crear obstáculos
+        if (frames % 2 === 0) {
+            obstaculos.forEach(obs => {
+                let top = parseFloat(obs.style.top) || 0;
+                top += velocidadActual;
+                
+                if (top >= 560) {
+                    top = -60;
+                    obs.style.left = Math.random() * 250 + "px";
+                    puntuacion += 1;
+                    puntajeTexto.innerText = `Puntos: ${puntuacion}`;
+                    actualizarNivel();
+                }
+                
+                obs.style.top = top + "px";
+                
+                if (!invulnerable && detectarColision(obs)) {
+                    collisionSound.currentTime = 0;
+                    collisionSound.play().catch(() => {});
+                    crearExplosion(autoPos + 22, 450);
+                    vidas--;
+                    actualizarVidas();
+                    
+                    if (vidas <= 0) {
+                        finDelJuego();
+                    } else {
+                        invulnerable = true;
+                        invulnerableTime = 120; // 2 segundos a 60fps
+                    }
+                }
+            });
+            
+            // Mover power-ups
+            powerUps.forEach((powerUp, index) => {
+                let top = parseFloat(powerUp.style.top) || 0;
+                top += velocidadActual;
+                
+                if (top >= 560) {
+                    powerUp.remove();
+                    powerUps.splice(index, 1);
+                    return;
+                }
+                
+                powerUp.style.top = top + "px";
+                
+                if (detectarColision(powerUp, true)) {
+                    powerupSound.currentTime = 0;
+                    powerupSound.play().catch(() => {});
+                    powerUp.remove();
+                    powerUps.splice(index, 1);
+                    puntuacion += 5;
+                    puntajeTexto.innerText = `Puntos: ${puntuacion}`;
+                    invulnerable = true;
+                    invulnerableTime = 180; // 3 segundos
+                }
+            });
+            
+            // Crear power-ups ocasionalmente
+            if (frames % 300 === 0) crearPowerUp();
+        }
+        
+        // Verificar victoria
+        if (puntuacion >= 200) {
+            victoria();
+        }
+    }
+
+    function actualizarVidas() {
+        let vidasDisplay = '';
+        for (let i = 0; i < 3; i++) {
+            vidasDisplay += i < vidas ? '❤️' : '🖤';
+        }
+        vidasTexto.innerHTML = vidasDisplay;
+    }
+
+    function configurarControles() {
+        const btnIzquierda = document.getElementById("btnIzquierda");
+        const btnDerecha = document.getElementById("btnDerecha");
+        
+        const startMove = (e, direccion, btn) => {
+            e.preventDefault();
+            if (direccion === 'izq') moviendoIzquierda = true;
+            else moviendoDerecha = true;
+            btn.classList.add('pressed');
+        };
+        
+        const stopMove = (e, direccion, btn) => {
+            e.preventDefault();
+            if (direccion === 'izq') moviendoIzquierda = false;
+            else moviendoDerecha = false;
+            btn.classList.remove('pressed');
+        };
+        
+        // Touch events
+        btnIzquierda.addEventListener("touchstart", (e) => startMove(e, 'izq', btnIzquierda), {passive: false});
+        btnIzquierda.addEventListener("touchend", (e) => stopMove(e, 'izq', btnIzquierda), {passive: false});
+        btnDerecha.addEventListener("touchstart", (e) => startMove(e, 'der', btnDerecha), {passive: false});
+        btnDerecha.addEventListener("touchend", (e) => stopMove(e, 'der', btnDerecha), {passive: false});
+        
+        // Mouse events
+        btnIzquierda.addEventListener("mousedown", (e) => startMove(e, 'izq', btnIzquierda));
+        btnIzquierda.addEventListener("mouseup", (e) => stopMove(e, 'izq', btnIzquierda));
+        btnDerecha.addEventListener("mousedown", (e) => startMove(e, 'der', btnDerecha));
+        btnDerecha.addEventListener("mouseup", (e) => stopMove(e, 'der', btnDerecha));
+        
+        // Cancel events
+        btnIzquierda.addEventListener("touchcancel", () => {
+            moviendoIzquierda = false;
+            btnIzquierda.classList.remove('pressed');
+        });
+        btnDerecha.addEventListener("touchcancel", () => {
+            moviendoDerecha = false;
+            btnDerecha.classList.remove('pressed');
+        });
+        
+        // Keyboard support
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                moviendoIzquierda = true;
+                btnIzquierda.classList.add('pressed');
+            }
+            if (e.key === 'ArrowRight') {
+                moviendoDerecha = true;
+                btnDerecha.classList.add('pressed');
+            }
+        });
+        
+        document.addEventListener('keyup', (e) => {
+            if (e.key === 'ArrowLeft') {
+                moviendoIzquierda = false;
+                btnIzquierda.classList.remove('pressed');
+            }
+            if (e.key === 'ArrowRight') {
+                moviendoDerecha = false;
+                btnDerecha.classList.remove('pressed');
+            }
+        });
+    }
+
+    function finDelJuego() {
+        jugando = false;
+        collisionSound.play().catch(() => {});
+        
+        // Actualizar high score
+        if (puntuacion > highScore) {
+            highScore = puntuacion;
+            localStorage.setItem('carrerasHighScore', highScore);
+            document.getElementById('newRecord').style.display = 'block';
+        } else {
+            document.getElementById('newRecord').style.display = 'none';
+        }
+        
+        finalScore.innerText = `Puntuación: ${puntuacion} | Nivel: ${nivel}`;
+        pantallaPerdiste.style.display = "flex";
+        gameAudio.pause();
+        gameAudio.currentTime = 0;
+    }
+
+    function victoria() {
+        jugando = false;
+        finalScoreWin.innerText = `¡Llegaste a ${puntuacion} puntos!`;
+        pantallaGanaste.style.display = "flex";
+        gameAudio.pause();
+        gameAudio.currentTime = 0;
+    }
+
+    function reiniciarJuego() {
+        cancelAnimationFrame(animacionId);
+        animacionId = null;
+        
+        jugando = false;
+        pantallaPerdiste.style.display = "none";
+        pantallaGanaste.style.display = "none";
+        
+        // Resetear variables
+        autoPos = 138;
+        auto.style.left = autoPos + "px";
+        auto.style.transform = "rotate(0deg)";
+        auto.style.opacity = "1";
+        puntuacion = 0;
+        nivel = 1;
+        vidas = 3;
+        velocidadActual = velocidadBase;
+        invulnerable = false;
+        invulnerableTime = 0;
+        frames = 0;
+        
+        puntajeTexto.innerText = "Puntos: 0";
+        nivelTexto.innerText = "Nivel: 1";
+        actualizarVidas();
+        
+        // Limpiar elementos
+        obstaculos.forEach(obs => obs.remove());
+        powerUps.forEach(pu => pu.remove());
+        obstaculos = [];
+        powerUps = [];
+        
+        // Mostrar pantalla de inicio
+        document.getElementById('highScoreDisplay').innerText = `Mejor puntuación: ${highScore}`;
+        startScreen.style.display = 'flex';
+    }
+
+    function iniciarJuego() {
+        startScreen.style.display = 'none';
+        jugando = true;
+        
+        crearObstaculos();
+        configurarControles();
+        
+        // Reproducir música
+        gameAudio.volume = 0.5;
+        gameAudio.play().catch(() => {});
+        
+        // Iniciar game loop
+        gameLoop();
+    }
+
+    // Inicialización
+    document.getElementById('startButton').addEventListener('click', iniciarJuego);
+    
+    // Prevenir zoom en móviles
+    document.addEventListener('touchmove', function(e) {
+        e.preventDefault();
+    }, { passive: false });
+</script>
+</body>
+</html>
