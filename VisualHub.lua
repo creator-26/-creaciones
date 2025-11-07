@@ -82,7 +82,7 @@ function VisualHub:AddButton(frame, btntext, callback, ypos)
     btn.Position = UDim2.new(0, 15, 0, ypos)
     btn.Size = UDim2.new(0, 340, 0, 35)
     btn.BackgroundColor3 = Color3.fromRGB(65, 113, 175)
-    btn.TextSize = 18
+    btn.TextSize = 15
     btn.TextColor3 = Color3.new(1,1,1)
     btn.Font = Enum.Font.Gotham
     btn.MouseButton1Click:Connect(function()
