@@ -24,17 +24,26 @@ VisualHub:AddSwitch(gui, "Lock Position", function(state)
         getgenv().lockConn = nil
     end
 end, y)
-y = y + 35
+y = y + 30
 
 -- Anti AFK
 VisualHub:AddButton(gui, "Anti AFK", function()
+    -- Desconecta Anti AFK previo si existe
+    if getgenv().afkConn then getgenv().afkConn:Disconnect() end
+    local Players = game:GetService("Players")
+    local LocalPlayer = Players.LocalPlayer
     local vu = game:GetService("VirtualUser")
-    game:GetService("Players").LocalPlayer.Idled:Connect(function()
+    -- Opción móvil/enhanced: VirtualInputManager
+    local vim = game:GetService("VirtualInputManager")
+    getgenv().afkConn = LocalPlayer.Idled:Connect(function()
         vu:CaptureController()
         vu:ClickButton2(Vector2.new())
+        if vim and vim.SendKeyEvent then
+            vim:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
+        end
     end)
 end, y)
-y = y + 35
+y = y + 30
 
 -- Antilag
 VisualHub:AddButton(gui, "Antilag (Doca)", function()
@@ -61,7 +70,7 @@ VisualHub:AddButton(gui, "Antilag (Doca)", function()
     Lighting.GlobalShadows = false
     Lighting.ExposureCompensation = 0
 end, y)
-y = y + 35
+y = y + 30
 
 -- Auto Egg cada 30 minutos
 VisualHub:AddSwitch(gui, "Auto Protein Egg 30 min", function(state)
@@ -77,7 +86,7 @@ VisualHub:AddSwitch(gui, "Auto Protein Egg 30 min", function(state)
         end
     end)
 end, y)
-y = y + 35
+y = y + 30
 
 -- Anti Knockback
 VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
@@ -105,7 +114,7 @@ VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
         end
     end
 end, y)
-y = y + 35
+y = y + 30
 -- Auto Equip Punch
 VisualHub:AddSwitch(gui, "Auto Equip Punch", function(state)
     getgenv().autoEquipPunch = state
@@ -119,7 +128,7 @@ VisualHub:AddSwitch(gui, "Auto Equip Punch", function(state)
         end
     end)
 end, y)
-y = y + 35
+y = y + 30
 
 -- Unlock Fast Punch
 VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
@@ -135,7 +144,7 @@ VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
         end
     end)
 end, y)
-y = y + 35
+y = y + 30
 
 -- Auto Rock de 10M
 VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
@@ -172,7 +181,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
         end
     end)
 end, y)
-y = y + 35
+y = y + 30
 
 -- Auto Rock de 1M
 VisualHub:AddSwitch(gui, "Auto Golpear Roca 1M", function(state)
@@ -209,7 +218,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 1M", function(state)
         end
     end)
 end, y)
-y = y + 35
+y = y + 30
 --roca 5M
 VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
     getgenv().autoRock5M = state
@@ -245,5 +254,5 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
         end
     end)
 end, y)
-y = y + 35
+y = y + 30
 -- El menú muestra todo bien, cada switch aparece y puedes reordenar a gusto.
