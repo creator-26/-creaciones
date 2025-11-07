@@ -149,7 +149,7 @@ end, y)
 y = y + 40
 
 -- Auto Rock de 1M
-VisualHub:AddSwitch(gui, "Auto Rock 1M", function(state)
+VisualHub:AddSwitch(gui, "Auto Rock 1M (Doca)", function(state)
     getgenv().autoRock1M = state
     task.spawn(function()
         while getgenv().autoRock1M and LocalPlayer.Character do
@@ -158,17 +158,19 @@ VisualHub:AddSwitch(gui, "Auto Rock 1M", function(state)
                 pushup.Parent = LocalPlayer.Character
                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+                -- Busca y golpea la roca de 1M si existe y tienes suficiente Durability
+                local rock = Workspace.machinesFolder:FindFirstChild("Normal Rock")
+                if rock and LocalPlayer:FindFirstChild("Durability") and LocalPlayer.Durability.Value >= 1000000 then
+                    firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 0)
+                    firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 0)
+                    task.wait()
+                    firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 1)
+                    firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 1)
+                end
             end
-            local rock = Workspace.machinesFolder and Workspace.machinesFolder:FindFirstChild("Normal Rock")
-            if rock and LocalPlayer:FindFirstChild("Durability") and LocalPlayer.Durability.Value >= 1000000 then
-                firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 0)
-                firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 0)
-                wait()
-                firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 1)
-                firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 1)
-            end
-            wait(0.2)
+            task.wait(0.1)
         end
     end)
 end, y)
+y = y + 40
 -- El menú muestra todo bien, cada switch aparece y puedes reordenar a gusto.
