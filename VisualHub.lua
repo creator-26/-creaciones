@@ -1,4 +1,4 @@
--- VisualHub.lua: v2 - draggable + RightShift toggle
+-- VisualHub.lua adaptado a móvil: botón hide/show y dragTouch
 local VisualHub = {}
 local CoreGui = game:GetService("CoreGui")
 local UIS = game:GetService("UserInputService")
@@ -13,6 +13,7 @@ function VisualHub:Create(title)
     frame.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
     frame.BorderSizePixel = 2
     frame.Name = "MainFrame"
+
     local titleLbl = Instance.new("TextLabel", frame)
     titleLbl.Text = title or "Visual Hub"
     titleLbl.Size = UDim2.new(1, 0, 0, 40)
@@ -22,39 +23,59 @@ function VisualHub:Create(title)
     titleLbl.BackgroundTransparency = 0.3
     titleLbl.BackgroundColor3 = Color3.fromRGB(25,25,35)
     titleLbl.Name = "TitleBar"
-    -- Draggable functionality
-    local dragging, dragInput, dragStart, startPos
+
+    -- Hide button (always visible, top right)
+    local hideBtn = Instance.new("TextButton", gui)
+    hideBtn.Text = "Hide"
+    hideBtn.Size = UDim2.new(0, 60, 0, 32)
+    hideBtn.Position = UDim2.new(1, -65, 0, 5)
+    hideBtn.BackgroundColor3 = Color3.fromRGB(60,60,110)
+    hideBtn.TextColor3 = Color3.new(1,1,1)
+    hideBtn.Font = Enum.Font.GothamSemibold
+    hideBtn.TextSize = 16
+    hideBtn.ZIndex = 15
+    hideBtn.AutoButtonColor = true
+    hideBtn.MouseButton1Click:Connect(function()
+        frame.Visible = not frame.Visible
+        -- Show a "Mostrar" button if oculto
+        if not frame.Visible then
+            hideBtn.Text = "Show"
+        else
+            hideBtn.Text = "Hide"
+        end
+    end)
+
+    -- Touch drag for mobile (drag on title)
+    local dragging = false
+    local dragStart, startPos
+
     titleLbl.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        if input.UserInputType == Enum.UserInputType.Touch then
             dragging = true
             dragStart = input.Position
             startPos = frame.Position
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    dragging = false
-                end
-            end)
+        end
+    end)
+    titleLbl.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
         end
     end)
     titleLbl.InputChanged:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            dragInput = input
-        end
-    end)
-    UIS.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then
+        if dragging and input.UserInputType == Enum.UserInputType.Touch then
             local delta = input.Position - dragStart
-            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            frame.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
         end
     end)
-    -- Toggle por tecla (RightShift)
-    UIS.InputBegan:Connect(function(input, processed)
-      if input.KeyCode == Enum.KeyCode.RightShift and not processed then
-        gui.Enabled = not gui.Enabled
-      end
-    end)
+
     return frame
 end
+
 function VisualHub:AddButton(frame, btntext, callback, ypos)
     local btn = Instance.new("TextButton", frame)
     btn.Text = btntext or "Botón"
@@ -94,15 +115,17 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     end)
     return back, sw
 end
+
 function VisualHub:AddLabel(frame, text, ypos)
     local label = Instance.new("TextLabel", frame)
     label.Text = text or "Label"
     label.Position = UDim2.new(0,20,0,ypos)
     label.Size = UDim2.new(0, 335, 0, 24)
-    label.TextSize = 18
+    label.TextSize = 17
     label.Font = Enum.Font.GothamSemibold
     label.TextColor3 = Color3.new(1,1,1)
     label.BackgroundTransparency = 1
     return label
 end
+
 return VisualHub
