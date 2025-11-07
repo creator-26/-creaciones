@@ -168,7 +168,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
                     end
                 end
             end)
-            task.wait(0.04)
+            task.wait(0.03)
         end
     end)
 end, y)
@@ -205,7 +205,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca Blanca 1M", function(state)
                     end
                 end
             end)
-            task.wait(0.1)
+            task.wait(0.03)
         end
     end)
 end, y)
