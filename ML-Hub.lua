@@ -149,7 +149,7 @@ end, y)
 y = y + 40
 
 -- Auto Rock de 1M
-VisualHub:AddSwitch(gui, "Auto Golpear Legends Rock", function(state)
+VisualHub:AddSwitch(gui, "Auto Golpear Legends Roca 1M", function(state)
     getgenv().autoLegendsRock = state
     task.spawn(function()
         while getgenv().autoLegendsRock and LocalPlayer.Character do
@@ -158,18 +158,18 @@ VisualHub:AddSwitch(gui, "Auto Golpear Legends Rock", function(state)
             if punch and punch.Parent ~= LocalPlayer.Character then
                 punch.Parent = LocalPlayer.Character
             end
-            -- Busca la roca "Legends Rock" y la golpea aunque estés lejos
-            local rock = Workspace.machinesFolder and Workspace.machinesFolder:FindFirstChild("Legends Rock")
+            -- Busca la roca correcta "LegendsGymRock"
+            local rock = Workspace.machinesFolder and Workspace.machinesFolder:FindFirstChild("LegendsGymRock")
             if rock and LocalPlayer:FindFirstChild("Durability") and LocalPlayer.Durability.Value >= 1000000 then
-                -- Forzar el golpe repetido aunque la mano esté lejos
+                -- Golpea con ambas manos a cualquier distancia (Doca Glitch)
                 for i=1,4 do
                     if LocalPlayer.Character:FindFirstChild("RightHand") then
-                        firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 0)
-                        firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 1)
+                        firetouchinterest(rock, LocalPlayer.Character.RightHand, 0)
+                        firetouchinterest(rock, LocalPlayer.Character.RightHand, 1)
                     end
                     if LocalPlayer.Character:FindFirstChild("LeftHand") then
-                        firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 0)
-                        firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 1)
+                        firetouchinterest(rock, LocalPlayer.Character.LeftHand, 0)
+                        firetouchinterest(rock, LocalPlayer.Character.LeftHand, 1)
                     end
                     task.wait(0.12)
                 end
