@@ -266,3 +266,5 @@ OpStuffFolder:AddSwitch("Auto Pushups with Rock (10M) and Auto Punch", function(
  LocalPlayer.CharacterAdded:Connect(function(char)
      if getgenv().setws and char:FindFirstChild("Humanoid") then
          char.Humanoid.WalkSpeed = getgenv().ws or 16
+                                      end
+                                end)                                                                                                                                                                                                             
