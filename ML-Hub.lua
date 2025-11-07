@@ -28,12 +28,10 @@ y = y + 30
 
 -- Anti AFK
 local btn = VisualHub:AddButton(gui, "Anti AFK", function()
-    -- Desconecta Anti AFK previo si existe
     if getgenv().afkConn then getgenv().afkConn:Disconnect() end
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local vu = game:GetService("VirtualUser")
-    -- Opción móvil/enhanced: VirtualInputManager
     local vim = game:GetService("VirtualInputManager")
     getgenv().afkConn = LocalPlayer.Idled:Connect(function()
         vu:CaptureController()
@@ -43,10 +41,51 @@ local btn = VisualHub:AddButton(gui, "Anti AFK", function()
         end
     end)
 end, y)
-btn.Size = UDim2.new(0, 150, 0, 30)  -- ancho 150, alto 35 (ajusta como prefieras)
-btn.Position = UDim2.new(0, 15, 0, y) -- opcional, para mantener alineado
-y = y + 30
+btn.Size = UDim2.new(0, 150, 0, 35)
+btn.Position = UDim2.new(0, 15, 0, y)
 
+-- Cuadro informativo a la derecha
+local infoFrame = Instance.new("Frame", btn.Parent)
+infoFrame.Size = UDim2.new(0, 68, 0, 35)
+infoFrame.Position = UDim2.new(0, 180, 0, y) -- ajusta 180 según posición de btn
+infoFrame.BackgroundColor3 = Color3.fromRGB(32,32,44)
+infoFrame.BorderSizePixel = 1
+
+local timeLabel = Instance.new("TextLabel", infoFrame)
+timeLabel.Size = UDim2.new(1,0,0,16)
+timeLabel.Position = UDim2.new(0,0,0,1)
+timeLabel.Text = "00:00:00"
+timeLabel.TextSize = 11
+timeLabel.TextColor3 = Color3.fromRGB(190,250,190)
+timeLabel.BackgroundTransparency = 1
+timeLabel.Font = Enum.Font.Gotham
+
+local pingLabel = Instance.new("TextLabel", infoFrame)
+pingLabel.Size = UDim2.new(1,0,0,15)
+pingLabel.Position = UDim2.new(0,0,0,18)
+pingLabel.Text = "0 ms"
+pingLabel.TextSize = 11
+pingLabel.TextColor3 = Color3.fromRGB(160,210,255)
+pingLabel.BackgroundTransparency = 1
+pingLabel.Font = Enum.Font.Gotham
+
+-- Cada segundo: actualiza hora y ping
+local startTime = tick()
+spawn(function()
+    while infoFrame.Parent do
+        local t = tick() - startTime
+        local hours = math.floor(t/3600)
+        local mins = math.floor((t%3600)/60)
+        local secs = math.floor(t%60)
+        timeLabel.Text = string.format("%02d:%02d:%02d", hours, mins, secs)
+        -- Roblox ping real: LocalPlayer:GetNetworkPing() solo en algunos exploits,
+        -- si no está disponible, simula uno random bajo.
+        local networkPing = math.floor((game.Stats and game.Stats.Network and game.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) or (math.random(60,110)))
+        pingLabel.Text = tostring(networkPing).." ms"
+        wait(1)
+    end
+end)
+y = y + 30
 
 -- Antilag
 local btn = VisualHub:AddButton(gui, "Antilag (Doca)", function()
