@@ -1,14 +1,15 @@
--- VisualHub.lua : GUI Modular con toggle ocultar/mostrar (RightShift)
+-- VisualHub.lua: v2 - draggable + RightShift toggle
 local VisualHub = {}
 local CoreGui = game:GetService("CoreGui")
 local UIS = game:GetService("UserInputService")
+
 function VisualHub:Create(title)
     local gui = Instance.new("ScreenGui")
     gui.Name = "VisualHub" .. tostring(math.random(1,10000))
     gui.Parent = CoreGui
     local frame = Instance.new("Frame", gui)
     frame.Position = UDim2.new(0.1, 0, 0.12, 0)
-    frame.Size = UDim2.new(0, 340, 0, 440)
+    frame.Size = UDim2.new(0, 380, 0, 480)
     frame.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
     frame.BorderSizePixel = 2
     frame.Name = "MainFrame"
@@ -18,8 +19,34 @@ function VisualHub:Create(title)
     titleLbl.TextSize = 25
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.TextColor3 = Color3.new(1,1,1)
-    titleLbl.BackgroundTransparency = 1
+    titleLbl.BackgroundTransparency = 0.3
+    titleLbl.BackgroundColor3 = Color3.fromRGB(25,25,35)
     titleLbl.Name = "TitleBar"
+    -- Draggable functionality
+    local dragging, dragInput, dragStart, startPos
+    titleLbl.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 then
+            dragging = true
+            dragStart = input.Position
+            startPos = frame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+            end)
+        end
+    end)
+    titleLbl.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement then
+            dragInput = input
+        end
+    end)
+    UIS.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            frame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
     -- Toggle por tecla (RightShift)
     UIS.InputBegan:Connect(function(input, processed)
       if input.KeyCode == Enum.KeyCode.RightShift and not processed then
@@ -32,7 +59,7 @@ function VisualHub:AddButton(frame, btntext, callback, ypos)
     local btn = Instance.new("TextButton", frame)
     btn.Text = btntext or "Botón"
     btn.Position = UDim2.new(0, 15, 0, ypos)
-    btn.Size = UDim2.new(0, 300, 0, 35)
+    btn.Size = UDim2.new(0, 340, 0, 35)
     btn.BackgroundColor3 = Color3.fromRGB(65, 113, 175)
     btn.TextSize = 18
     btn.TextColor3 = Color3.new(1,1,1)
@@ -54,7 +81,7 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     local sw = Instance.new("TextButton", frame)
     sw.Text = "OFF"
     sw.Position = UDim2.new(0, 250, 0, ypos)
-    sw.Size = UDim2.new(0, 65, 0, 32)
+    sw.Size = UDim2.new(0, 100, 0, 32)
     sw.BackgroundColor3 = Color3.fromRGB(100,30,30)
     sw.TextColor3 = Color3.new(1,1,1)
     sw.Font = Enum.Font.GothamBold
@@ -71,7 +98,7 @@ function VisualHub:AddLabel(frame, text, ypos)
     local label = Instance.new("TextLabel", frame)
     label.Text = text or "Label"
     label.Position = UDim2.new(0,20,0,ypos)
-    label.Size = UDim2.new(0, 290, 0, 24)
+    label.Size = UDim2.new(0, 335, 0, 24)
     label.TextSize = 18
     label.Font = Enum.Font.GothamSemibold
     label.TextColor3 = Color3.new(1,1,1)
