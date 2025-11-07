@@ -43,7 +43,10 @@ VisualHub:AddButton(gui, "Anti AFK", function()
         end
     end)
 end, y)
+btn.Size = UDim2.new(0, 150, 0, 35)  -- ancho 150, alto 35 (ajusta como prefieras)
+btn.Position = UDim2.new(0, 15, 0, y) -- opcional, para mantener alineación
 y = y + 30
+
 
 -- Antilag
 VisualHub:AddButton(gui, "Antilag (Doca)", function()
@@ -70,6 +73,8 @@ VisualHub:AddButton(gui, "Antilag (Doca)", function()
     Lighting.GlobalShadows = false
     Lighting.ExposureCompensation = 0
 end, y)
+btn.Size = UDim2.new(0, 150, 0, 35)  -- ancho 150, alto 35 (ajusta como prefieras)
+btn.Position = UDim2.new(0, 15, 0, y) -- opcional, para mantener alineación
 y = y + 30
 
 -- Auto Egg cada 30 minutos
