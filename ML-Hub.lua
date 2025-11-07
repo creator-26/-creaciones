@@ -129,7 +129,7 @@ VisualHub:AddSwitch(gui, "Auto Equip Punch", function(state)
             if punch then
                 punch.Parent = LocalPlayer.Character
             end
-            wait(0.2)
+            wait(0.1)
         end
     end)
 end, y)
@@ -145,7 +145,7 @@ VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
             end
-            task.wait(0.04) -- Más bajo = más velocidad
+            task.wait(0.03) -- Más bajo = más velocidad
         end
     end)
 end, y)
@@ -182,7 +182,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
                     end
                 end
             end)
-            task.wait(0.04)
+            task.wait(0.03)
         end
     end)
 end, y)
@@ -219,7 +219,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 1M", function(state)
                     end
                 end
             end)
-            task.wait(0.04)
+            task.wait(0.03)
         end
     end)
 end, y)
@@ -255,7 +255,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
                     end
                 end
             end)
-            task.wait(0.04)
+            task.wait(0.03)
         end
     end)
 end, y)
