@@ -43,7 +43,7 @@ local btn = VisualHub:AddButton(gui, "Anti AFK", function()
         end
     end)
 end, y)
-btn.Size = UDim2.new(0, 150, 0, 35)  -- ancho 150, alto 35 (ajusta como prefieras)
+btn.Size = UDim2.new(0, 150, 0, 32)  -- ancho 150, alto 35 (ajusta como prefieras)
 btn.Position = UDim2.new(0, 15, 0, y) -- opcional, para mantener alineado
 y = y + 30
 
