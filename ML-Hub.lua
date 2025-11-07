@@ -149,21 +149,21 @@ end, y)
 y = y + 40
 
 -- Auto Rock de 1M
-VisualHub:AddSwitch(gui, "Auto Punch Legends Rock (1M)", function(state)
-    getgenv().autoLegendsRock = state
+VisualHub:AddSwitch(gui, "Golpear Legends Rock (1M)", function(state)
+    getgenv().golpearLegendsRock = state
     task.spawn(function()
-        while getgenv().autoLegendsRock and LocalPlayer.Character do
-            -- Equipa Punch automáticamente
+        while getgenv().golpearLegendsRock and LocalPlayer.Character do
+            -- Equipa Punch si no está equipado
             local punch = LocalPlayer.Backpack:FindFirstChild("Punch") or LocalPlayer.Character:FindFirstChild("Punch")
             if punch and punch.Parent ~= LocalPlayer.Character then
                 punch.Parent = LocalPlayer.Character
             end
-            -- Busca el modelo llamado "Legends Rock" y luego el "Rock" dentro de ese modelo
-            local legendsModel = Workspace.machinesFolder and Workspace.machinesFolder:FindFirstChild("Legends Rock")
+            -- Busca bien la roca blanca: "Legends Rock" > "Rock"
+            local legendsModel = Workspace:FindFirstChild("machinesFolder") and Workspace.machinesFolder:FindFirstChild("Legends Rock")
             local rockPart = legendsModel and legendsModel:FindFirstChild("Rock")
-            if rockPart and LocalPlayer:FindFirstChild("Durability") and LocalPlayer.Durability.Value >= 1000000 then
-                -- Forzar el golpe con ambas manos
-                for i=1,4 do
+            if rockPart then
+                -- Glitch de golpe a distancia (lo más robusto)
+                for i = 1, 4 do
                     if LocalPlayer.Character:FindFirstChild("RightHand") then
                         firetouchinterest(rockPart, LocalPlayer.Character.RightHand, 0)
                         firetouchinterest(rockPart, LocalPlayer.Character.RightHand, 1)
@@ -172,7 +172,7 @@ VisualHub:AddSwitch(gui, "Auto Punch Legends Rock (1M)", function(state)
                         firetouchinterest(rockPart, LocalPlayer.Character.LeftHand, 0)
                         firetouchinterest(rockPart, LocalPlayer.Character.LeftHand, 1)
                     end
-                    task.wait(0.12)
+                    task.wait(0.1)
                 end
             end
             task.wait(0.3)
