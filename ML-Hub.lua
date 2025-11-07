@@ -117,7 +117,7 @@ VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
             end
-            wait(0.05)
+            task.wait(0.05)
         end
     end)
 end, y)
