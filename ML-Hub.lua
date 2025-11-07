@@ -163,38 +163,37 @@ end, y)
 y = y + 40
 
 -- Auto Rock de 1M
-VisualHub:AddSwitch(gui, "Auto Punch Legends Rock (1M)", function(state)
-    getgenv().autoLegendsRock = state
+VisualHub:AddSwitch(gui, "Auto Golpear Roca Blanca 1M", function(state)
+    getgenv().autoRock1M = state
     task.spawn(function()
-        while getgenv().autoLegendsRock and LocalPlayer.Character do
-            local punch = LocalPlayer.Backpack:FindFirstChild("Punch") or LocalPlayer.Character:FindFirstChild("Punch")
-            if punch and punch.Parent ~= LocalPlayer.Character then
-                punch.Parent = LocalPlayer.Character
-            end
-            -- PRIMERA OPCIÓN: encuentra la parte Rock dentro del modelo Legends Rock
-            local legendsModel = Workspace:FindFirstChild("machinesFolder") and Workspace.machinesFolder:FindFirstChild("Legends Rock")
-            local rockPart = legendsModel and legendsModel:FindFirstChild("Rock")
-            -- SI FALLA, PRUEBA USAR "Legends Rock" DIRECTO
-            if not rockPart and Workspace.machinesFolder:FindFirstChild("Legends Rock") then
-                if Workspace.machinesFolder["Legends Rock"]:IsA("BasePart") then
-                    rockPart = Workspace.machinesFolder["Legends Rock"]
-                end
-            end
-            -- Ejecuta el golpe si encontró el Part correcto
-            if rockPart and rockPart:IsA("BasePart") then
-                for i = 1, 4 do
-                    if LocalPlayer.Character:FindFirstChild("RightHand") then
-                        firetouchinterest(rockPart, LocalPlayer.Character.RightHand, 0)
-                        firetouchinterest(rockPart, LocalPlayer.Character.RightHand, 1)
+        while getgenv().autoRock1M and LocalPlayer.Character do
+            pcall(function()
+                if LocalPlayer.Durability.Value >= 1000000 then
+                    local character = LocalPlayer.Character
+                    if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                        for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
+                            if v.Name == "neededDurability" and v.Value == 1000000 then
+                                local rock = v.Parent:FindFirstChild("Rock")
+                                if rock then
+                                    firetouchinterest(rock, character.RightHand, 0)
+                                    firetouchinterest(rock, character.RightHand, 1)
+                                    firetouchinterest(rock, character.LeftHand, 0)
+                                    firetouchinterest(rock, character.LeftHand, 1)
+                                    -- Equipar puños automático
+                                    local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
+                                    if punch then
+                                        punch.Parent = character
+                                    end
+                                    LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                                    LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                                    break
+                                end
+                            end
+                        end
                     end
-                    if LocalPlayer.Character:FindFirstChild("LeftHand") then
-                        firetouchinterest(rockPart, LocalPlayer.Character.LeftHand, 0)
-                        firetouchinterest(rockPart, LocalPlayer.Character.LeftHand, 1)
-                    end
-                    task.wait(0.1)
                 end
-            end
-            task.wait(0.3)
+            end)
+            task.wait(0.1)
         end
     end)
 end, y)
