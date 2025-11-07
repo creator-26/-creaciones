@@ -102,7 +102,7 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     local sw = Instance.new("TextButton", frame)
     sw.Text = "OFF"
     sw.Position = UDim2.new(0, 200, 0, ypos)
-    sw.Size = UDim2.new(0, 70, 0, 18)
+    sw.Size = UDim2.new(0, 65, 0, 18)
     sw.BackgroundColor3 = Color3.fromRGB(100,30,30)
     sw.TextColor3 = Color3.new(1,1,1)
     sw.Font = Enum.Font.GothamBold
@@ -121,7 +121,7 @@ function VisualHub:AddLabel(frame, text, ypos)
     label.Text = text or "Label"
     label.Position = UDim2.new(0,20,0,ypos)
     label.Size = UDim2.new(0, 335, 0, 24)
-    label.TextSize = 15
+    label.TextSize = 17
     label.Font = Enum.Font.GothamSemibold
     label.TextColor3 = Color3.new(1,1,1)
     label.BackgroundTransparency = 1
