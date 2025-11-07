@@ -27,7 +27,7 @@ end, y)
 y = y + 30
 
 -- Anti AFK
-VisualHub:AddButton(gui, "Anti AFK", function()
+local btn = VisualHub:AddButton(gui, "Anti AFK", function()
     -- Desconecta Anti AFK previo si existe
     if getgenv().afkConn then getgenv().afkConn:Disconnect() end
     local Players = game:GetService("Players")
@@ -43,11 +43,13 @@ VisualHub:AddButton(gui, "Anti AFK", function()
         end
     end)
 end, y)
+btn.Size = UDim2.new(0, 150, 0, 35)  -- ancho 150, alto 35 (ajusta como prefieras)
+btn.Position = UDim2.new(0, 15, 0, y) -- opcional, para mantener alineado
 y = y + 30
 
 
 -- Antilag
-VisualHub:AddButton(gui, "Antilag (Doca)", function()
+local btn = VisualHub:AddButton(gui, "Antilag (Doca)", function()
     -- Cambia todos los materiales a SmoothPlastic y reflectancia a 0
     for _, v in pairs(Workspace:GetDescendants()) do
         if v:IsA("BasePart") then
@@ -71,6 +73,8 @@ VisualHub:AddButton(gui, "Antilag (Doca)", function()
     Lighting.GlobalShadows = false
     Lighting.ExposureCompensation = 0
 end, y)
+btn.Size = UDim2.new(0, 150, 0, 35)  -- ancho 150, alto 35 (ajusta como prefieras)
+btn.Position = UDim2.new(0, 15, 0, y) 
 y = y + 30
 
 -- Auto Egg cada 30 minutos
