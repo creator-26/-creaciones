@@ -80,7 +80,7 @@ function VisualHub:AddButton(frame, btntext, callback, ypos)
     local btn = Instance.new("TextButton", frame)
     btn.Text = btntext or "Botón"
     btn.Position = UDim2.new(0, 15, 0, ypos)
-    btn.Size = UDim2.new(0, 340, 0, 35)
+    btn.Size = UDim2.new(0, 250, 0, 28)
     btn.BackgroundColor3 = Color3.fromRGB(65, 113, 175)
     btn.TextSize = 15
     btn.TextColor3 = Color3.new(1,1,1)
@@ -98,11 +98,11 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     back.TextColor3 = Color3.new(1,1,1)
     back.BackgroundColor3 = Color3.fromRGB(70,70,80)
     back.Position = UDim2.new(0, 15, 0, ypos)
-    back.Size = UDim2.new(0, 220, 0, 32)
+    back.Size = UDim2.new(0, 160, 0, 24)
     local sw = Instance.new("TextButton", frame)
     sw.Text = "OFF"
     sw.Position = UDim2.new(0, 250, 0, ypos)
-    sw.Size = UDim2.new(0, 100, 0, 32)
+    sw.Size = UDim2.new(0, 70, 0, 24)
     sw.BackgroundColor3 = Color3.fromRGB(100,30,30)
     sw.TextColor3 = Color3.new(1,1,1)
     sw.Font = Enum.Font.GothamBold
