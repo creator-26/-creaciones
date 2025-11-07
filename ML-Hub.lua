@@ -5,7 +5,6 @@ local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Workspace = game:GetService('Workspace')
 
--- Crear Hub con drag y hide (puedes mover y ocultar con RightShift)
 local gui = VisualHub:Create("ML-Hub")
 local y = 50
 
@@ -25,6 +24,7 @@ VisualHub:AddSwitch(gui, "Lock Position", function(state)
         getgenv().lockConn = nil
     end
 end, y)
+y = y + 40
 
 -- Anti AFK
 VisualHub:AddButton(gui, "Anti AFK", function()
@@ -57,7 +57,7 @@ VisualHub:AddSwitch(gui, "Auto Eat Protein Egg (30 min)", function(state)
                 egg.Parent = LocalPlayer.Character
                 ReplicatedStorage.muscleEvent:FireServer("rep")
             end
-            task.wait(1800) -- 30 minutos
+            task.wait(1800)
         end
     end)
 end, y)
@@ -155,5 +155,4 @@ VisualHub:AddSwitch(gui, "Auto Rock 1M", function(state)
         end
     end)
 end, y)
-
--- [Puedes mover el hub arrastrando el tope, y ocultar con RightShift]
+-- El menú muestra todo bien, cada switch aparece y puedes reordenar a gusto.
