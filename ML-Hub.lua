@@ -241,7 +241,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
                     end
                 end
             end)
-            task.wait(0.1)
+            task.wait(0.03)
         end
     end)
 end, y)
