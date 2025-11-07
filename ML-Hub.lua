@@ -149,26 +149,32 @@ end, y)
 y = y + 40
 
 -- Auto Rock de 1M
-VisualHub:AddSwitch(gui, "Auto Rock 1M (Doca)", function(state)
-    getgenv().autoRock1M = state
+VisualHub:AddSwitch(gui, "Auto Golpear Legends Rock", function(state)
+    getgenv().autoLegendsRock = state
     task.spawn(function()
-        while getgenv().autoRock1M and LocalPlayer.Character do
-            local pushup = LocalPlayer.Backpack:FindFirstChild("Pushups") or LocalPlayer.Character:FindFirstChild("Pushups")
-            if pushup then
-                pushup.Parent = LocalPlayer.Character
-                ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
-                ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
-                -- Busca y golpea la roca de 1M si existe y tienes suficiente Durability
-                local rock = Workspace.machinesFolder:FindFirstChild("Normal Rock")
-                if rock and LocalPlayer:FindFirstChild("Durability") and LocalPlayer.Durability.Value >= 1000000 then
-                    firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 0)
-                    firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 0)
-                    task.wait()
-                    firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 1)
-                    firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 1)
+        while getgenv().autoLegendsRock and LocalPlayer.Character do
+            -- Equipa Punch automáticamente
+            local punch = LocalPlayer.Backpack:FindFirstChild("Punch") or LocalPlayer.Character:FindFirstChild("Punch")
+            if punch and punch.Parent ~= LocalPlayer.Character then
+                punch.Parent = LocalPlayer.Character
+            end
+            -- Busca la roca "Legends Rock" y la golpea aunque estés lejos
+            local rock = Workspace.machinesFolder and Workspace.machinesFolder:FindFirstChild("Legends Rock")
+            if rock and LocalPlayer:FindFirstChild("Durability") and LocalPlayer.Durability.Value >= 1000000 then
+                -- Forzar el golpe repetido aunque la mano esté lejos
+                for i=1,4 do
+                    if LocalPlayer.Character:FindFirstChild("RightHand") then
+                        firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 0)
+                        firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 1)
+                    end
+                    if LocalPlayer.Character:FindFirstChild("LeftHand") then
+                        firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 0)
+                        firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 1)
+                    end
+                    task.wait(0.12)
                 end
             end
-            task.wait(0.1)
+            task.wait(0.3)
         end
     end)
 end, y)
