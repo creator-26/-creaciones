@@ -37,13 +37,29 @@ end, y)
 y = y + 40
 
 -- Antilag
-VisualHub:AddButton(gui, "Antilag", function()
+VisualHub:AddButton(gui, "Antilag (Doca)", function()
+    -- Cambia todos los materiales a SmoothPlastic y reflectancia a 0
     for _, v in pairs(Workspace:GetDescendants()) do
-        if v:IsA("BasePart") and not v.Parent:IsA("Model") then
+        if v:IsA("BasePart") then
             v.Material = Enum.Material.SmoothPlastic
             v.Reflectance = 0
         end
+        if v:IsA("Decal") or v:IsA("Texture") then
+            v.Transparency = 1
+        end
+        if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+            v.Enabled = false
+        end
+        if v:IsA("Explosion") then
+            v:Destroy()
+        end
     end
+    -- Desactiva efectos ambientales para aún más rendimiento
+    local Lighting = game:GetService("Lighting")
+    Lighting.Brightness = 1
+    Lighting.FogEnd = 100000
+    Lighting.GlobalShadows = false
+    Lighting.ExposureCompensation = 0
 end, y)
 y = y + 40
 
