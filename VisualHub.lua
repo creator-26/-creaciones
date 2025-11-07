@@ -17,7 +17,7 @@ function VisualHub:Create(title)
     local titleLbl = Instance.new("TextLabel", frame)
     titleLbl.Text = title or "Visual Hub"
     titleLbl.Size = UDim2.new(1, 0, 0, 40)
-    titleLbl.TextSize = 25
+    titleLbl.TextSize = 23
     titleLbl.Font = Enum.Font.GothamBold
     titleLbl.TextColor3 = Color3.new(1,1,1)
     titleLbl.BackgroundTransparency = 0.3
@@ -94,7 +94,7 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     local back = Instance.new("TextLabel", frame)
     back.Text = lbltext
     back.Font = Enum.Font.Gotham
-    back.TextSize = 18
+    back.TextSize = 15
     back.TextColor3 = Color3.new(1,1,1)
     back.BackgroundColor3 = Color3.fromRGB(70,70,80)
     back.Position = UDim2.new(0, 15, 0, ypos)
@@ -121,7 +121,7 @@ function VisualHub:AddLabel(frame, text, ypos)
     label.Text = text or "Label"
     label.Position = UDim2.new(0,20,0,ypos)
     label.Size = UDim2.new(0, 335, 0, 24)
-    label.TextSize = 17
+    label.TextSize = 15
     label.Font = Enum.Font.GothamSemibold
     label.TextColor3 = Color3.new(1,1,1)
     label.BackgroundTransparency = 1
