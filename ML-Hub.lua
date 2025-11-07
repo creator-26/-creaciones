@@ -172,7 +172,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
         end
     end)
 end, y)
-y = y + 40
+y = y + 35
 
 -- Auto Rock de 1M
 VisualHub:AddSwitch(gui, "Auto Golpear Roca 1M", function(state)
@@ -241,7 +241,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
                     end
                 end
             end)
-            task.wait(0.02)
+            task.wait(0.01)
         end
     end)
 end, y)
