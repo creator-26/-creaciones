@@ -210,4 +210,40 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca Blanca 1M", function(state)
     end)
 end, y)
 y = y + 40
+--roca 5M
+VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
+    getgenv().autoRock5M = state
+    task.spawn(function()
+        while getgenv().autoRock5M and LocalPlayer.Character do
+            pcall(function()
+                if LocalPlayer.Durability.Value >= 5000000 then
+                    local character = LocalPlayer.Character
+                    if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                        for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
+                            if v.Name == "neededDurability" and v.Value == 5000000 then
+                                local rock = v.Parent:FindFirstChild("Rock")
+                                if rock then
+                                    firetouchinterest(rock, character.RightHand, 0)
+                                    firetouchinterest(rock, character.RightHand, 1)
+                                    firetouchinterest(rock, character.LeftHand, 0)
+                                    firetouchinterest(rock, character.LeftHand, 1)
+                                    -- Equipar puños automático
+                                    local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
+                                    if punch then
+                                        punch.Parent = character
+                                    end
+                                    LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                                    LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+            task.wait(0.1)
+        end
+    end)
+end, y)
+y = y + 40
 -- El menú muestra todo bien, cada switch aparece y puedes reordenar a gusto.
