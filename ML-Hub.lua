@@ -138,25 +138,37 @@ end, y)
 y = y + 40
 
 -- Auto Rock de 10M
-VisualHub:AddSwitch(gui, "Auto Rock 10M", function(state)
+VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
     getgenv().autoRock10M = state
     task.spawn(function()
         while getgenv().autoRock10M and LocalPlayer.Character do
-            local pushup = LocalPlayer.Backpack:FindFirstChild("Pushups") or LocalPlayer.Character:FindFirstChild("Pushups")
-            if pushup then
-                pushup.Parent = LocalPlayer.Character
-                ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
-                ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
-            end
-            local rock = Workspace.machinesFolder and Workspace.machinesFolder:FindFirstChild("King Rock")
-            if rock and LocalPlayer:FindFirstChild("Durability") and LocalPlayer.Durability.Value >= 10000000 then
-                firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 0)
-                firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 0)
-                wait()
-                firetouchinterest(rock.Rock, LocalPlayer.Character.RightHand, 1)
-                firetouchinterest(rock.Rock, LocalPlayer.Character.LeftHand, 1)
-            end
-            wait(0.2)
+            pcall(function()
+                if LocalPlayer.Durability.Value >= 10000000 then
+                    local character = LocalPlayer.Character
+                    if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                        for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
+                            if v.Name == "neededDurability" and v.Value == 10000000 then
+                                local rock = v.Parent:FindFirstChild("Rock")
+                                if rock then
+                                    firetouchinterest(rock, character.RightHand, 0)
+                                    firetouchinterest(rock, character.RightHand, 1)
+                                    firetouchinterest(rock, character.LeftHand, 0)
+                                    firetouchinterest(rock, character.LeftHand, 1)
+                                    -- Equipar puños automático
+                                    local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
+                                    if punch then
+                                        punch.Parent = character
+                                    end
+                                    LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                                    LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                                    break
+                                end
+                            end
+                        end
+                    end
+                end
+            end)
+            task.wait(0.04)
         end
     end)
 end, y)
