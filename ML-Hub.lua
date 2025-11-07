@@ -81,17 +81,31 @@ y = y + 40
 
 -- Anti Knockback
 VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
-    getgenv().antiKnockback = state
-    LocalPlayer.CharacterAdded:Connect(function(char)
-        if getgenv().antiKnockback then
-            char.HumanoidRootPart.Anchored = true
-            wait(0.1)
-            char.HumanoidRootPart.Anchored = false
+    local player = game.Players.LocalPlayer
+    local character = player and game.Workspace:FindFirstChild(player.Name)
+    if state then
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local rootPart = character.HumanoidRootPart
+            if not rootPart:FindFirstChild("BodyVelocity") then
+                local bodyVelocity = Instance.new("BodyVelocity")
+                bodyVelocity.MaxForce = Vector3.new(100000, 0, 100000)
+                bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+                bodyVelocity.P = 1250
+                bodyVelocity.Name = "AntiKnockbackBV"
+                bodyVelocity.Parent = rootPart
+            end
         end
-    end)
+    else
+        if character and character:FindFirstChild("HumanoidRootPart") then
+            local rootPart = character.HumanoidRootPart
+            local bv = rootPart:FindFirstChild("AntiKnockbackBV")
+            if bv then
+                bv:Destroy()
+            end
+        end
+    end
 end, y)
 y = y + 40
-
 -- Auto Equip Punch
 VisualHub:AddSwitch(gui, "Auto Equip Punch", function(state)
     getgenv().autoEquipPunch = state
