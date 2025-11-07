@@ -12,18 +12,19 @@ local y = 50
 -- Lock Position
 VisualHub:AddSwitch(gui, "Lock Position", function(state)
     getgenv().lockPosition = state
-    if state and LocalPlayer.Character then
+    if state and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
         getgenv().lockedPos = LocalPlayer.Character.HumanoidRootPart.CFrame
+        if getgenv().lockConn then getgenv().lockConn:Disconnect() end
         getgenv().lockConn = game:GetService("RunService").Heartbeat:Connect(function()
-            if LocalPlayer.Character and getgenv().lockedPos then
+            if LocalPlayer.Character and getgenv().lockPosition and getgenv().lockedPos then
                 LocalPlayer.Character.HumanoidRootPart.CFrame = getgenv().lockedPos
             end
         end)
     elseif getgenv().lockConn then
         getgenv().lockConn:Disconnect()
+        getgenv().lockConn = nil
     end
 end, y)
-y = y + 40
 
 -- Anti AFK
 VisualHub:AddButton(gui, "Anti AFK", function()
