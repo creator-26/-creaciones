@@ -121,6 +121,7 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     thumb.BackgroundColor3 = Color3.fromRGB(255,255,255)
     thumb.BorderSizePixel = 0
     thumb.Name = "Thumb"
+    thumb.Active = false
     local thumbCorner = Instance.new("UICorner", thumb)
     thumbCorner.CornerRadius = UDim.new(1,0)
     -- Drop shadow effect
