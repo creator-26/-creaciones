@@ -187,7 +187,7 @@ VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
             end
-            task.wait(0.03) -- Más bajo = más velocidad
+            task.wait(0.01) -- Más bajo = más velocidad
         end
     end)
 end, y)
@@ -317,7 +317,7 @@ VisualHub:AddSwitch(gui, "Auto Pushups", function(state)
             if char and char:FindFirstChild("Pushups") then
                 LocalPlayer.muscleEvent:FireServer("rep")
             end
-            task.wait(0.04) -- Puedes bajar a 0.08 o 0.05 para más rapidez
+            task.wait(0.03) -- Puedes bajar a 0.08 o 0.05 para más rapidez
         end
     end)
 end, y)
