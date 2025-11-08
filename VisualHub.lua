@@ -91,16 +91,16 @@ function VisualHub:AddButton(frame, btntext, callback, ypos)
     return btn
 end
 function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
-    local anchoBack = 344   -- Ancho total del label azul/gris, lo suficiente para cubrir casi todo el menú
-    local anchoSw = 55     -- Ancho del botón ON/OFF (igual o apenas menor que el de la imagen)
+    local anchoBack = 340   -- Ancho total del label azul/gris, lo suficiente para cubrir casi todo el menú
+    local anchoSw = 52     -- Ancho del botón ON/OFF (igual o apenas menor que el de la imagen)
     local alturaLabel = 34  -- Ajusta para igualar visualmente tu diseño (alto del label)
-    local alturaSwitch = 19 -- Más bajo que el label para que quede en el centro
+    local alturaSwitch = 15 -- Más bajo que el label para que quede en el centro
     local ajuste = math.floor((alturaLabel - alturaSwitch)/2)
     -- Label grande de color (fondo)
     local back = Instance.new("TextLabel", frame)
     back.Text = lbltext
     back.Font = Enum.Font.Gotham
-    back.TextSize = 15
+    back.TextSize = 16
     back.TextColor3 = Color3.new(1,1,1)
     back.BackgroundColor3 = Color3.fromRGB(70,70,80)
     back.Position = UDim2.new(0, 15, 0, ypos)
