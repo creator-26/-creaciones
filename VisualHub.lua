@@ -104,8 +104,8 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
 
     -- Switch
     local switch = Instance.new("Frame", frame)
-    switch.Size = UDim2.new(0, 46, 0, 26)
-    switch.Position = UDim2.new(0, 270, 0, ypos+2)
+    switch.Size = UDim2.new(0, 32, 0, 18)
+    switch.Position = UDim2.new(0, 270, 0, ypos+4)
     switch.BackgroundTransparency = 0
     switch.BackgroundColor3 = Color3.fromRGB(180, 180, 188)
     switch.BorderSizePixel = 0
@@ -116,7 +116,7 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
 
     -- Thumb circle
     local thumb = Instance.new("Frame", switch)
-    thumb.Size = UDim2.new(0, 22, 0, 22)
+    thumb.Size = UDim2.new(0, 12, 0, 12)
     thumb.Position = UDim2.new(0, 2, 0, 2)
     thumb.BackgroundColor3 = Color3.fromRGB(255,255,255)
     thumb.BorderSizePixel = 0
@@ -134,11 +134,11 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     if active then
         -- VERDE cuando está activado
         switch.BackgroundColor3 = Color3.fromRGB(46, 204, 113)  -- Verde clásico
-        thumb.Position = UDim2.new(0, 22, 0, 2)
+        thumb.Position = UDim2.new(0, 16, 0, 3)
     else
         -- ROJO cuando está desactivado
         switch.BackgroundColor3 = Color3.fromRGB(231, 76, 60)   -- Rojo clásico
-        thumb.Position = UDim2.new(0, 2, 0, 2)
+        thumb.Position = UDim2.new(0, 3, 0, 3)
          end
     end
     setState(false)
