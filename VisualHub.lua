@@ -144,17 +144,11 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     setState(false)
 
     switch.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            setState(not active)
-            if typeof(callback)=="function" then pcall(callback, active) end
-        end
-    end)
-    thumb.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            setState(not active)
-            if typeof(callback)=="function" then pcall(callback, active) end
-        end
-    end)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        setState(not active)
+        if typeof(callback)=="function" then pcall(callback, active) end
+           end
+       end)
     return label, switch
 end
 
