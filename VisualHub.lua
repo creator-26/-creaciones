@@ -92,39 +92,68 @@ function VisualHub:AddButton(frame, btntext, callback, ypos)
     return btn
 end
 function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
-    local anchoBack = 340   -- Ancho total del label azul/gris, lo suficiente para cubrir casi todo el menú
-    local anchoSw = 52     -- Ancho del botón ON/OFF (igual o apenas menor que el de la imagen)
-    local alturaLabel = 30  -- Ajusta para igualar visualmente tu diseño (alto del label)
-    local alturaSwitch = 15 -- Más bajo que el label para que quede en el centro
-    local ajuste = math.floor((alturaLabel - alturaSwitch)/2)
-    -- Label grande de color (fondo)
-    local back = Instance.new("TextLabel", frame)
-    back.Text = lbltext
-    back.Font = Enum.Font.Gotham
-    back.TextSize = 16
-    back.TextColor3 = Color3.new(1,1,1)
-    back.BackgroundColor3 = Color3.fromRGB(70,70,80)
-    back.Position = UDim2.new(0, 15, 0, ypos)
-    back.Size = UDim2.new(0, anchoBack, 0, alturaLabel)
-    back.BackgroundTransparency = 0.25
-    -- Botón ON/OFF justo pegado al extremo derecho, dentro del área coloreada
-    local sw = Instance.new("TextButton", frame)
-    sw.Text = "OFF"
-    -- Pega el botón ON/OFF al borde derecho del label (offset negativo)
-    sw.Position = UDim2.new(0, 15 + anchoBack - anchoSw - 6, 0, ypos + ajuste)
-    sw.Size = UDim2.new(0, anchoSw, 0, alturaSwitch)
-    sw.BackgroundColor3 = Color3.fromRGB(100,30,30)
-    sw.TextColor3 = Color3.new(1,1,1)
-    sw.Font = Enum.Font.GothamBold
-    sw.BorderSizePixel = 0
+    -- Label
+    local label = Instance.new("TextLabel", frame)
+    label.Text = lbltext
+    label.Position = UDim2.new(0, 15, 0, ypos)
+    label.Size = UDim2.new(0, 210, 0, 30)
+    label.BackgroundTransparency = 1
+    label.TextColor3 = Color3.new(1,1,1)
+    label.Font = Enum.Font.Gotham
+    label.TextSize = 16
+
+    -- Switch
+    local switch = Instance.new("Frame", frame)
+    switch.Size = UDim2.new(0, 46, 0, 26)
+    switch.Position = UDim2.new(0, 270, 0, ypos+2)
+    switch.BackgroundTransparency = 0
+    switch.BackgroundColor3 = Color3.fromRGB(180, 180, 188)
+    switch.BorderSizePixel = 0
+    switch.Name = "Switch"
+    -- Make it rounded
+    local corner = Instance.new("UICorner", switch)
+    corner.CornerRadius = UDim.new(1,0)
+
+    -- Thumb circle
+    local thumb = Instance.new("Frame", switch)
+    thumb.Size = UDim2.new(0, 22, 0, 22)
+    thumb.Position = UDim2.new(0, 2, 0, 2)
+    thumb.BackgroundColor3 = Color3.fromRGB(255,255,255)
+    thumb.BorderSizePixel = 0
+    thumb.Name = "Thumb"
+    local thumbCorner = Instance.new("UICorner", thumb)
+    thumbCorner.CornerRadius = UDim.new(1,0)
+    -- Drop shadow effect
+    local shadow = Instance.new("UIStroke", thumb)
+    shadow.Color = Color3.fromRGB(180,180,180)
+    shadow.Thickness = 1
+
     local active = false
-    sw.MouseButton1Click:Connect(function()
-        active = not active
-        sw.Text = active and "ON" or "OFF"
-        sw.BackgroundColor3 = active and Color3.fromRGB(30, 130, 30) or Color3.fromRGB(100,30,30)
-        if typeof(callback)=="function" then pcall(callback, active) end
+    local function setState(state)
+        active = state
+        if active then
+            switch.BackgroundColor3 = Color3.fromRGB(255,69,58) -- Rojo tipo iOS activo
+            thumb.Position = UDim2.new(0, 22, 0, 2)
+        else
+            switch.BackgroundColor3 = Color3.fromRGB(180,180,188)
+            thumb.Position = UDim2.new(0, 2, 0, 2)
+        end
+    end
+    setState(false)
+
+    switch.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            setState(not active)
+            if typeof(callback)=="function" then pcall(callback, active) end
+        end
     end)
-    return back, sw
+    thumb.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            setState(not active)
+            if typeof(callback)=="function" then pcall(callback, active) end
+        end
+    end)
+    return label, switch
 end
 
 function VisualHub:AddLabel(frame, text, ypos)
