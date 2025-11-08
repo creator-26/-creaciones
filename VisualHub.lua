@@ -11,6 +11,7 @@ function VisualHub:Create(title)
     frame.Position = UDim2.new(0.1, 0, 0.12, 0)
     frame.Size = UDim2.new(0, 380, 0, 480)
     frame.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
+    frame.BackgroundTransparency = 0.24
     frame.BorderSizePixel = 2
     frame.Name = "MainFrame"
 
