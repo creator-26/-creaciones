@@ -299,4 +299,23 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
     end)
 end, y)
 y = y + 30
+--Auto Pushups 
+VisualHub:AddSwitch(gui, "Auto Pushups", function(state)
+    getgenv().autoPushups = state
+    task.spawn(function()
+        while getgenv().autoPushups and LocalPlayer.Character do
+            -- Equipa "Pushups" si no está equipado
+            local pushups = LocalPlayer.Backpack:FindFirstChild("Pushups") or LocalPlayer.Character:FindFirstChild("Pushups")
+            if pushups and pushups.Parent ~= LocalPlayer.Character then
+                pushups.Parent = LocalPlayer.Character
+            end
+            -- Hace el movimiento de plancha (igual que un click)
+            if LocalPlayer.Character:FindFirstChild("Pushups") then
+                ReplicatedStorage.muscleEvent:FireServer("rep")
+            end
+            task.wait(0.6) -- Puedes bajar el valor para más rápido (0.10, 0.08, etc)
+        end
+    end)
+end, y)
+y = y + 30
 -- El menú muestra todo bien, cada switch aparece y puedes reordenar a gusto.
