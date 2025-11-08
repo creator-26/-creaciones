@@ -46,7 +46,7 @@ btn.Position = UDim2.new(0, 15, 0, y)
 
 -- Cuadro informativo a la derecha
 local infoFrame = Instance.new("Frame", btn.Parent)
-infoFrame.Size = UDim2.new(0, 68, 0, 35)
+infoFrame.Size = UDim2.new(0, 67, 0, 34)
 infoFrame.Position = UDim2.new(0, 180, 0, y) -- ajusta 180 según posición de btn
 infoFrame.BackgroundColor3 = Color3.fromRGB(32,32,44)
 infoFrame.BorderSizePixel = 1
