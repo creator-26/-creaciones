@@ -91,22 +91,31 @@ function VisualHub:AddButton(frame, btntext, callback, ypos)
     return btn
 end
 function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
+    local anchoBack = 344   -- Ancho total del label azul/gris, lo suficiente para cubrir casi todo el menú
+    local anchoSw = 58      -- Ancho del botón ON/OFF (igual o apenas menor que el de la imagen)
+    local alturaLabel = 38  -- Ajusta para igualar visualmente tu diseño (alto del label)
+    local alturaSwitch = 32 -- Más bajo que el label para que quede en el centro
+    local ajuste = math.floor((alturaLabel - alturaSwitch)/2)
+    -- Label grande de color (fondo)
     local back = Instance.new("TextLabel", frame)
     back.Text = lbltext
     back.Font = Enum.Font.Gotham
-    back.TextSize = 15
+    back.TextSize = 20
     back.TextColor3 = Color3.new(1,1,1)
     back.BackgroundColor3 = Color3.fromRGB(70,70,80)
     back.Position = UDim2.new(0, 15, 0, ypos)
-    back.Size = UDim2.new(0, 240, 0, 24)
+    back.Size = UDim2.new(0, anchoBack, 0, alturaLabel)
+    back.BackgroundTransparency = 0
+    -- Botón ON/OFF justo pegado al extremo derecho, dentro del área coloreada
     local sw = Instance.new("TextButton", frame)
     sw.Text = "OFF"
-    sw.Position = UDim2.new(0, 170, 0, ypos + ajuste)
-    sw.Size = UDim2.new(0, 60, 0, 16)
-    local ajuste = math.floor(( 24 - 16)/2)
+    -- Pega el botón ON/OFF al borde derecho del label (offset negativo)
+    sw.Position = UDim2.new(0, 15 + anchoBack - anchoSw - 6, 0, ypos + ajuste)
+    sw.Size = UDim2.new(0, anchoSw, 0, alturaSwitch)
     sw.BackgroundColor3 = Color3.fromRGB(100,30,30)
     sw.TextColor3 = Color3.new(1,1,1)
     sw.Font = Enum.Font.GothamBold
+    sw.BorderSizePixel = 0
     local active = false
     sw.MouseButton1Click:Connect(function()
         active = not active
