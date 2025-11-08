@@ -117,58 +117,19 @@ btn.Position = UDim2.new(0, 15, 0, y)
 y = y + 30
 
 -- Auto Egg cada 30 minutos
-VisualHub:AddSwitch(gui, "Auto Egg (30 min)", function(state)
+VisualHub:AddSwitch(gui, "Auto Eat Egg (30 min)", function(state)
     getgenv().autoEatEgg = state
     task.spawn(function()
-        while getgenv().autoEatEgg do
-            -- 1. Detectar la tool que tienes equipada ANTES de comer
-            local char = LocalPlayer.Character
-            local prevTool = nil
-            if char then
-                for _, v in pairs(char:GetChildren()) do
-                    if v:IsA("Tool") and v.Name ~= "Protein Egg" then
-                        prevTool = v.Name
-                        break
-                    end
-                end
+        while getgenv().autoEatEgg and LocalPlayer.Character do
+            local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
+            if egg and egg.Parent ~= LocalPlayer.Character then
+                egg.Parent = LocalPlayer.Character
             end
-
-            -- 2. Guarda la herramienta previa, y retírala para comer huevo
-            local function unequipAllTools()
-                if char then
-                    for _, v in pairs(char:GetChildren()) do
-                        if v:IsA("Tool") then
-                            v.Parent = LocalPlayer.Backpack
-                        end
-                    end
-                end
+            -- ¡Usa el evento "rep" como en Doca y Sherya!
+            if egg and LocalPlayer.Character:FindFirstChild("Protein Egg") then
+                ReplicatedStorage.muscleEvent:FireServer("rep")
             end
-            unequipAllTools()
-            task.wait(0.1)
-
-            -- 3. Equipa el huevo
-            local backpack = LocalPlayer.Backpack
-            local egg = backpack:FindFirstChild("Protein Egg") or (char and char:FindFirstChild("Protein Egg"))
-            if egg and egg.Parent ~= char then
-                egg.Parent = char
-                task.wait(0.05)
-            end
-
-            -- 4. Comer el huevo (evento)
-            if char and char:FindFirstChild("Protein Egg") then
-                ReplicatedStorage.muscleEvent:FireServer("eatEgg")
-            end
-
-            -- 5. Volver a equipar la tool previa
-            if prevTool and backpack:FindFirstChild(prevTool) then
-                backpack[prevTool].Parent = char
-            end
-
-            -- 6. Esperar 30 minutos
-            for i=1, 1800 do
-                if not getgenv().autoEatEgg then break end
-                task.wait(1)
-            end
+            task.wait(1800) -- 30 minutos
         end
     end)
 end, y)
