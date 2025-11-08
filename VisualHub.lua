@@ -105,7 +105,7 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     -- Switch
     local switch = Instance.new("Frame", frame)
     switch.Size = UDim2.new(0, 32, 0, 18)
-    switch.Position = UDim2.new(0, 270, 0, ypos+4)
+    switch.Position = UDim2.new(0, 270, 0, ypos+8)
     switch.BackgroundTransparency = 0
     switch.BackgroundColor3 = Color3.fromRGB(180, 180, 188)
     switch.BorderSizePixel = 0
