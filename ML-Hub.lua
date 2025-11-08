@@ -187,7 +187,7 @@ VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
                 ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
                 ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
             end
-            task.wait(0.01) -- Más bajo = más velocidad
+            task.wait(0.05) -- Más bajo = más velocidad
         end
     end)
 end, y)
