@@ -151,7 +151,7 @@ VisualHub:AddSwitch(gui, "Auto Egg (30 min)", function(state)
             local egg = backpack:FindFirstChild("Protein Egg") or (char and char:FindFirstChild("Protein Egg"))
             if egg and egg.Parent ~= char then
                 egg.Parent = char
-                task.wait(0.15)
+                task.wait(0.05)
             end
 
             -- 4. Comer el huevo (evento)
@@ -356,7 +356,7 @@ VisualHub:AddSwitch(gui, "Auto Pushups", function(state)
             if char and char:FindFirstChild("Pushups") then
                 LocalPlayer.muscleEvent:FireServer("rep")
             end
-            task.wait(0.07) -- Puedes bajar a 0.08 o 0.05 para más rapidez
+            task.wait(0.04) -- Puedes bajar a 0.08 o 0.05 para más rapidez
         end
     end)
 end, y)
