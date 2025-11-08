@@ -88,7 +88,7 @@ end)
 y = y + 30
 
 -- Antilag
-local btn = VisualHub:AddButton(gui, "Antilag (Doca)", function()
+local btn = VisualHub:AddButton(gui, "Antilag ", function()
     -- Cambia todos los materiales a SmoothPlastic y reflectancia a 0
     for _, v in pairs(Workspace:GetDescendants()) do
         if v:IsA("BasePart") then
@@ -171,7 +171,7 @@ VisualHub:AddSwitch(gui, "Auto Equip Punch", function(state)
             if punch then
                 punch.Parent = LocalPlayer.Character
             end
-            wait(0.1)
+            wait(0.05)
         end
     end)
 end, y)
