@@ -303,17 +303,18 @@ y = y + 30
 VisualHub:AddSwitch(gui, "Auto Pushups", function(state)
     getgenv().autoPushups = state
     task.spawn(function()
-        while getgenv().autoPushups and LocalPlayer.Character do
-            -- Equipa "Pushups" si no está equipado
-            local pushups = LocalPlayer.Backpack:FindFirstChild("Pushups") or LocalPlayer.Character:FindFirstChild("Pushups")
-            if pushups and pushups.Parent ~= LocalPlayer.Character then
-                pushups.Parent = LocalPlayer.Character
+        while getgenv().autoPushups do
+            -- Intentar equipar Pushups
+            local char = LocalPlayer.Character
+            local push = char and char:FindFirstChild("Pushups") or LocalPlayer.Backpack:FindFirstChild("Pushups")
+            if push and push.Parent ~= char then
+                push.Parent = char
             end
-            -- Hace el movimiento de plancha (igual que un click)
-            if LocalPlayer.Character:FindFirstChild("Pushups") then
-                ReplicatedStorage.muscleEvent:FireServer("rep")
+            -- Solo spamear "rep" si la herramienta está equipada
+            if char and char:FindFirstChild("Pushups") then
+                LocalPlayer.muscleEvent:FireServer("rep")
             end
-            task.wait(0.6) -- Puedes bajar el valor para más rápido (0.10, 0.08, etc)
+            task.wait(0.08) -- Puedes bajar a 0.08 o 0.05 para más rapidez
         end
     end)
 end, y)
