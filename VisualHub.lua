@@ -130,14 +130,16 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
 
     local active = false
     local function setState(state)
-        active = state
-        if active then
-            switch.BackgroundColor3 = Color3.fromRGB(255,69,58) -- Rojo tipo iOS activo
-            thumb.Position = UDim2.new(0, 22, 0, 2)
-        else
-            switch.BackgroundColor3 = Color3.fromRGB(180,180,188)
-            thumb.Position = UDim2.new(0, 2, 0, 2)
-        end
+    active = state
+    if active then
+        -- VERDE cuando está activado
+        switch.BackgroundColor3 = Color3.fromRGB(46, 204, 113)  -- Verde clásico
+        thumb.Position = UDim2.new(0, 22, 0, 2)
+    else
+        -- ROJO cuando está desactivado
+        switch.BackgroundColor3 = Color3.fromRGB(231, 76, 60)   -- Rojo clásico
+        thumb.Position = UDim2.new(0, 2, 0, 2)
+         end
     end
     setState(false)
 
