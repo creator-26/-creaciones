@@ -105,7 +105,7 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     back.BackgroundColor3 = Color3.fromRGB(70,70,80)
     back.Position = UDim2.new(0, 15, 0, ypos)
     back.Size = UDim2.new(0, anchoBack, 0, alturaLabel)
-    back.BackgroundTransparency = 0
+    back.BackgroundTransparency = 0.25
     -- Botón ON/OFF justo pegado al extremo derecho, dentro del área coloreada
     local sw = Instance.new("TextButton", frame)
     sw.Text = "OFF"
