@@ -117,16 +117,26 @@ btn.Position = UDim2.new(0, 15, 0, y)
 y = y + 30
 
 -- Auto Egg cada 30 minutos
-VisualHub:AddSwitch(gui, "Auto Protein Egg 30 min", function(state)
-    getgenv().autoEatProteinEgg30 = state
+VisualHub:AddSwitch(gui, "Auto Egg 30 min", function(state)
+    getgenv().autoEatEgg = state
     task.spawn(function()
-        while getgenv().autoEatProteinEgg30 and LocalPlayer.Character do
-            local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
-            if egg then
-                egg.Parent = LocalPlayer.Character
-                ReplicatedStorage.muscleEvent:FireServer("rep")
+        while getgenv().autoEatEgg do
+            -- Equipa siempre el huevo si no está equipado
+            local char = LocalPlayer.Character
+            local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or (char and char:FindFirstChild("Protein Egg"))
+            if egg and egg.Parent ~= char then
+                egg.Parent = char
             end
-            task.wait(1800)
+            -- Si está equipado, comerlo automáticamente usando el evento correspondiente del juego
+            if char and char:FindFirstChild("Protein Egg") then
+                ReplicatedStorage.muscleEvent:FireServer("eatEgg")
+            end
+            -- Espera 30 minutos (1800 segundos) para volver a comer automáticamente
+            local cooldown = 30*60
+            for i=1, cooldown do
+                if not getgenv().autoEatEgg then break end
+                task.wait(1)
+            end
         end
     end)
 end, y)
@@ -314,7 +324,7 @@ VisualHub:AddSwitch(gui, "Auto Pushups", function(state)
             if char and char:FindFirstChild("Pushups") then
                 LocalPlayer.muscleEvent:FireServer("rep")
             end
-            task.wait(0.08) -- Puedes bajar a 0.08 o 0.05 para más rapidez
+            task.wait(0.07) -- Puedes bajar a 0.08 o 0.05 para más rapidez
         end
     end)
 end, y)
