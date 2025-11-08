@@ -94,7 +94,7 @@ function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
     local anchoBack = 344   -- Ancho total del label azul/gris, lo suficiente para cubrir casi todo el menú
     local anchoSw = 55     -- Ancho del botón ON/OFF (igual o apenas menor que el de la imagen)
     local alturaLabel = 34  -- Ajusta para igualar visualmente tu diseño (alto del label)
-    local alturaSwitch = 24 -- Más bajo que el label para que quede en el centro
+    local alturaSwitch = 19 -- Más bajo que el label para que quede en el centro
     local ajuste = math.floor((alturaLabel - alturaSwitch)/2)
     -- Label grande de color (fondo)
     local back = Instance.new("TextLabel", frame)
