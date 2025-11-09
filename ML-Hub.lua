@@ -117,22 +117,36 @@ btn.Position = UDim2.new(0, 15, 0, y)
 y = y + 30
 
 -- Auto Egg cada 30 minutos
-VisualHub:AddSwitch(gui, "Auto Eat Egg (30 min)", function(state)
-    getgenv().autoEatEgg = state
-    task.spawn(function()
-        while getgenv().autoEatEgg and LocalPlayer.Character do
-            local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
-            if egg and egg.Parent ~= LocalPlayer.Character then
-                egg.Parent = LocalPlayer.Character
-            end
-            -- ¡Usa el evento "rep" como en Doca y Sherya!
-            if egg and LocalPlayer.Character:FindFirstChild("Protein Egg") then
-                ReplicatedStorage.muscleEvent:FireServer("rep")
-            end
-            task.wait(1800) -- 30 minutos
+local autoEatEnabled = false
+
+local function eatProteinEgg()
+    local player = game.Players.LocalPlayer
+    local backpack = player:WaitForChild("Backpack")
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    local egg = backpack:FindFirstChild("Protein Egg")
+    if egg then
+        egg.Parent = character
+        pcall(function()
+            egg:Activate()
+        end)
+    end
+end
+
+task.spawn(function()
+    while true do
+        if autoEatEnabled then
+            eatProteinEgg()
+            task.wait(1800) -- 1800 segundos = 30 minutos exactos
+        else
+            task.wait(1)
         end
-    end)
-end, y)
+    end
+end)
+
+AutoFarm:AddSwitch("Auto Egg (30 Min)", function(state)
+    autoEatEnabled = state
+end)
 y = y + 30
 
 -- Anti Knockback
