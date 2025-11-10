@@ -118,35 +118,42 @@ y = y + 27
 
 -- Auto Egg cada 30 minutos
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = game:GetService("Players").LocalPlayer
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
-VisualHub:AddSwitch(gui, "Auto Eat Egg (30 min)", function(state)
-    getgenv().autoEatEgg = state
-    if state then
-        task.spawn(function()
-            while getgenv().autoEatEgg do
-                local interval = 1800
-                local lastEgg = tick() - interval
-                while getgenv().autoEatEgg do
-                    -- Si ya pasaron 30 minutos desde el último egg
-                    if tick() - lastEgg >= interval then
-                        local backpack = LocalPlayer:FindFirstChild("Backpack")
-                        if backpack then
-                            local egg = backpack:FindFirstChild("Protein Egg") or backpack:FindFirstChild("ProteinEgg")
-                            if egg then
-                                -- Llama el evento oficial del huevo
-                                ReplicatedStorage.rEvents.eatEvent:FireServer("eat", egg)
-                                lastEgg = tick()
-                            end
-                        end
-                    end
-                    task.wait(2)
+VisualHub:AddSwitch(gui, "Auto Eat Protein Egg Every 30 Minutes", function(state)
+    getgenv().autoEatProteinEggActive = state
+    task.spawn(function()
+        while getgenv().autoEatProteinEggActive and LocalPlayer.Character do
+            local eggConsumed = false
+            for retry = 1, 30 do -- Hasta 30 intentos, cada 2s, para cubrir lag o espera de egg
+                local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") 
+                    or LocalPlayer.Character:FindFirstChild("Protein Egg")
+                if egg then
+                    egg.Parent = LocalPlayer.Character
+                    ReplicatedStorage.muscleEvent:FireServer("rep")
+                    eggConsumed = true
+                    break
+                end
+                task.wait(2)
+            end
+            -- Si lo consumió, espera 1800 segundos (30 min)
+            if eggConsumed then
+                for i = 1,1800 do
+                    if not getgenv().autoEatProteinEggActive then return end
+                    task.wait(1)
+                end
+            else
+                -- No encontró huevo tras 1 minuto, reintenta cada 10s
+                for i = 1, 5 do
+                    if not getgenv().autoEatProteinEggActive then return end
+                    task.wait(10)
                 end
             end
-        end)
-    end
+        end
+    end)
 end, y)
-y = y + 30
+y = y + 27
 -- Anti Knockback
 VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
     local player = game.Players.LocalPlayer
