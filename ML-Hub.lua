@@ -121,21 +121,33 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
 
-VisualHub:AddSwitch(gui, "Auto Eat Protein Egg Every 30 Minutes", function(state)
-    getgenv().autoEatProteinEggActive = state
-    task.spawn(function()
-        while getgenv().autoEatProteinEggActive and LocalPlayer.Character do
-            local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") 
-                or LocalPlayer.Character:FindFirstChild("Protein Egg")
+local function autoEatEggLoop()
+    while getgenv().autoEatEgg do
+        -- Intenta encontrar y comer el huevo cada ciclo (reintenta si algo falla)
+        for i = 1,20 do -- reintenta 20 veces cada 1.5s si no logra consumir
+            local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
             if egg then
-                -- Equipa
                 egg.Parent = LocalPlayer.Character
-                -- Y dispara el evento que come el huevo
+                task.wait(0.15)
                 ReplicatedStorage.muscleEvent:FireServer("rep")
+                break
             end
-            task.wait(1800)
+            task.wait(1.5)
         end
-    end)
+        -- Espera exactamente 1800 segundos (30 min)
+        local waitSecs = 1800
+        for j = 1, waitSecs do
+            if not getgenv().autoEatEgg then return end
+            task.wait(1)
+        end
+    end
+end
+
+VisualHub:AddSwitch(gui, "Auto Eat Egg (30 min)", function(state)
+    getgenv().autoEatEgg = state
+    if state then
+        spawn(autoEatEggLoop)
+    end
 end, y)
 y = y + 27
 -- Anti Knockback
