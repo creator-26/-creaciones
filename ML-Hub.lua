@@ -120,6 +120,20 @@ y = y + 28
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local LocalPlayer = game:GetService("Players").LocalPlayer
 
+local function eatProteinEgg()
+    local backpack = LocalPlayer:FindFirstChild("Backpack")
+    if backpack then
+        -- Busca las dos variantes de nombre
+        local egg = backpack:FindFirstChild("ProteinEgg") or backpack:FindFirstChild("Protein Egg")
+        if egg then
+            -- Usa el remote event universal para comer huevos: rEvents.eatEvent
+            ReplicatedStorage.rEvents.eatEvent:FireServer("eat", egg)
+            return true
+        end
+    end
+    return false
+end
+
 local lastEggTime = tick() - 1800
 getgenv().autoEatEgg = false
 
@@ -130,12 +144,8 @@ end, y)
 task.spawn(function()
     while true do
         if getgenv().autoEatEgg then
-            local backpack = LocalPlayer:FindFirstChild("Backpack")
-            if backpack then
-                local egg = backpack:FindFirstChild("Protein Egg")
-                if egg and (tick() - lastEggTime) >= 1800 then
-                    -- Consumir el huevo usando el remote correcto
-                    ReplicatedStorage.rEvents.eatEvent:FireServer("eat", egg)
+            if (tick() - lastEggTime) >= 1800 then
+                if eatProteinEgg() then
                     lastEggTime = tick()
                 end
             end
