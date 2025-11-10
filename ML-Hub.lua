@@ -24,7 +24,7 @@ VisualHub:AddSwitch(gui, "Lock Position", function(state)
         getgenv().lockConn = nil
     end
 end, y)
-y = y + 29
+y = y + 28
 
 -- Anti AFK
 local btn = VisualHub:AddButton(gui, "Anti AFK", function()
@@ -85,7 +85,7 @@ spawn(function()
         wait(1)
     end
 end)
-y = y + 29
+y = y + 28
 
 -- Antilag
 local btn = VisualHub:AddButton(gui, "Antilag ", function()
@@ -114,10 +114,13 @@ local btn = VisualHub:AddButton(gui, "Antilag ", function()
 end, y)
 btn.Size = UDim2.new(0, 150, 0, 30)  -- ancho 150, alto 35 (ajusta como prefieras)
 btn.Position = UDim2.new(0, 15, 0, y) 
-y = y + 29
+y = y + 28
 
 -- Auto Egg cada 30 minutos
-local lastEggTime = os.time() - 1800    -- cuenta como consumido hace 30 min para forzar inicio inmediato
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local LocalPlayer = game:GetService("Players").LocalPlayer
+
+local lastEggTime = tick() - 1800
 getgenv().autoEatEgg = false
 
 VisualHub:AddSwitch(gui, "Auto Eat Egg (30 min)", function(state)
@@ -126,26 +129,21 @@ end, y)
 
 task.spawn(function()
     while true do
-        if getgenv().autoEatEgg and LocalPlayer.Character then
-            local eggAvailable = false
-            local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
-            if egg then eggAvailable = true end
-            if (os.time() - lastEggTime) >= 1800 and eggAvailable then
-                -- Equipa y consume el huevo
-                if egg.Parent ~= LocalPlayer.Character then
-                    egg.Parent = LocalPlayer.Character
-                    task.wait(0.2)
+        if getgenv().autoEatEgg then
+            local backpack = LocalPlayer:FindFirstChild("Backpack")
+            if backpack then
+                local egg = backpack:FindFirstChild("Protein Egg")
+                if egg and (tick() - lastEggTime) >= 1800 then
+                    -- Consumir el huevo usando el remote correcto
+                    ReplicatedStorage.rEvents.eatEvent:FireServer("eat", egg)
+                    lastEggTime = tick()
                 end
-                pcall(function()
-                    if egg:IsA("Tool") then egg:Activate() end
-                end)
-                lastEggTime = os.time()
             end
         end
         task.wait(2)
     end
 end)
-y = y + 29
+y = y + 28
 -- Anti Knockback
 VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
     local player = game.Players.LocalPlayer
@@ -172,7 +170,7 @@ VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
         end
     end
 end, y)
-y = y + 29
+y = y + 28
 -- Auto Equip Punch
 VisualHub:AddSwitch(gui, "Auto Equip Punch", function(state)
     getgenv().autoEquipPunch = state
@@ -186,7 +184,7 @@ VisualHub:AddSwitch(gui, "Auto Equip Punch", function(state)
         end
     end)
 end, y)
-y = y + 29
+y = y + 28
 
 -- Unlock Fast Punch
 VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
@@ -202,7 +200,7 @@ VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
         end
     end)
 end, y)
-y = y + 29
+y = y + 28
 
 -- Auto Rock de 10M
 VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
@@ -239,7 +237,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
         end
     end)
 end, y)
-y = y + 29
+y = y + 28
 
 -- Auto Rock de 1M
 VisualHub:AddSwitch(gui, "Auto Golpear Roca 1M", function(state)
@@ -276,7 +274,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 1M", function(state)
         end
     end)
 end, y)
-y = y + 29
+y = y + 28
 --roca 5M
 VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
     getgenv().autoRock5M = state
@@ -312,7 +310,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
         end
     end)
 end, y)
-y = y + 29
+y = y + 28
 --Auto Pushups 
 VisualHub:AddSwitch(gui, "Auto Pushups", function(state)
     getgenv().autoPushups = state
@@ -332,5 +330,5 @@ VisualHub:AddSwitch(gui, "Auto Pushups", function(state)
         end
     end)
 end, y)
-y = y + 29
+y = y + 28
 -- El menú muestra todo bien, cada switch aparece y puedes reordenar a gusto.
