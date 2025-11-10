@@ -24,7 +24,7 @@ VisualHub:AddSwitch(gui, "Lock Position", function(state)
         getgenv().lockConn = nil
     end
 end, y)
-y = y + 28
+y = y + 27
 
 -- Anti AFK
 local btn = VisualHub:AddButton(gui, "Anti AFK", function()
@@ -85,7 +85,7 @@ spawn(function()
         wait(1)
     end
 end)
-y = y + 28
+y = y + 27
 
 -- Antilag
 local btn = VisualHub:AddButton(gui, "Antilag ", function()
@@ -114,46 +114,37 @@ local btn = VisualHub:AddButton(gui, "Antilag ", function()
 end, y)
 btn.Size = UDim2.new(0, 150, 0, 30)  -- ancho 150, alto 35 (ajusta como prefieras)
 btn.Position = UDim2.new(0, 15, 0, y) 
-y = y + 28
+y = y + 27
 
 -- Auto Egg cada 30 minutos
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local LocalPlayer = game:GetService("Players").LocalPlayer
-
-local function eatProteinEgg()
-    local backpack = LocalPlayer:FindFirstChild("Backpack")
-    if backpack then
-        -- Busca las dos variantes de nombre
-        local egg = backpack:FindFirstChild("ProteinEgg") or backpack:FindFirstChild("Protein Egg")
-        if egg then
-            -- Usa el remote event universal para comer huevos: rEvents.eatEvent
-            ReplicatedStorage.rEvents.eatEvent:FireServer("eat", egg)
-            return true
-        end
-    end
-    return false
-end
-
-local lastEggTime = tick() - 1800
-getgenv().autoEatEgg = false
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
 
 VisualHub:AddSwitch(gui, "Auto Eat Egg (30 min)", function(state)
     getgenv().autoEatEgg = state
-end, y)
-
-task.spawn(function()
-    while true do
-        if getgenv().autoEatEgg then
-            if (tick() - lastEggTime) >= 1800 then
-                if eatProteinEgg() then
-                    lastEggTime = tick()
+    if state then
+        spawn(function()
+            while getgenv().autoEatEgg and LocalPlayer.Character do
+                -- Busca el huevo en backpack o character
+                local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
+                if egg and egg.Parent ~= LocalPlayer.Character then
+                    egg.Parent = LocalPlayer.Character
+                end
+                -- Usa el evento de muscle para “comer” el huevo
+                if egg and LocalPlayer.Character:FindFirstChild("Protein Egg") then
+                    ReplicatedStorage.muscleEvent:FireServer("rep")
+                end
+                -- Espera 30 minutos
+                for i = 1, 1800 do
+                    if not getgenv().autoEatEgg then break end
+                    task.wait(1)
                 end
             end
-        end
-        task.wait(2)
+        end)
     end
-end)
-y = y + 28
+end, y)
+y = y + 27
 -- Anti Knockback
 VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
     local player = game.Players.LocalPlayer
@@ -180,7 +171,7 @@ VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
         end
     end
 end, y)
-y = y + 28
+y = y + 27
 -- Auto Equip Punch
 VisualHub:AddSwitch(gui, "Auto Equip Punch", function(state)
     getgenv().autoEquipPunch = state
@@ -194,7 +185,7 @@ VisualHub:AddSwitch(gui, "Auto Equip Punch", function(state)
         end
     end)
 end, y)
-y = y + 28
+y = y + 27
 
 -- Unlock Fast Punch
 VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
@@ -210,7 +201,7 @@ VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
         end
     end)
 end, y)
-y = y + 28
+y = y + 27
 
 -- Auto Rock de 10M
 VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
@@ -247,7 +238,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
         end
     end)
 end, y)
-y = y + 28
+y = y + 27
 
 -- Auto Rock de 1M
 VisualHub:AddSwitch(gui, "Auto Golpear Roca 1M", function(state)
@@ -284,7 +275,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 1M", function(state)
         end
     end)
 end, y)
-y = y + 28
+y = y + 27
 --roca 5M
 VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
     getgenv().autoRock5M = state
@@ -320,7 +311,7 @@ VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
         end
     end)
 end, y)
-y = y + 28
+y = y + 27
 --Auto Pushups 
 VisualHub:AddSwitch(gui, "Auto Pushups", function(state)
     getgenv().autoPushups = state
@@ -340,5 +331,5 @@ VisualHub:AddSwitch(gui, "Auto Pushups", function(state)
         end
     end)
 end, y)
-y = y + 28
+y = y + 27
 -- El menú muestra todo bien, cada switch aparece y puedes reordenar a gusto.
