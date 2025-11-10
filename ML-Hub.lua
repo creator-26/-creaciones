@@ -117,50 +117,35 @@ btn.Position = UDim2.new(0, 15, 0, y)
 y = y + 29
 
 -- Auto Egg cada 30 minutos
+local lastEggTime = os.time() - 1800    -- cuenta como consumido hace 30 min para forzar inicio inmediato
+getgenv().autoEatEgg = false
+
 VisualHub:AddSwitch(gui, "Auto Eat Egg (30 min)", function(state)
     getgenv().autoEatEgg = state
-    if state then
-        if not getgenv().autoEatEggThread or not getgenv().autoEatEggThreadAlive then
-            getgenv().autoEatEggThreadAlive = true
-            getgenv().autoEatEggThread = task.spawn(function()
-                while getgenv().autoEatEgg and LocalPlayer.Character do
-                    -- Espera 1800 segundos (~30min)
-                    for i = 1, 1800 do
-                        if not getgenv().autoEatEgg then break end
-                        task.wait(1)
-                    end
-                    if not getgenv().autoEatEgg then break end
-
-                    -- Equipar el huevo en el personaje
-                    local success = false
-                    for attempt = 1, 25 do
-                        local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
-                        if egg then
-                            if egg.Parent ~= LocalPlayer.Character then
-                                egg.Parent = LocalPlayer.Character
-                                task.wait(0.05)
-                            end
-                            -- Usa Activate() para garantizar que el evento no se pise
-                            pcall(function()
-                                if egg:IsA("Tool") then
-                                    egg:Activate()
-                                end
-                            end)
-                            success = true
-                            break
-                        else
-                            task.wait(2)
-                        end
-                    end
-                end
-                getgenv().autoEatEggThreadAlive = false
-            end)
-        end
-    else
-        getgenv().autoEatEggThreadAlive = false
-    end
 end, y)
-y = y + 30
+
+task.spawn(function()
+    while true do
+        if getgenv().autoEatEgg and LocalPlayer.Character then
+            local eggAvailable = false
+            local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
+            if egg then eggAvailable = true end
+            if (os.time() - lastEggTime) >= 1800 and eggAvailable then
+                -- Equipa y consume el huevo
+                if egg.Parent ~= LocalPlayer.Character then
+                    egg.Parent = LocalPlayer.Character
+                    task.wait(0.2)
+                end
+                pcall(function()
+                    if egg:IsA("Tool") then egg:Activate() end
+                end)
+                lastEggTime = os.time()
+            end
+        end
+        task.wait(2)
+    end
+end)
+y = y + 29
 -- Anti Knockback
 VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
     local player = game.Players.LocalPlayer
