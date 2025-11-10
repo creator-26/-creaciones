@@ -125,30 +125,27 @@ VisualHub:AddSwitch(gui, "Auto Eat Protein Egg Every 30 Minutes", function(state
     getgenv().autoEatProteinEggActive = state
     task.spawn(function()
         while getgenv().autoEatProteinEggActive and LocalPlayer.Character do
-            local eggConsumed = false
-            for retry = 1, 30 do -- Hasta 30 intentos, cada 2s, para cubrir lag o espera de egg
+            -- Reintenta consumir el huevo si no lo logra en el primer intento
+            local eggAte = false
+            for retry = 1, 25 do
                 local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") 
                     or LocalPlayer.Character:FindFirstChild("Protein Egg")
                 if egg then
                     egg.Parent = LocalPlayer.Character
                     ReplicatedStorage.muscleEvent:FireServer("rep")
-                    eggConsumed = true
+                    eggAte = true
                     break
                 end
                 task.wait(2)
             end
-            -- Si lo consumió, espera 1800 segundos (30 min)
-            if eggConsumed then
-                for i = 1,1800 do
+            -- Solo si lo consumió, espera 30 minutos. Si no, reintenta hasta lograrlo.
+            if eggAte then
+                for i = 1, 1800 do
                     if not getgenv().autoEatProteinEggActive then return end
                     task.wait(1)
                 end
             else
-                -- No encontró huevo tras 1 minuto, reintenta cada 10s
-                for i = 1, 5 do
-                    if not getgenv().autoEatProteinEggActive then return end
-                    task.wait(10)
-                end
+                task.wait(10) -- Si no se pudo comer huevo, reintenta más rápido
             end
         end
     end)
