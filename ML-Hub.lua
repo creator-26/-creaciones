@@ -118,38 +118,35 @@ y = y + 27
 
 -- Auto Egg cada 30 minutos
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-local function autoEatEggLoop()
-    while getgenv().autoEatEgg do
-        -- Intenta encontrar y comer el huevo cada ciclo (reintenta si algo falla)
-        for i = 1,20 do -- reintenta 20 veces cada 1.5s si no logra consumir
-            local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
-            if egg then
-                egg.Parent = LocalPlayer.Character
-                task.wait(0.15)
-                ReplicatedStorage.muscleEvent:FireServer("rep")
-                break
-            end
-            task.wait(1.5)
-        end
-        -- Espera exactamente 1800 segundos (30 min)
-        local waitSecs = 1800
-        for j = 1, waitSecs do
-            if not getgenv().autoEatEgg then return end
-            task.wait(1)
-        end
-    end
-end
+local LocalPlayer = game:GetService("Players").LocalPlayer
 
 VisualHub:AddSwitch(gui, "Auto Eat Egg (30 min)", function(state)
     getgenv().autoEatEgg = state
     if state then
-        spawn(autoEatEggLoop)
+        task.spawn(function()
+            while getgenv().autoEatEgg do
+                local interval = 1800
+                local lastEgg = tick() - interval
+                while getgenv().autoEatEgg do
+                    -- Si ya pasaron 30 minutos desde el último egg
+                    if tick() - lastEgg >= interval then
+                        local backpack = LocalPlayer:FindFirstChild("Backpack")
+                        if backpack then
+                            local egg = backpack:FindFirstChild("Protein Egg") or backpack:FindFirstChild("ProteinEgg")
+                            if egg then
+                                -- Llama el evento oficial del huevo
+                                ReplicatedStorage.rEvents.eatEvent:FireServer("eat", egg)
+                                lastEgg = tick()
+                            end
+                        end
+                    end
+                    task.wait(2)
+                end
+            end
+        end)
     end
 end, y)
-y = y + 27
+y = y + 30
 -- Anti Knockback
 VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
     local player = game.Players.LocalPlayer
