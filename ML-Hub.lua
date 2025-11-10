@@ -124,24 +124,30 @@ VisualHub:AddSwitch(gui, "Auto Eat Egg (30 min)", function(state)
             getgenv().autoEatEggThreadAlive = true
             getgenv().autoEatEggThread = task.spawn(function()
                 while getgenv().autoEatEgg and LocalPlayer.Character do
-                    -- Espera 1800 segundos
-                    for i = 1,1800 do
+                    -- Espera 1800 segundos (~30min)
+                    for i = 1, 1800 do
                         if not getgenv().autoEatEgg then break end
                         task.wait(1)
                     end
                     if not getgenv().autoEatEgg then break end
-                    -- Ahora intenta consumir el huevo hasta lograrlo
-                    local attempts = 0
-                    local consumed = false
-                    while not consumed and attempts < 30 and getgenv().autoEatEgg do
-                        attempts = attempts + 1
+
+                    -- Equipar el huevo en el personaje
+                    local success = false
+                    for attempt = 1, 25 do
                         local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") or LocalPlayer.Character:FindFirstChild("Protein Egg")
-                        if egg and egg.Parent ~= LocalPlayer.Character then
-                            egg.Parent = LocalPlayer.Character
-                        end
-                        if egg and LocalPlayer.Character:FindFirstChild("Protein Egg") then
-                            ReplicatedStorage.muscleEvent:FireServer("rep")
-                            consumed = true
+                        if egg then
+                            if egg.Parent ~= LocalPlayer.Character then
+                                egg.Parent = LocalPlayer.Character
+                                task.wait(0.05)
+                            end
+                            -- Usa Activate() para garantizar que el evento no se pise
+                            pcall(function()
+                                if egg:IsA("Tool") then
+                                    egg:Activate()
+                                end
+                            end)
+                            success = true
+                            break
                         else
                             task.wait(2)
                         end
@@ -154,7 +160,7 @@ VisualHub:AddSwitch(gui, "Auto Eat Egg (30 min)", function(state)
         getgenv().autoEatEggThreadAlive = false
     end
 end, y)
-y = y + 29
+y = y + 30
 -- Anti Knockback
 VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
     local player = game.Players.LocalPlayer
