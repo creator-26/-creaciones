@@ -28,18 +28,42 @@ y = y + 27
 
 -- Anti AFK
 local btn = VisualHub:AddButton(gui, "Anti AFK", function()
-    if getgenv().afkConn then getgenv().afkConn:Disconnect() end
+    -- Desconecta cualquier anti afk previo
+    if getgenv().afkConn then
+        pcall(function() getgenv().afkConn:Disconnect() end)
+        getgenv().afkConn = nil
+    end
     local Players = game:GetService("Players")
     local LocalPlayer = Players.LocalPlayer
     local vu = game:GetService("VirtualUser")
     local vim = game:GetService("VirtualInputManager")
+
+    -- Conexión robusta combinando los mejores hubs
     getgenv().afkConn = LocalPlayer.Idled:Connect(function()
         vu:CaptureController()
         vu:ClickButton2(Vector2.new())
+        -- Barra espaciadora virtual (según Monarc/Supernova)
         if vim and vim.SendKeyEvent then
             vim:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
         end
+        -- Mini prevención ante desconexión (redundante pero seguro)
+        pcall(function()
+            vu:CaptureController()
+        end)
     end)
+    -- Keepalive cada 5 minutos (extra seguro, cubre servers estrictos)
+    if not getgenv().antiAFKKeepAliveLoop then
+        getgenv().antiAFKKeepAliveLoop = true
+        task.spawn(function()
+            while getgenv().antiAFKKeepAliveLoop do
+                pcall(function()
+                    vu:CaptureController()
+                    vu:ClickButton2(Vector2.new())
+                end)
+                task.wait(300)
+            end
+        end)
+    end
 end, y)
 btn.Size = UDim2.new(0, 150, 0, 30)
 btn.Position = UDim2.new(0, 15, 0, y)
