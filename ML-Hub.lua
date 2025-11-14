@@ -363,3 +363,34 @@ mainSection:NewToggle({
         end)
     end
 })
+-- Esto va junto con tus secciones en el script principal
+
+-- Creamos la sección derecha, si aún no existe
+local miscSection = mainTab:NewSection({
+    Title = "Misc",
+    Position = "Right" -- Hace que salga en la columna derecha
+})
+
+-- Agregamos el toggle de Auto Fortune Wheel/Auto Spin
+miscSection:NewToggle({
+    Title = "Auto Spin",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoFortuneWheelActive = state
+        if state then
+            local function openFortuneWheel()
+                while getgenv().autoFortuneWheelActive do
+                    local args = {
+                        [1] = "openFortuneWheel",
+                        [2] = game:GetService("ReplicatedStorage"):WaitForChild("fortuneWheelChances"):WaitForChild("Fortune Wheel")
+                    }
+                    game:GetService("ReplicatedStorage"):WaitForChild("rEvents"):WaitForChild("openFortuneWheelRemote"):InvokeServer(unpack(args))
+                    task.wait() -- No uses wait(0), usa task.wait()
+                end
+            end
+            task.spawn(openFortuneWheel) -- Usa task.spawn que es mejor que coroutine.wrap
+        else
+            getgenv().autoFortuneWheelActive = false
+        end
+    end
+})
