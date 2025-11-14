@@ -11,11 +11,11 @@ local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Workspace = game:GetService('Workspace')
 
--- INFO TAB: Tiempo y ping
+-- -------------------- INFO TAB: Tiempo y ping -------------------------
 local infoTab = Window:NewTab({Title="Info"})
 local infoSection = infoTab:NewSection({Title="Status"})
-local timeLabel = infoSection:NewLabel({Title="Tiempo: 00:00:00"})
-local pingLabel = infoSection:NewLabel({Title="Ping: 0 ms"})
+local timeLabel = infoSection:NewTitle("Tiempo: 00:00:00")  -- USAR NewTitle
+local pingLabel = infoSection:NewTitle("Ping: 0 ms")        -- USAR NewTitle
 
 local startTime = tick()
 task.spawn(function()
@@ -24,15 +24,15 @@ task.spawn(function()
         local hours = math.floor(t/3600)
         local mins = math.floor((t%3600)/60)
         local secs = math.floor(t%60)
-        timeLabel:Set("Tiempo: " .. string.format("%02d:%02d:%02d", hours, mins, secs))
+        timeLabel.Set("Tiempo: " .. string.format("%02d:%02d:%02d", hours, mins, secs))
         local LocalPlayer = Players.LocalPlayer
         local networkPing = math.floor((game:FindFirstChild("Stats") and game.Stats.Network and game.Stats.Network.ServerStatsItem and game.Stats.Network.ServerStatsItem["Data Ping"] and game.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) or math.random(60,110))
-        pingLabel:Set("Ping: " .. tostring(networkPing).." ms")
+        pingLabel.Set("Ping: " .. tostring(networkPing).." ms")
         task.wait(1)
     end
 end)
 
--- FARM TAB
+-- -------------------- FARM TAB --------------------------
 local mainTab = Window:NewTab({Title = "Farm y Utilidades"})
 local mainSection = mainTab:NewSection({Title = "Autos & Resistencia"})
 
