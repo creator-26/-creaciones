@@ -82,7 +82,6 @@ mainSection:NewButton({
 })
 
 mainSection:NewButton({
-        mainSection:NewButton({
     Title = "Antilag",
     Description = "Optimiza FPS y reduce efectos al máximo.",
     Callback = function()
