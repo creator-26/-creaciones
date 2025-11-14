@@ -1,168 +1,328 @@
--- VisualHub.lua adaptado a móvil: botón hide/show y dragTouch
-local VisualHub = {}
-local CoreGui = game:GetService("CoreGui")
-local UIS = game:GetService("UserInputService")
+local Library = loadfile("librerya-tokkatk.txt")()
 
-function VisualHub:Create(title)
-    local gui = Instance.new("ScreenGui")
-    gui.Name = "VisualHub" .. tostring(math.random(1,10000))
-    gui.Parent = CoreGui
-    local frame = Instance.new("Frame", gui)
-    frame.Position = UDim2.new(0.1, 0, 0.12, 0)
-    frame.Size = UDim2.new(0, 380, 0, 480)
-    frame.BackgroundColor3 = Color3.fromRGB(45, 45, 55)
-    frame.BackgroundTransparency = 0.24
-    frame.BorderSizePixel = 2
-    frame.Name = "MainFrame"
+local Window = Library.new({
+    Title = "ML-Hub Premium",
+    Keybind = Enum.KeyCode.RightShift,
+    Accent = Color3.fromRGB(45, 160, 230)
+})
 
-    local titleLbl = Instance.new("TextLabel", frame)
-    titleLbl.Text = title or "Visual Hub"
-    titleLbl.Size = UDim2.new(1, 0, 0, 40)
-    titleLbl.TextSize = 23
-    titleLbl.Font = Enum.Font.GothamBold
-    titleLbl.TextColor3 = Color3.new(1,1,1)
-    titleLbl.BackgroundTransparency = 0.3
-    titleLbl.BackgroundColor3 = Color3.fromRGB(25,25,35)
-    titleLbl.Name = "TitleBar"
+local Players = game:GetService('Players')
+local LocalPlayer = Players.LocalPlayer
+local ReplicatedStorage = game:GetService('ReplicatedStorage')
+local Workspace = game:GetService('Workspace')
 
-    -- Hide button (always visible, top right)
-    local hideBtn = Instance.new("TextButton", gui)
-    hideBtn.Text = "Hide"
-    hideBtn.Size = UDim2.new(0, 60, 0, 32)
-    hideBtn.Position = UDim2.new(1, -65, 0, 5)
-    hideBtn.BackgroundColor3 = Color3.fromRGB(60,60,110)
-    hideBtn.TextColor3 = Color3.new(1,1,1)
-    hideBtn.Font = Enum.Font.GothamSemibold
-    hideBtn.TextSize = 16
-    hideBtn.ZIndex = 15
-    hideBtn.AutoButtonColor = true
-    hideBtn.MouseButton1Click:Connect(function()
-        frame.Visible = not frame.Visible
-        -- Show a "Mostrar" button if oculto
-        if not frame.Visible then
-            hideBtn.Text = "Show"
-        else
-            hideBtn.Text = "Hide"
+-- ================== INFO TAB: TIEMPO y PING ==================
+local infoTab = Window:NewTab({Title="Info"})
+local infoSection = infoTab:NewSection({Title="Status"})
+local timeLabel = infoSection:NewLabel({Title="Tiempo: 00:00:00"})
+local pingLabel = infoSection:NewLabel({Title="Ping: 0 ms"})
+
+local startTime = tick()
+spawn(function()
+    while true do
+        local t = tick() - startTime
+        local hours = math.floor(t/3600)
+        local mins = math.floor((t%3600)/60)
+        local secs = math.floor(t%60)
+        timeLabel:Set("Tiempo: " .. string.format("%02d:%02d:%02d", hours, mins, secs))
+        local networkPing = math.floor((game.Stats and game.Stats.Network and game.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) or (math.random(60,110)))
+        pingLabel:Set("Ping: " .. tostring(networkPing).." ms")
+        wait(1)
+    end
+end)
+
+-- ================== FARM TAB ==================
+local mainTab = Window:NewTab({Title = "Farm y Utilidades"})
+local mainSection = mainTab:NewSection({Title = "Autos & Resistencia"})
+
+mainSection:NewToggle({
+    Title = "Lock Position",
+    Default = false,
+    Callback = function(state)
+        getgenv().lockPosition = state
+        if state and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            getgenv().lockedPos = LocalPlayer.Character.HumanoidRootPart.CFrame
+            if getgenv().lockConn then getgenv().lockConn:Disconnect() end
+            getgenv().lockConn = game:GetService("RunService").Heartbeat:Connect(function()
+                if LocalPlayer.Character and getgenv().lockPosition and getgenv().lockedPos then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = getgenv().lockedPos
+                end
+            end)
+        elseif getgenv().lockConn then
+            getgenv().lockConn:Disconnect()
+            getgenv().lockConn = nil
         end
-    end)
-
-    -- Touch drag for mobile (drag on title)
-    local dragging = false
-local dragStart, startPos
-
-frame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = frame.Position
     end
-end)
-frame.InputEnded:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.Touch then
-        dragging = false
+})
+
+mainSection:NewButton({
+    Title = "Anti AFK",
+    Description = "Evita el kick por inactividad.",
+    Callback = function()
+        if getgenv().afkConn then pcall(function() getgenv().afkConn:Disconnect() end) end
+        local vu = game:GetService("VirtualUser")
+        getgenv().afkConn = LocalPlayer.Idled:Connect(function()
+            vu:CaptureController()
+            vu:ClickButton2(Vector2.new())
+        end)
+        if not getgenv().antiAFKKeepAliveLoop then
+            getgenv().antiAFKKeepAliveLoop = true
+            task.spawn(function()
+                while getgenv().antiAFKKeepAliveLoop do
+                    pcall(function()
+                        vu:CaptureController()
+                        vu:ClickButton2(Vector2.new())
+                    end)
+                    task.wait(300)
+                end
+            end)
+        end
     end
-end)
-frame.InputChanged:Connect(function(input)
-    if dragging and input.UserInputType == Enum.UserInputType.Touch then
-        local delta = input.Position - dragStart
-        frame.Position = UDim2.new(
-            startPos.X.Scale,
-            startPos.X.Offset + delta.X,
-            startPos.Y.Scale,
-            startPos.Y.Offset + delta.Y
-        )
+})
+
+mainSection:NewButton({
+    Title = "Antilag",
+    Description = "Maximiza tu FPS y elimina efectos visuales.",
+    Callback = function()
+        for _, v in pairs(Workspace:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Material = Enum.Material.SmoothPlastic
+                v.Reflectance = 0
+            end
+            if v:IsA("Decal") or v:IsA("Texture") then
+                v.Transparency = 1
+            end
+            if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+                v.Enabled = false
+            end
+            if v:IsA("Explosion") then
+                v:Destroy()
+            end
+        end
+        local Lighting = game:GetService("Lighting")
+        Lighting.Brightness = 1
+        Lighting.FogEnd = 100000
+        Lighting.GlobalShadows = false
+        Lighting.ExposureCompensation = 0
     end
-end)
+})
 
-    return frame
-end
-
-function VisualHub:AddButton(frame, btntext, callback, ypos)
-    local btn = Instance.new("TextButton", frame)
-    btn.Text = btntext or "Botón"
-    btn.Position = UDim2.new(0, 15, 0, ypos)
-    btn.Size = UDim2.new(0, 250, 0, 28)
-    btn.BackgroundColor3 = Color3.fromRGB(65, 113, 175)
-    btn.TextSize = 15
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.Font = Enum.Font.Gotham
-    btn.MouseButton1Click:Connect(function()
-        if typeof(callback)=="function" then pcall(callback) end
-    end)
-    return btn
-end
-function VisualHub:AddSwitch(frame, lbltext, callback, ypos)
-    -- Label
-    local label = Instance.new("TextLabel", frame)
-    label.Text = lbltext
-    label.Position = UDim2.new(0, 15, 0, ypos)
-    label.Size = UDim2.new(0, 210, 0, 30)
-    label.BackgroundTransparency = 1
-    label.TextColor3 = Color3.new(1,1,1)
-    label.Font = Enum.Font.Gotham
-    label.TextSize = 16
-
-    -- Switch
-    local switch = Instance.new("Frame", frame)
-    switch.Size = UDim2.new(0, 32, 0, 18)
-    switch.Position = UDim2.new(0, 250, 0, ypos+8)
-    switch.BackgroundTransparency = 0
-    switch.BackgroundColor3 = Color3.fromRGB(180, 180, 188)
-    switch.BorderSizePixel = 0
-    switch.Name = "Switch"
-    -- Make it rounded
-    local corner = Instance.new("UICorner", switch)
-    corner.CornerRadius = UDim.new(1,0)
-
-    -- Thumb circle
-    local thumb = Instance.new("Frame", switch)
-    thumb.Size = UDim2.new(0, 12, 0, 12)
-    thumb.Position = UDim2.new(0, 2, 0, 2)
-    thumb.BackgroundColor3 = Color3.fromRGB(255,255,255)
-    thumb.BorderSizePixel = 0
-    thumb.Name = "Thumb"
-    thumb.Active = false
-    local thumbCorner = Instance.new("UICorner", thumb)
-    thumbCorner.CornerRadius = UDim.new(1,0)
-    -- Drop shadow effect
-    local shadow = Instance.new("UIStroke", thumb)
-    shadow.Color = Color3.fromRGB(180,180,180)
-    shadow.Thickness = 1
-
-    local active = false
-    local function setState(state)
-    active = state
-    if active then
-        -- VERDE cuando está activado
-        switch.BackgroundColor3 = Color3.fromRGB(46, 204, 113)  -- Verde clásico
-        thumb.Position = UDim2.new(0, 16, 0, 3)
-    else
-        -- ROJO cuando está desactivado
-        switch.BackgroundColor3 = Color3.fromRGB(231, 76, 60)   -- Rojo clásico
-        thumb.Position = UDim2.new(0, 3, 0, 3)
-         end
+mainSection:NewToggle({
+    Title = "Auto Eat Protein Egg 30 Min",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoEatProteinEggActive = state
+        task.spawn(function()
+            while getgenv().autoEatProteinEggActive and LocalPlayer.Character do
+                local eggAte = false
+                for retry = 1, 25 do
+                    local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") 
+                        or LocalPlayer.Character:FindFirstChild("Protein Egg")
+                    if egg then
+                        egg.Parent = LocalPlayer.Character
+                        ReplicatedStorage.muscleEvent:FireServer("rep")
+                        eggAte = true
+                        break
+                    end
+                    task.wait(2)
+                end
+                if eggAte then
+                    for i = 1, 1800 do
+                        if not getgenv().autoEatProteinEggActive then return end
+                        task.wait(1)
+                    end
+                else
+                    task.wait(10)
+                end
+            end
+        end)
     end
-    setState(false)
+})
 
-    switch.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        setState(not active)
-        if typeof(callback)=="function" then pcall(callback, active) end
-           end
-       end)
-    return label, switch
-end
+mainSection:NewToggle({
+    Title = "Anti Knockback",
+    Default = false,
+    Callback = function(state)
+        local player = game.Players.LocalPlayer
+        local character = player and Workspace:FindFirstChild(player.Name)
+        if state then
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local rootPart = character.HumanoidRootPart
+                if not rootPart:FindFirstChild("BodyVelocity") then
+                    local bodyVelocity = Instance.new("BodyVelocity")
+                    bodyVelocity.MaxForce = Vector3.new(100000, 0, 100000)
+                    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+                    bodyVelocity.P = 1250
+                    bodyVelocity.Name = "AntiKnockbackBV"
+                    bodyVelocity.Parent = rootPart
+                end
+            end
+        else
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local rootPart = character.HumanoidRootPart
+                local bv = rootPart:FindFirstChild("AntiKnockbackBV")
+                if bv then bv:Destroy() end
+            end
+        end
+    end
+})
 
-function VisualHub:AddLabel(frame, text, ypos)
-    local label = Instance.new("TextLabel", frame)
-    label.Text = text or "Label"
-    label.Position = UDim2.new(0,20,0,ypos)
-    label.Size = UDim2.new(0, 335, 0, 24)
-    label.TextSize = 17
-    label.Font = Enum.Font.GothamSemibold
-    label.TextColor3 = Color3.new(1,1,1)
-    label.BackgroundTransparency = 1
-    return label
-end
+mainSection:NewToggle({
+    Title = "Auto Equip Punch",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoEquipPunch = state
+        task.spawn(function()
+            while getgenv().autoEquipPunch and LocalPlayer.Character do
+                local punch = LocalPlayer.Backpack:FindFirstChild("Punch") or LocalPlayer.Character:FindFirstChild("Punch")
+                if punch then punch.Parent = LocalPlayer.Character end
+                wait(0.05)
+            end
+        end)
+    end
+})
 
-return VisualHub
+mainSection:NewToggle({
+    Title = "Unlock Fast Punch",
+    Default = false,
+    Callback = function(state)
+        getgenv().fastPunch = state
+        task.spawn(function()
+            while getgenv().fastPunch and LocalPlayer.Character do
+                local punch = LocalPlayer.Character:FindFirstChild("Punch")
+                if punch then
+                    ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                    ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+                end
+                task.wait(0.01)
+            end
+        end)
+    end
+})
+
+mainSection:NewToggle({
+    Title = "Auto Golpear Roca 10M",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoRock10M = state
+        task.spawn(function()
+            while getgenv().autoRock10M and LocalPlayer.Character do
+                pcall(function()
+                    if LocalPlayer.Durability.Value >= 10000000 then
+                        local character = LocalPlayer.Character
+                        if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                            for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
+                                if v.Name == "neededDurability" and v.Value == 10000000 then
+                                    local rock = v.Parent:FindFirstChild("Rock")
+                                    if rock then
+                                        firetouchinterest(rock, character.RightHand, 0)
+                                        firetouchinterest(rock, character.RightHand, 1)
+                                        firetouchinterest(rock, character.LeftHand, 0)
+                                        firetouchinterest(rock, character.LeftHand, 1)
+                                        local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
+                                        if punch then punch.Parent = character end
+                                        LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                                        LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+                task.wait(0.01)
+            end
+        end)
+    end
+})
+
+mainSection:NewToggle({
+    Title = "Auto Golpear Roca 1M",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoRock1M = state
+        task.spawn(function()
+            while getgenv().autoRock1M and LocalPlayer.Character do
+                pcall(function()
+                    if LocalPlayer.Durability.Value >= 1000000 then
+                        local character = LocalPlayer.Character
+                        if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                            for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
+                                if v.Name == "neededDurability" and v.Value == 1000000 then
+                                    local rock = v.Parent:FindFirstChild("Rock")
+                                    if rock then
+                                        firetouchinterest(rock, character.RightHand, 0)
+                                        firetouchinterest(rock, character.RightHand, 1)
+                                        firetouchinterest(rock, character.LeftHand, 0)
+                                        firetouchinterest(rock, character.LeftHand, 1)
+                                        local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
+                                        if punch then punch.Parent = character end
+                                        LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                                        LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+                task.wait(0.01)
+            end
+        end)
+    end
+})
+
+mainSection:NewToggle({
+    Title = "Auto Golpear Roca 5M",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoRock5M = state
+        task.spawn(function()
+            while getgenv().autoRock5M and LocalPlayer.Character do
+                pcall(function()
+                    if LocalPlayer.Durability.Value >= 5000000 then
+                        local character = LocalPlayer.Character
+                        if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                            for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
+                                if v.Name == "neededDurability" and v.Value == 5000000 then
+                                    local rock = v.Parent:FindFirstChild("Rock")
+                                    if rock then
+                                        firetouchinterest(rock, character.RightHand, 0)
+                                        firetouchinterest(rock, character.RightHand, 1)
+                                        firetouchinterest(rock, character.LeftHand, 0)
+                                        firetouchinterest(rock, character.LeftHand, 1)
+                                        local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
+                                        if punch then punch.Parent = character end
+                                        LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                                        LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                                        break
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end)
+                task.wait(0.01)
+            end
+        end)
+    end
+})
+
+mainSection:NewToggle({
+    Title = "Auto Pushups",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoPushups = state
+        task.spawn(function()
+            while getgenv().autoPushups do
+                local char = LocalPlayer.Character
+                local push = char and char:FindFirstChild("Pushups") or LocalPlayer.Backpack:FindFirstChild("Pushups")
+                if push and push.Parent ~= char then push.Parent = char end
+                if char and char:FindFirstChild("Pushups") then
+                    LocalPlayer.muscleEvent:FireServer("rep")
+                end
+                task.wait(0.01)
+            end
+        end)
+    end
+})
