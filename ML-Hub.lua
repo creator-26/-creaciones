@@ -1,4 +1,4 @@
-local Library = loadfile(loadstring(game:HttpGet("https://raw.githubusercontent.com/creator-26/-creaciones/refs/heads/main/librerya%20tokkatk.txt"))()
+local Library = loadstring(game:HttpGet("https://raw.githubusercontent.com/creator-26/-creaciones/refs/heads/main/librerya%20tokkatk.txt"))()
 
 local Window = Library.new({
     Title = "ML-Hub",
