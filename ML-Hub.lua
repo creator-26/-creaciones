@@ -1,365 +1,329 @@
--- ML-Hub personalizado VisualHub
-local VisualHub = loadstring(game:HttpGet("https://raw.githubusercontent.com/creator-26/-creaciones/refs/heads/main/VisualHub.lua"))()
+local Library = loadfile("librerya-tokkatk.txt")()
+
+local Window = Library.new({
+    Title = "ML-Hub Premium",
+    Keybind = Enum.KeyCode.RightShift,
+    Accent = Color3.fromRGB(45, 160, 230)
+})
+
 local Players = game:GetService('Players')
 local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Workspace = game:GetService('Workspace')
 
-local gui = VisualHub:Create("ML-Hub")
-local y = 50
+-- -------------------- INFO TAB: Tiempo y ping -------------------------
+local infoTab = Window:NewTab({Title="Info"})
+local infoSection = infoTab:NewSection({Title="Status"})
+local timeLabel = infoSection:NewLabel({Title="Tiempo: 00:00:00"})
+local pingLabel = infoSection:NewLabel({Title="Ping: 0 ms"})
 
--- Lock Position
-VisualHub:AddSwitch(gui, "Lock Position", function(state)
-    getgenv().lockPosition = state
-    if state and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
-        getgenv().lockedPos = LocalPlayer.Character.HumanoidRootPart.CFrame
-        if getgenv().lockConn then getgenv().lockConn:Disconnect() end
-        getgenv().lockConn = game:GetService("RunService").Heartbeat:Connect(function()
-            if LocalPlayer.Character and getgenv().lockPosition and getgenv().lockedPos then
-                LocalPlayer.Character.HumanoidRootPart.CFrame = getgenv().lockedPos
-            end
-        end)
-    elseif getgenv().lockConn then
-        getgenv().lockConn:Disconnect()
-        getgenv().lockConn = nil
-    end
-end, y)
-y = y + 26
-
--- Anti AFK
-local btn = VisualHub:AddButton(gui, "Anti AFK", function()
-    -- Desconecta cualquier anti afk previo
-    if getgenv().afkConn then
-        pcall(function() getgenv().afkConn:Disconnect() end)
-        getgenv().afkConn = nil
-    end
-    local Players = game:GetService("Players")
-    local LocalPlayer = Players.LocalPlayer
-    local vu = game:GetService("VirtualUser")
-    local vim = game:GetService("VirtualInputManager")
-
-    -- Conexión robusta combinando los mejores hubs
-    getgenv().afkConn = LocalPlayer.Idled:Connect(function()
-        vu:CaptureController()
-        vu:ClickButton2(Vector2.new())
-        -- Barra espaciadora virtual (según Monarc/Supernova)
-        if vim and vim.SendKeyEvent then
-            vim:SendKeyEvent(true, Enum.KeyCode.Space, false, game)
-        end
-        -- Mini prevención ante desconexión (redundante pero seguro)
-        pcall(function()
-            vu:CaptureController()
-        end)
-    end)
-    -- Keepalive cada 5 minutos (extra seguro, cubre servers estrictos)
-    if not getgenv().antiAFKKeepAliveLoop then
-        getgenv().antiAFKKeepAliveLoop = true
-        task.spawn(function()
-            while getgenv().antiAFKKeepAliveLoop do
-                pcall(function()
-                    vu:CaptureController()
-                    vu:ClickButton2(Vector2.new())
-                end)
-                task.wait(300)
-            end
-        end)
-    end
-end, y)
-btn.Size = UDim2.new(0, 150, 0, 30)
-btn.Position = UDim2.new(0, 15, 0, y)
-
--- Cuadro informativo a la derecha
-local infoFrame = Instance.new("Frame", btn.Parent)
-infoFrame.Size = UDim2.new(0, 67, 0, 34)
-infoFrame.Position = UDim2.new(0, 180, 0, y) -- ajusta 180 según posición de btn
-infoFrame.BackgroundColor3 = Color3.fromRGB(32,32,44)
-infoFrame.BorderSizePixel = 1
-
-local timeLabel = Instance.new("TextLabel", infoFrame)
-timeLabel.Size = UDim2.new(1,0,0,16)
-timeLabel.Position = UDim2.new(0,0,0,1)
-timeLabel.Text = "00:00:00"
-timeLabel.TextSize = 11
-timeLabel.TextColor3 = Color3.fromRGB(190,250,190)
-timeLabel.BackgroundTransparency = 1
-timeLabel.Font = Enum.Font.Gotham
-
-local pingLabel = Instance.new("TextLabel", infoFrame)
-pingLabel.Size = UDim2.new(1,0,0,15)
-pingLabel.Position = UDim2.new(0,0,0,18)
-pingLabel.Text = "0 ms"
-pingLabel.TextSize = 11
-pingLabel.TextColor3 = Color3.fromRGB(160,210,255)
-pingLabel.BackgroundTransparency = 1
-pingLabel.Font = Enum.Font.Gotham
-
--- Cada segundo: actualiza hora y ping
 local startTime = tick()
 spawn(function()
-    while infoFrame.Parent do
+    while true do
         local t = tick() - startTime
         local hours = math.floor(t/3600)
         local mins = math.floor((t%3600)/60)
         local secs = math.floor(t%60)
-        timeLabel.Text = string.format("%02d:%02d:%02d", hours, mins, secs)
-        -- Roblox ping real: LocalPlayer:GetNetworkPing() solo en algunos exploits,
-        -- si no está disponible, simula uno random bajo.
+        timeLabel:Set("Tiempo: " .. string.format("%02d:%02d:%02d", hours, mins, secs))
+        local LocalPlayer = game:GetService('Players').LocalPlayer
         local networkPing = math.floor((game.Stats and game.Stats.Network and game.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) or (math.random(60,110)))
-        pingLabel.Text = tostring(networkPing).." ms"
+        pingLabel:Set("Ping: " .. tostring(networkPing).." ms")
         wait(1)
     end
 end)
-y = y + 26
 
--- Antilag
-local btn = VisualHub:AddButton(gui, "Antilag ", function()
-    -- Cambia todos los materiales a SmoothPlastic y reflectancia a 0
-    for _, v in pairs(Workspace:GetDescendants()) do
-        if v:IsA("BasePart") then
-            v.Material = Enum.Material.SmoothPlastic
-            v.Reflectance = 0
-        end
-        if v:IsA("Decal") or v:IsA("Texture") then
-            v.Transparency = 1
-        end
-        if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
-            v.Enabled = false
-        end
-        if v:IsA("Explosion") then
-            v:Destroy()
+-- -------------------- FARM TAB --------------------------
+local mainTab = Window:NewTab({Title = "Farm y Utilidades"})
+local mainSection = mainTab:NewSection({Title = "Autos & Resistencia"})
+
+mainSection:NewToggle({
+    Title = "Lock Position",
+    Default = false,
+    Callback = function(state)
+        getgenv().lockPosition = state
+        if state and LocalPlayer.Character and LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then
+            getgenv().lockedPos = LocalPlayer.Character.HumanoidRootPart.CFrame
+            if getgenv().lockConn then getgenv().lockConn:Disconnect() end
+            getgenv().lockConn = game:GetService("RunService").Heartbeat:Connect(function()
+                if LocalPlayer.Character and getgenv().lockPosition and getgenv().lockedPos then
+                    LocalPlayer.Character.HumanoidRootPart.CFrame = getgenv().lockedPos
+                end
+            end)
+        elseif getgenv().lockConn then
+            getgenv().lockConn:Disconnect()
+            getgenv().lockConn = nil
         end
     end
-    -- Desactiva efectos ambientales para aún más rendimiento
-    local Lighting = game:GetService("Lighting")
-    Lighting.Brightness = 1
-    Lighting.FogEnd = 100000
-    Lighting.GlobalShadows = false
-    Lighting.ExposureCompensation = 0
-end, y)
-btn.Size = UDim2.new(0, 150, 0, 30)  -- ancho 150, alto 35 (ajusta como prefieras)
-btn.Position = UDim2.new(0, 15, 0, y) 
-y = y + 26
+})
 
--- Auto Egg cada 30 minutos
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
-VisualHub:AddSwitch(gui, "Auto Eat Protein Egg 30 Min", function(state)
-    getgenv().autoEatProteinEggActive = state
-    task.spawn(function()
-        while getgenv().autoEatProteinEggActive and LocalPlayer.Character do
-            -- Reintenta consumir el huevo si no lo logra en el primer intento
-            local eggAte = false
-            for retry = 1, 25 do
-                local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") 
-                    or LocalPlayer.Character:FindFirstChild("Protein Egg")
-                if egg then
-                    egg.Parent = LocalPlayer.Character
-                    ReplicatedStorage.muscleEvent:FireServer("rep")
-                    eggAte = true
-                    break
+mainSection:NewButton({
+    Title = "Anti AFK",
+    Description = "Evita el kick por inactividad.",
+    Callback = function()
+        if getgenv().afkConn then pcall(function() getgenv().afkConn:Disconnect() end) end
+        local vu = game:GetService("VirtualUser")
+        getgenv().afkConn = LocalPlayer.Idled:Connect(function()
+            vu:CaptureController()
+            vu:ClickButton2(Vector2.new())
+        end)
+        if not getgenv().antiAFKKeepAliveLoop then
+            getgenv().antiAFKKeepAliveLoop = true
+            task.spawn(function()
+                while getgenv().antiAFKKeepAliveLoop do
+                    pcall(function()
+                        vu:CaptureController()
+                        vu:ClickButton2(Vector2.new())
+                    end)
+                    task.wait(300)
                 end
-                task.wait(2)
+            end)
+        end
+    end
+})
+
+mainSection:NewButton({
+    Title = "Antilag",
+    Description = "Maximiza tu FPS y elimina efectos visuales.",
+    Callback = function()
+        for _, v in pairs(Workspace:GetDescendants()) do
+            if v:IsA("BasePart") then
+                v.Material = Enum.Material.SmoothPlastic
+                v.Reflectance = 0
             end
-            -- Solo si lo consumió, espera 30 minutos. Si no, reintenta hasta lograrlo.
-            if eggAte then
-                for i = 1, 1800 do
-                    if not getgenv().autoEatProteinEggActive then return end
-                    task.wait(1)
-                end
-            else
-                task.wait(10) -- Si no se pudo comer huevo, reintenta más rápido
+            if v:IsA("Decal") or v:IsA("Texture") then
+                v.Transparency = 1
+            end
+            if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+                v.Enabled = false
+            end
+            if v:IsA("Explosion") then
+                v:Destroy()
             end
         end
-    end)
-end, y)
-y = y + 26
--- Anti Knockback
-VisualHub:AddSwitch(gui, "Anti Knockback", function(state)
-    local player = game.Players.LocalPlayer
-    local character = player and game.Workspace:FindFirstChild(player.Name)
-    if state then
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            local rootPart = character.HumanoidRootPart
-            if not rootPart:FindFirstChild("BodyVelocity") then
-                local bodyVelocity = Instance.new("BodyVelocity")
-                bodyVelocity.MaxForce = Vector3.new(100000, 0, 100000)
-                bodyVelocity.Velocity = Vector3.new(0, 0, 0)
-                bodyVelocity.P = 1250
-                bodyVelocity.Name = "AntiKnockbackBV"
-                bodyVelocity.Parent = rootPart
+        local Lighting = game:GetService("Lighting")
+        Lighting.Brightness = 1
+        Lighting.FogEnd = 100000
+        Lighting.GlobalShadows = false
+        Lighting.ExposureCompensation = 0
+    end
+})
+
+mainSection:NewToggle({
+    Title = "Auto Eat Protein Egg 30 Min",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoEatProteinEggActive = state
+        task.spawn(function()
+            while getgenv().autoEatProteinEggActive and LocalPlayer.Character do
+                local eggAte = false
+                for retry = 1, 25 do
+                    local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") 
+                        or LocalPlayer.Character:FindFirstChild("Protein Egg")
+                    if egg then
+                        egg.Parent = LocalPlayer.Character
+                        ReplicatedStorage.muscleEvent:FireServer("rep")
+                        eggAte = true
+                        break
+                    end
+                    task.wait(2)
+                end
+                if eggAte then
+                    for i = 1, 1800 do
+                        if not getgenv().autoEatProteinEggActive then return end
+                        task.wait(1)
+                    end
+                else
+                    task.wait(10)
+                end
             end
-        end
-    else
-        if character and character:FindFirstChild("HumanoidRootPart") then
-            local rootPart = character.HumanoidRootPart
-            local bv = rootPart:FindFirstChild("AntiKnockbackBV")
-            if bv then
-                bv:Destroy()
+        end)
+    end
+})
+
+mainSection:NewToggle({
+    Title = "Anti Knockback",
+    Default = false,
+    Callback = function(state)
+        local player = game.Players.LocalPlayer
+        local character = player and Workspace:FindFirstChild(player.Name)
+        if state then
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local rootPart = character.HumanoidRootPart
+                if not rootPart:FindFirstChild("BodyVelocity") then
+                    local bodyVelocity = Instance.new("BodyVelocity")
+                    bodyVelocity.MaxForce = Vector3.new(100000, 0, 100000)
+                    bodyVelocity.Velocity = Vector3.new(0, 0, 0)
+                    bodyVelocity.P = 1250
+                    bodyVelocity.Name = "AntiKnockbackBV"
+                    bodyVelocity.Parent = rootPart
+                end
+            end
+        else
+            if character and character:FindFirstChild("HumanoidRootPart") then
+                local rootPart = character.HumanoidRootPart
+                local bv = rootPart:FindFirstChild("AntiKnockbackBV")
+                if bv then bv:Destroy() end
             end
         end
     end
-end, y)
-y = y + 26
--- Auto Equip Punch
-VisualHub:AddSwitch(gui, "Auto Equip Punch", function(state)
-    getgenv().autoEquipPunch = state
-    task.spawn(function()
-        while getgenv().autoEquipPunch and LocalPlayer.Character do
-            local punch = LocalPlayer.Backpack:FindFirstChild("Punch") or LocalPlayer.Character:FindFirstChild("Punch")
-            if punch then
-                punch.Parent = LocalPlayer.Character
-            end
-            wait(0.05)
-        end
-    end)
-end, y)
-y = y + 26
+})
 
--- Unlock Fast Punch
-VisualHub:AddSwitch(gui, "Unlock Fast Punch", function(state)
-    getgenv().fastPunch = state
-    task.spawn(function()
-        while getgenv().fastPunch and LocalPlayer.Character do
-            local punch = LocalPlayer.Character:FindFirstChild("Punch")
-            if punch then
-                ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
-                ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+mainSection:NewToggle({
+    Title = "Auto Equip Punch",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoEquipPunch = state
+        task.spawn(function()
+            while getgenv().autoEquipPunch and LocalPlayer.Character do
+                local punch = LocalPlayer.Backpack:FindFirstChild("Punch") or LocalPlayer.Character:FindFirstChild("Punch")
+                if punch then punch.Parent = LocalPlayer.Character end
+                wait(0.05)
             end
-            task.wait(0.01) -- Más bajo = más velocidad
-        end
-    end)
-end, y)
-y = y + 26
+        end)
+    end
+})
 
--- Auto Rock de 10M
-VisualHub:AddSwitch(gui, "Auto Golpear Roca 10M", function(state)
-    getgenv().autoRock10M = state
-    task.spawn(function()
-        while getgenv().autoRock10M and LocalPlayer.Character do
-            pcall(function()
-                if LocalPlayer.Durability.Value >= 10000000 then
-                    local character = LocalPlayer.Character
-                    if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
-                        for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
-                            if v.Name == "neededDurability" and v.Value == 10000000 then
-                                local rock = v.Parent:FindFirstChild("Rock")
-                                if rock then
-                                    firetouchinterest(rock, character.RightHand, 0)
-                                    firetouchinterest(rock, character.RightHand, 1)
-                                    firetouchinterest(rock, character.LeftHand, 0)
-                                    firetouchinterest(rock, character.LeftHand, 1)
-                                    -- Equipar puños automático
-                                    local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
-                                    if punch then
-                                        punch.Parent = character
+mainSection:NewToggle({
+    Title = "Unlock Fast Punch",
+    Default = false,
+    Callback = function(state)
+        getgenv().fastPunch = state
+        task.spawn(function()
+            while getgenv().fastPunch and LocalPlayer.Character do
+                local punch = LocalPlayer.Character:FindFirstChild("Punch")
+                if punch then
+                    ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
+                    ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
+                end
+                task.wait(0.01)
+            end
+        end)
+    end
+})
+
+mainSection:NewToggle({
+    Title = "Auto Golpear Roca 10M",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoRock10M = state
+        task.spawn(function()
+            while getgenv().autoRock10M and LocalPlayer.Character do
+                pcall(function()
+                    if LocalPlayer.Durability.Value >= 10000000 then
+                        local character = LocalPlayer.Character
+                        if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                            for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
+                                if v.Name == "neededDurability" and v.Value == 10000000 then
+                                    local rock = v.Parent:FindFirstChild("Rock")
+                                    if rock then
+                                        firetouchinterest(rock, character.RightHand, 0)
+                                        firetouchinterest(rock, character.RightHand, 1)
+                                        firetouchinterest(rock, character.LeftHand, 0)
+                                        firetouchinterest(rock, character.LeftHand, 1)
+                                        local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
+                                        if punch then punch.Parent = character end
+                                        LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                                        LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                                        break
                                     end
-                                    LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                                    LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                                    break
                                 end
                             end
                         end
                     end
-                end
-            end)
-            task.wait(0.01)
-        end
-    end)
-end, y)
-y = y + 26
+                end)
+                task.wait(0.01)
+            end
+        end)
+    end
+})
 
--- Auto Rock de 1M
-VisualHub:AddSwitch(gui, "Auto Golpear Roca 1M", function(state)
-    getgenv().autoRock1M = state
-    task.spawn(function()
-        while getgenv().autoRock1M and LocalPlayer.Character do
-            pcall(function()
-                if LocalPlayer.Durability.Value >= 1000000 then
-                    local character = LocalPlayer.Character
-                    if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
-                        for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
-                            if v.Name == "neededDurability" and v.Value == 1000000 then
-                                local rock = v.Parent:FindFirstChild("Rock")
-                                if rock then
-                                    firetouchinterest(rock, character.RightHand, 0)
-                                    firetouchinterest(rock, character.RightHand, 1)
-                                    firetouchinterest(rock, character.LeftHand, 0)
-                                    firetouchinterest(rock, character.LeftHand, 1)
-                                    -- Equipar puños automático
-                                    local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
-                                    if punch then
-                                        punch.Parent = character
+mainSection:NewToggle({
+    Title = "Auto Golpear Roca 1M",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoRock1M = state
+        task.spawn(function()
+            while getgenv().autoRock1M and LocalPlayer.Character do
+                pcall(function()
+                    if LocalPlayer.Durability.Value >= 1000000 then
+                        local character = LocalPlayer.Character
+                        if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                            for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
+                                if v.Name == "neededDurability" and v.Value == 1000000 then
+                                    local rock = v.Parent:FindFirstChild("Rock")
+                                    if rock then
+                                        firetouchinterest(rock, character.RightHand, 0)
+                                        firetouchinterest(rock, character.RightHand, 1)
+                                        firetouchinterest(rock, character.LeftHand, 0)
+                                        firetouchinterest(rock, character.LeftHand, 1)
+                                        local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
+                                        if punch then punch.Parent = character end
+                                        LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                                        LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                                        break
                                     end
-                                    LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                                    LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                                    break
                                 end
                             end
                         end
                     end
-                end
-            end)
-            task.wait(0.01)
-        end
-    end)
-end, y)
-y = y + 26
---roca 5M
-VisualHub:AddSwitch(gui, "Auto Golpear Roca 5M", function(state)
-    getgenv().autoRock5M = state
-    task.spawn(function()
-        while getgenv().autoRock5M and LocalPlayer.Character do
-            pcall(function()
-                if LocalPlayer.Durability.Value >= 5000000 then
-                    local character = LocalPlayer.Character
-                    if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
-                        for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
-                            if v.Name == "neededDurability" and v.Value == 5000000 then
-                                local rock = v.Parent:FindFirstChild("Rock")
-                                if rock then
-                                    firetouchinterest(rock, character.RightHand, 0)
-                                    firetouchinterest(rock, character.RightHand, 1)
-                                    firetouchinterest(rock, character.LeftHand, 0)
-                                    firetouchinterest(rock, character.LeftHand, 1)
-                                    -- Equipar puños automático
-                                    local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
-                                    if punch then
-                                        punch.Parent = character
+                end)
+                task.wait(0.01)
+            end
+        end)
+    end
+})
+
+mainSection:NewToggle({
+    Title = "Auto Golpear Roca 5M",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoRock5M = state
+        task.spawn(function()
+            while getgenv().autoRock5M and LocalPlayer.Character do
+                pcall(function()
+                    if LocalPlayer.Durability.Value >= 5000000 then
+                        local character = LocalPlayer.Character
+                        if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
+                            for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
+                                if v.Name == "neededDurability" and v.Value == 5000000 then
+                                    local rock = v.Parent:FindFirstChild("Rock")
+                                    if rock then
+                                        firetouchinterest(rock, character.RightHand, 0)
+                                        firetouchinterest(rock, character.RightHand, 1)
+                                        firetouchinterest(rock, character.LeftHand, 0)
+                                        firetouchinterest(rock, character.LeftHand, 1)
+                                        local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
+                                        if punch then punch.Parent = character end
+                                        LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                                        LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                                        break
                                     end
-                                    LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                                    LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                                    break
                                 end
                             end
                         end
                     end
+                end)
+                task.wait(0.01)
+            end
+        end)
+    end
+})
+
+mainSection:NewToggle({
+    Title = "Auto Pushups",
+    Default = false,
+    Callback = function(state)
+        getgenv().autoPushups = state
+        task.spawn(function()
+            while getgenv().autoPushups do
+                local char = LocalPlayer.Character
+                local push = char and char:FindFirstChild("Pushups") or LocalPlayer.Backpack:FindFirstChild("Pushups")
+                if push and push.Parent ~= char then push.Parent = char end
+                if char and char:FindFirstChild("Pushups") then
+                    LocalPlayer.muscleEvent:FireServer("rep")
                 end
-            end)
-            task.wait(0.01)
-        end
-    end)
-end, y)
-y = y + 26
---Auto Pushups 
-VisualHub:AddSwitch(gui, "Auto Pushups", function(state)
-    getgenv().autoPushups = state
-    task.spawn(function()
-        while getgenv().autoPushups do
-            -- Intentar equipar Pushups
-            local char = LocalPlayer.Character
-            local push = char and char:FindFirstChild("Pushups") or LocalPlayer.Backpack:FindFirstChild("Pushups")
-            if push and push.Parent ~= char then
-                push.Parent = char
+                task.wait(0.01)
             end
-            -- Solo spamear "rep" si la herramienta está equipada
-            if char and char:FindFirstChild("Pushups") then
-                LocalPlayer.muscleEvent:FireServer("rep")
-            end
-            task.wait(0.01) -- Puedes bajar a 0.08 o 0.05 para más rapidez
-        end
-    end)
-end, y)
-y = y + 26
--- El menú muestra todo bien, cada switch aparece y puedes reordenar a gusto.
+        end)
+    end
+})
