@@ -82,32 +82,69 @@ mainSection:NewButton({
 })
 
 mainSection:NewButton({
+        mainSection:NewButton({
     Title = "Antilag",
-    Description = "Maximiza tu FPS y elimina efectos visuales.",
+    Description = "Optimiza FPS y reduce efectos al máximo.",
     Callback = function()
-        for _, v in pairs(Workspace:GetDescendants()) do
+        -- Simplifica materiales y elimina reflejos
+        for _, v in ipairs(Workspace:GetDescendants()) do
             if v:IsA("BasePart") then
                 v.Material = Enum.Material.SmoothPlastic
                 v.Reflectance = 0
+                v.CastShadow = false
             end
             if v:IsA("Decal") or v:IsA("Texture") then
                 v.Transparency = 1
             end
-            if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") then
+            if v:IsA("ParticleEmitter") or v:IsA("Trail") or v:IsA("Smoke") or v:IsA("Fire") or v:IsA("Sparkles") or v:IsA("Beam") then
                 v.Enabled = false
             end
-            if v:IsA("Explosion") then
+            if v:IsA("Explosion") or v:IsA("Sound") then
                 v:Destroy()
             end
+            if v:IsA("SurfaceAppearance") or v:IsA("Highlight") or v:IsA("Shimmer") then
+                v:Destroy()
+            end
+            if v:IsA("MeshPart") then
+                v.TextureID = ""
+            end
+            if v:IsA("PointLight") or v:IsA("SpotLight") or v:IsA("SurfaceLight") then
+                v.Enabled = false
+            end
         end
+
+        -- Lighting settings súper bajos
         local Lighting = game:GetService("Lighting")
         Lighting.Brightness = 1
-        Lighting.FogEnd = 100000
+        Lighting.FogEnd = 1e10
         Lighting.GlobalShadows = false
         Lighting.ExposureCompensation = 0
+        Lighting.OutdoorAmbient = Color3.fromRGB(127,127,127)
+        Lighting.ClockTime = 14
+        Lighting.EnvironmentDiffuseScale = 0
+        Lighting.EnvironmentSpecularScale = 0
+        -- Elimina efectos de Lighting
+        for _, e in ipairs(Lighting:GetChildren()) do
+            if e:IsA("BlurEffect") or e:IsA("SunRaysEffect") or e:IsA("ColorCorrectionEffect") or e:IsA("BloomEffect") or e:IsA("DepthOfFieldEffect") or e:IsA("Atmosphere") then
+                e:Destroy()
+            end
+        end
+
+        -- Reduce Textures de Terrain (si el juego usa Terrain)
+        if Workspace:FindFirstChildOfClass("Terrain") then
+            Workspace.Terrain.WaterWaveSize = 0
+            Workspace.Terrain.WaterWaveSpeed = 0
+            Workspace.Terrain.WaterReflectance = 0
+            Workspace.Terrain.WaterTransparency = 0
+        end
+
+        -- Intenta deshabilitar efectos especiales extra
+        if game:GetService("StarterGui"):FindFirstChild("Blur") then
+            game:GetService("StarterGui").Blur:Destroy()
+        end
     end
 })
-
+    
 mainSection:NewToggle({
     Title = "Auto Eat Protein Egg 30 Min",
     Default = false,
