@@ -11,28 +11,28 @@ local LocalPlayer = Players.LocalPlayer
 local ReplicatedStorage = game:GetService('ReplicatedStorage')
 local Workspace = game:GetService('Workspace')
 
--- -------------------- INFO TAB: Tiempo y ping -------------------------
+-- INFO TAB: Tiempo y ping
 local infoTab = Window:NewTab({Title="Info"})
 local infoSection = infoTab:NewSection({Title="Status"})
 local timeLabel = infoSection:NewLabel({Title="Tiempo: 00:00:00"})
 local pingLabel = infoSection:NewLabel({Title="Ping: 0 ms"})
 
 local startTime = tick()
-spawn(function()
+task.spawn(function()
     while true do
         local t = tick() - startTime
         local hours = math.floor(t/3600)
         local mins = math.floor((t%3600)/60)
         local secs = math.floor(t%60)
         timeLabel:Set("Tiempo: " .. string.format("%02d:%02d:%02d", hours, mins, secs))
-        local LocalPlayer = game:GetService('Players').LocalPlayer
-        local networkPing = math.floor((game.Stats and game.Stats.Network and game.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) or (math.random(60,110)))
+        local LocalPlayer = Players.LocalPlayer
+        local networkPing = math.floor((game:FindFirstChild("Stats") and game.Stats.Network and game.Stats.Network.ServerStatsItem and game.Stats.Network.ServerStatsItem["Data Ping"] and game.Stats.Network.ServerStatsItem["Data Ping"]:GetValue()) or math.random(60,110))
         pingLabel:Set("Ping: " .. tostring(networkPing).." ms")
-        wait(1)
+        task.wait(1)
     end
 end)
 
--- -------------------- FARM TAB --------------------------
+-- FARM TAB
 local mainTab = Window:NewTab({Title = "Farm y Utilidades"})
 local mainSection = mainTab:NewSection({Title = "Autos & Resistencia"})
 
@@ -144,8 +144,8 @@ mainSection:NewToggle({
     Title = "Anti Knockback",
     Default = false,
     Callback = function(state)
-        local player = game.Players.LocalPlayer
-        local character = player and Workspace:FindFirstChild(player.Name)
+        local player = Players.LocalPlayer
+        local character = Workspace:FindFirstChild(player.Name)
         if state then
             if character and character:FindFirstChild("HumanoidRootPart") then
                 local rootPart = character.HumanoidRootPart
@@ -177,7 +177,7 @@ mainSection:NewToggle({
             while getgenv().autoEquipPunch and LocalPlayer.Character do
                 local punch = LocalPlayer.Backpack:FindFirstChild("Punch") or LocalPlayer.Character:FindFirstChild("Punch")
                 if punch then punch.Parent = LocalPlayer.Character end
-                wait(0.05)
+                task.wait(0.05)
             end
         end)
     end
