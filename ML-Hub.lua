@@ -143,38 +143,56 @@ mainSection:NewButton({
         end
     end
 })
-    
+
+--Auto Egg 30 min
+-- Variable de estado global por si otro script también la usa
+getgenv().autoEatProteinEggEnabled = false
+
+local function eatProteinEggNew()
+    local player = game.Players.LocalPlayer
+    local backpack = player:FindFirstChild("Backpack")
+    local character = player.Character or player.CharacterAdded:Wait()
+
+    if not backpack then
+        warn("[AutoEgg] No se encontró Backpack.")
+        return
+    end
+    local egg = backpack:FindFirstChild("Protein Egg")
+        or (character and character:FindFirstChild("Protein Egg"))
+    if egg then
+        egg.Parent = character
+        pcall(function()
+            egg:Activate()
+        end)
+        print("[AutoEgg] Protein Egg consumido.")
+    else
+        warn("[AutoEgg] No se encontró Protein Egg en Backpack ni en Character.")
+    end
+end
+
+-- Proceso autosostenido cada 30 minutos
+task.spawn(function()
+    while true do
+        if getgenv().autoEatProteinEggEnabled then
+            eatProteinEggNew()
+            task.wait(1800) -- 30 minutos
+        else
+            task.wait(1)
+        end
+    end
+end)
+
+-- El toggle en el menú izquierdo
 mainSection:NewToggle({
-    Title = "Auto Eat Protein Egg 30 Min",
+    Title = "Auto Protein Egg 30 Min",
     Default = false,
     Callback = function(state)
-        getgenv().autoEatProteinEggActive = state
-        task.spawn(function()
-            while getgenv().autoEatProteinEggActive and LocalPlayer.Character do
-                local eggAte = false
-                for retry = 1, 25 do
-                    local egg = LocalPlayer.Backpack:FindFirstChild("Protein Egg") 
-                        or LocalPlayer.Character:FindFirstChild("Protein Egg")
-                    if egg then
-                        egg.Parent = LocalPlayer.Character
-                        ReplicatedStorage.muscleEvent:FireServer("rep")
-                        eggAte = true
-                        break
-                    end
-                    task.wait(2)
-                end
-                if eggAte then
-                    for i = 1, 1800 do
-                        if not getgenv().autoEatProteinEggActive then return end
-                        task.wait(1)
-                    end
-                else
-                    task.wait(10)
-                end
-            end
-        end)
+        getgenv().autoEatProteinEggEnabled = state
+        print(state and "[AutoEgg] Activado." or "[AutoEgg] Desactivado.")
     end
 })
+    
+
 
 mainSection:NewToggle({
     Title = "Anti Knockback",
