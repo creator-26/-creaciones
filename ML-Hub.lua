@@ -1,7 +1,7 @@
-local Library = loadfile("librerya-tokkatk.txt")()
+local Library = loadfile(loadstring(game:HttpGet("https://raw.githubusercontent.com/creator-26/-creaciones/refs/heads/main/librerya%20tokkatk.txt"))()
 
 local Window = Library.new({
-    Title = "ML-Hub Premium",
+    Title = "ML-Hub",
     Keybind = Enum.KeyCode.RightShift,
     Accent = Color3.fromRGB(45, 160, 230)
 })
