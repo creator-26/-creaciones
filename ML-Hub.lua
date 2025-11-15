@@ -14,10 +14,27 @@ local Workspace = game:GetService('Workspace')
 -- -------------------- INFO TAB: Tiempo y ping -------------------------
 local infoTab = Window:NewTab({Title="Info"})
 local infoSection = infoTab:NewSection({Title="Status"})
-local timeLabel = infoSection:NewTitle("Tiempo: 00:00:00")  -- USAR NewTitle
-local pingLabel = infoSection:NewTitle("Ping: 0 ms")        -- USAR NewTitle
+local timeLabel = infoSection:NewTitle("Tiempo: 00:00:00")
+local pingLabel = infoSection:NewTitle("Ping: 0 ms")
+local fpsLabel = infoSection:NewTitle("FPS: 0") -- Nuevo campo FPS
 
 local startTime = tick()
+local lastUpdate = tick()
+local frames = 0
+local currentFps = 0
+
+-- Calcula y actualiza FPS continuamente
+game:GetService("RunService").RenderStepped:Connect(function()
+    frames = frames + 1
+    local now = tick()
+    if now - lastUpdate >= 1 then
+        currentFps = frames
+        fpsLabel.Set("FPS: " .. tostring(currentFps))
+        frames = 0
+        lastUpdate = now
+    end
+end)
+
 task.spawn(function()
     while true do
         local t = tick() - startTime
