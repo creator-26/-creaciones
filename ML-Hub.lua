@@ -429,3 +429,28 @@ miscSection:NewToggle({
         end
     end
 })
+-- Nueva pestaña
+local tpTab = Window:NewTab({Title = "TP portals"})
+
+-- Nueva sección columna izquierda
+local tpSection = tpTab:NewSection({
+    Title = "Teleport portals",
+    Position = "Left"
+})
+
+tpSection:NewToggle({
+    Title = "TP muscle King",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local char = game.Players.LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = CFrame.new(-8752.46, 30.90, -5860.09)
+            end
+            -- El toggle se apaga solo después de teletransportar (opcional)
+            task.wait(0.2)
+            -- quita el check automáticamente (esto solo oculta visualmente el toggle)
+            pcall(function() tpSection["TP muscle King"].Value(false) end)
+        end
+    end
+})
