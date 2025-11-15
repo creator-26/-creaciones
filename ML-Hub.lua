@@ -231,7 +231,7 @@ mainSection:NewToggle({
             while getgenv().autoEquipPunch and LocalPlayer.Character do
                 local punch = LocalPlayer.Backpack:FindFirstChild("Punch") or LocalPlayer.Character:FindFirstChild("Punch")
                 if punch then punch.Parent = LocalPlayer.Character end
-                task.wait(0.05)
+                task.wait(0.04)
             end
         end)
     end
@@ -249,7 +249,7 @@ mainSection:NewToggle({
                     ReplicatedStorage.muscleEvent:FireServer("punch", "rightHand")
                     ReplicatedStorage.muscleEvent:FireServer("punch", "leftHand")
                 end
-                task.wait(0.01)
+                task.wait(0.02)
             end
         end)
     end
