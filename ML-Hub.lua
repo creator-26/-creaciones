@@ -49,6 +49,7 @@ task.spawn(function()
     end
 end)
 ---------------------------
+
 local Players = game:GetService("Players")
 
 local function shortNumber(n)
@@ -68,7 +69,6 @@ local function shortNumber(n)
 end
 
 local function getPlayerNames()
-    -- SIEMPRE crea una tabla NUEVA de nombres exactos
     local t = {}
     for _, p in ipairs(Players:GetPlayers()) do
         table.insert(t, p.Name)
@@ -78,18 +78,15 @@ end
 
 local selectedPlayer = Players.LocalPlayer.Name
 
--- Debes crear la sección SOLO una vez, si ya existe reutiliza el objeto
+-- solo usa el statsSection si YA lo creaste una vez, no lo repitas!
 local statsSection = infoTab:NewSection({
     Title = "Stats",
     Position = "Right"
 })
 
--- DEFINITIVO: el Data es función (NO uses paréntesis ni tabla estática)
 local playerDropdown = statsSection:NewDropdown({
     Title = "Jugador",
-    Data = function()
-        return getPlayerNames() -- Esto fuerza a la librería a consultar siempre la lista actual exacta
-    end,
+    Data = getPlayerNames, -- ¡sin paréntesis aquí!
     Default = selectedPlayer,
     Callback = function(val)
         selectedPlayer = val
@@ -101,22 +98,17 @@ local durabilityLabel = statsSection:NewTitle("Durabilidad: ...")
 local rebirthsLabel = statsSection:NewTitle("Renacimientos: ...")
 local killsLabel = statsSection:NewTitle("Kills: ...")
 
--- Si aún no refresca, FORZA el update tras estos eventos:
-Players.PlayerAdded:Connect(function()
-    if playerDropdown.SetValues then
-        playerDropdown:SetValues(getPlayerNames())
+-- FUNCIONALIDAD CRÍTICA, fuerza el refresco cuando entra/sale un jugador:
+local function refreshDropdown()
+    if playerDropdown and playerDropdown.Set then
+        local users = getPlayerNames()
+        -- Forzamos la actualización del menú desplegable
+        playerDropdown:Set(users[1] or "")
     end
-end)
-Players.PlayerRemoving:Connect(function()
-    if playerDropdown.SetValues then
-        playerDropdown:SetValues(getPlayerNames())
-        -- además, opcional: si se fue el seleccionado, pon a ti mismo
-        if not Players:FindFirstChild(selectedPlayer) then
-            selectedPlayer = Players.LocalPlayer.Name
-            if playerDropdown.Set then playerDropdown:Set(selectedPlayer) end
-        end
-    end
-end)
+end
+
+Players.PlayerAdded:Connect(refreshDropdown)
+Players.PlayerRemoving:Connect(refreshDropdown)
 
 task.spawn(function()
     while true do
