@@ -454,3 +454,23 @@ tpSection:NewToggle({
         end
     end
 })
+-- Sección derecha en TP portals
+local tpSectionRight = tpTab:NewSection({
+    Title = "Teleport portals",
+    Position = "Right"
+})
+
+tpSectionRight:NewToggle({
+    Title = "TP isla secreta",
+    Default = false,
+    Callback = function(state)
+        if state then
+            local char = game.Players.LocalPlayer.Character
+            if char and char:FindFirstChild("HumanoidRootPart") then
+                char.HumanoidRootPart.CFrame = CFrame.new(1948.75, 1.86, 6178.24)
+            end
+            task.wait(0.2)
+            pcall(function() tpSectionRight["TP isla secreta"].Value(false) end)
+        end
+    end
+})
