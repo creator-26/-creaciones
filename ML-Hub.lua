@@ -48,6 +48,69 @@ task.spawn(function()
         task.wait(1)
     end
 end)
+local Players = game:GetService("Players")
+
+-- Sección derecha del tab "Info"
+local statsSection = infoTab:NewSection({
+    Title = "Stats",
+    Position = "Right"
+})
+
+-- Dropdown de jugadores
+local allPlayers = {}
+for _, p in ipairs(Players:GetPlayers()) do
+    table.insert(allPlayers, p.Name)
+end
+
+local selectedPlayer = Players.LocalPlayer.Name
+local playerDropdown = statsSection:NewDropdown({
+    Title = "Jugador",
+    Values = allPlayers,
+    Default = selectedPlayer,
+    Callback = function(value)
+        selectedPlayer = value
+    end
+})
+
+local strengthLabel = statsSection:NewTitle("Fuerza: ...")
+local durabilityLabel = statsSection:NewTitle("Durabilidad: ...")
+local rebirthsLabel = statsSection:NewTitle("Renacimientos: ...")
+local agilityLabel = statsSection:NewTitle("Agilidad: ...")
+
+task.spawn(function()
+    while true do
+        local player = Players:FindFirstChild(selectedPlayer)
+        if player then
+            local leaderstats = player:FindFirstChild("leaderstats")
+            if leaderstats then
+                strengthLabel.Set("Fuerza: " .. tostring((leaderstats:FindFirstChild("Strength") and leaderstats.Strength.Value) or 0))
+                rebirthsLabel.Set("Renacimientos: " .. tostring((leaderstats:FindFirstChild("Rebirths") and leaderstats.Rebirths.Value) or 0))
+            end
+            durabilityLabel.Set("Durabilidad: " .. tostring((player:FindFirstChild("Durability") and player.Durability.Value) or 0))
+            agilityLabel.Set("Agilidad: " .. tostring((player:FindFirstChild("Agility") and player.Agility.Value) or 0))
+        end
+        task.wait(1)
+    end
+end)
+
+-- Actualiza la lista de usuarios cuando entra/sale gente del servidor
+Players.PlayerAdded:Connect(function(p)
+    table.insert(allPlayers, p.Name)
+    playerDropdown.SetValues(allPlayers)
+end)
+Players.PlayerRemoving:Connect(function(p)
+    for i, name in ipairs(allPlayers) do
+        if name == p.Name then
+            table.remove(allPlayers, i)
+            break
+        end
+    end
+    playerDropdown.SetValues(allPlayers)
+    if selectedPlayer == p.Name then
+        selectedPlayer = Players.LocalPlayer.Name
+        playerDropdown.Set(selectedPlayer)
+    end
+end)
 
 -- -------------------- FARM TAB --------------------------
 local mainTab = Window:NewTab({Title = "Farm y Utilidades"})
