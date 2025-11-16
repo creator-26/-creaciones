@@ -56,7 +56,7 @@ local statsSection = infoTab:NewSection({
     Position = "Right"
 })
 
--- Función para recortar números grandes
+-- Función para 'pretty print' de números grandes
 local function shortNumber(n)
     n = tonumber(n)
     if not n then return "0" end
@@ -73,13 +73,13 @@ local function shortNumber(n)
     end
 end
 
--- dropdown siempre con los names verdaderos de los jugadores
+-- Función para obtener nombres de todos los jugadores del server
 local function getPlayerNames()
-    local names = {}
-    for _, p in ipairs(Players:GetPlayers()) do
-        table.insert(names, p.Name)
+    local t = {}
+    for _,p in ipairs(Players:GetPlayers()) do
+        table.insert(t, p.Name)
     end
-    return names
+    return t
 end
 
 local selectedPlayer = Players.LocalPlayer.Name
@@ -87,30 +87,29 @@ local playerDropdown = statsSection:NewDropdown({
     Title = "Jugador",
     Values = getPlayerNames(),
     Default = selectedPlayer,
-    Callback = function(value)
-        selectedPlayer = value
+    Callback = function(val)
+        selectedPlayer = val
     end
 })
 
 local strengthLabel = statsSection:NewTitle("Fuerza: ...")
 local durabilityLabel = statsSection:NewTitle("Durabilidad: ...")
 local rebirthsLabel = statsSection:NewTitle("Renacimientos: ...")
-local agilityLabel = statsSection:NewTitle("Agilidad: ...")
+local killsLabel = statsSection:NewTitle("Kills: ...")
 
--- Auto-actualiza lista de nombres cuando se une/se va un jugador
+-- Actualiza nombres en tiempo real cuando entra o sale alguien
 Players.PlayerAdded:Connect(function()
     playerDropdown.SetValues(getPlayerNames())
 end)
 Players.PlayerRemoving:Connect(function()
     playerDropdown.SetValues(getPlayerNames())
-    -- Si el seleccionado se desconecta, vuelve a ti
     if not Players:FindFirstChild(selectedPlayer) then
         selectedPlayer = Players.LocalPlayer.Name
         playerDropdown.Set(selectedPlayer)
     end
 end)
 
--- Actualiza los stats mostrados del jugador seleccionado
+-- Refresca stats mostrados según el jugador que elijas
 task.spawn(function()
     while true do
         local player = Players:FindFirstChild(selectedPlayer)
@@ -119,17 +118,18 @@ task.spawn(function()
             if leaderstats then
                 strengthLabel.Set("Fuerza: " .. shortNumber((leaderstats:FindFirstChild("Strength") and leaderstats.Strength.Value) or 0))
                 rebirthsLabel.Set("Renacimientos: " .. tostring((leaderstats:FindFirstChild("Rebirths") and leaderstats.Rebirths.Value) or 0))
+                killsLabel.Set("Kills: " .. tostring((leaderstats:FindFirstChild("Kills") and leaderstats.Kills.Value) or 0))
             else
                 strengthLabel.Set("Fuerza: N/A")
                 rebirthsLabel.Set("Renacimientos: N/A")
+                killsLabel.Set("Kills: N/A")
             end
             durabilityLabel.Set("Durabilidad: " .. shortNumber((player:FindFirstChild("Durability") and player.Durability.Value) or 0))
-            agilityLabel.Set("Agilidad: " .. tostring((player:FindFirstChild("Agility") and player.Agility.Value) or 0))
         else
             strengthLabel.Set("Fuerza: N/A")
             durabilityLabel.Set("Durabilidad: N/A")
             rebirthsLabel.Set("Renacimientos: N/A")
-            agilityLabel.Set("Agilidad: N/A")
+            killsLabel.Set("Kills: N/A")
         end
         task.wait(1)
     end
