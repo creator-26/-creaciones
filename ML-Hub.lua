@@ -48,15 +48,10 @@ task.spawn(function()
         task.wait(1)
     end
 end)
-----------------------------
+---------------------------
 local Players = game:GetService("Players")
-local infoTab = Window:NewTab({Title="Info"})
-local statsSection = infoTab:NewSection({
-    Title = "Stats",
-    Position = "Right"
-})
 
--- Función formato corto
+-- Función para cantidad bonita
 local function shortNumber(n)
     n = tonumber(n)
     if not n then return "0" end
@@ -73,7 +68,7 @@ local function shortNumber(n)
     end
 end
 
--- SIEMPRE retorna nombres reales de jugadores
+-- Esta función DEBE retornarse sin paréntesis a Data
 local function getPlayerNames()
     local t = {}
     for _, p in ipairs(Players:GetPlayers()) do
@@ -84,9 +79,14 @@ end
 
 local selectedPlayer = Players.LocalPlayer.Name
 
+local statsSection = infoTab:NewSection({
+    Title = "Stats",
+    Position = "Right"
+})
+
 local playerDropdown = statsSection:NewDropdown({
     Title = "Jugador",
-    Data = getPlayerNames, -- ¡No uses paréntesis! Así refresca nombres cada vez.
+    Data = getPlayerNames, -- ¡sin paréntesis aquí!
     Default = selectedPlayer,
     Callback = function(val)
         selectedPlayer = val
@@ -98,7 +98,6 @@ local durabilityLabel = statsSection:NewTitle("Durabilidad: ...")
 local rebirthsLabel = statsSection:NewTitle("Renacimientos: ...")
 local killsLabel = statsSection:NewTitle("Kills: ...")
 
--- Actualiza los stats siempre del jugador seleccionado
 task.spawn(function()
     while true do
         local player = Players:FindFirstChild(selectedPlayer)
