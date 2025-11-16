@@ -48,15 +48,33 @@ task.spawn(function()
         task.wait(1)
     end
 end)
+--
 local Players = game:GetService("Players")
 
--- Sección derecha del tab "Info"
+-- Formato para valores grandes
+local function shortNumber(n)
+    n = tonumber(n)
+    if not n then return "0" end
+    if n >= 1e15 then
+        return string.format("%.2fQ", n / 1e15)
+    elseif n >= 1e12 then
+        return string.format("%.2fT", n / 1e12)
+    elseif n >= 1e9 then
+        return string.format("%.2fB", n / 1e9)
+    elseif n >= 1e6 then
+        return string.format("%.2fM", n / 1e6)
+    else
+        return tostring(n)
+    end
+end
+
+-- Sección derecha (Stats) en Info
 local statsSection = infoTab:NewSection({
     Title = "Stats",
     Position = "Right"
 })
 
--- Dropdown de jugadores
+-- Dropdown para TODOS los jugadores y auto-actualizable
 local allPlayers = {}
 for _, p in ipairs(Players:GetPlayers()) do
     table.insert(allPlayers, p.Name)
@@ -83,17 +101,25 @@ task.spawn(function()
         if player then
             local leaderstats = player:FindFirstChild("leaderstats")
             if leaderstats then
-                strengthLabel.Set("Fuerza: " .. tostring((leaderstats:FindFirstChild("Strength") and leaderstats.Strength.Value) or 0))
+                strengthLabel.Set("Fuerza: " .. shortNumber((leaderstats:FindFirstChild("Strength") and leaderstats.Strength.Value) or 0))
                 rebirthsLabel.Set("Renacimientos: " .. tostring((leaderstats:FindFirstChild("Rebirths") and leaderstats.Rebirths.Value) or 0))
+            else
+                strengthLabel.Set("Fuerza: N/A")
+                rebirthsLabel.Set("Renacimientos: N/A")
             end
-            durabilityLabel.Set("Durabilidad: " .. tostring((player:FindFirstChild("Durability") and player.Durability.Value) or 0))
+            durabilityLabel.Set("Durabilidad: " .. shortNumber((player:FindFirstChild("Durability") and player.Durability.Value) or 0))
             agilityLabel.Set("Agilidad: " .. tostring((player:FindFirstChild("Agility") and player.Agility.Value) or 0))
+        else
+            strengthLabel.Set("Fuerza: N/A")
+            durabilityLabel.Set("Durabilidad: N/A")
+            rebirthsLabel.Set("Renacimientos: N/A")
+            agilityLabel.Set("Agilidad: N/A")
         end
         task.wait(1)
     end
 end)
 
--- Actualiza la lista de usuarios cuando entra/sale gente del servidor
+-- Mantén el dropdown siempre actualizado
 Players.PlayerAdded:Connect(function(p)
     table.insert(allPlayers, p.Name)
     playerDropdown.SetValues(allPlayers)
@@ -111,6 +137,7 @@ Players.PlayerRemoving:Connect(function(p)
         playerDropdown.Set(selectedPlayer)
     end
 end)
+
 
 -- -------------------- FARM TAB --------------------------
 local mainTab = Window:NewTab({Title = "Farm y Utilidades"})
