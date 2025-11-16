@@ -48,15 +48,16 @@ task.spawn(function()
         task.wait(1)
     end
 end)
---
+-------
 local Players = game:GetService("Players")
 
+-- Stats Section
 local statsSection = infoTab:NewSection({
     Title = "Stats",
     Position = "Right"
 })
 
--- Función para 'pretty print' de números grandes
+-- Formato corto
 local function shortNumber(n)
     n = tonumber(n)
     if not n then return "0" end
@@ -73,19 +74,21 @@ local function shortNumber(n)
     end
 end
 
--- Función para obtener nombres de todos los jugadores del server
 local function getPlayerNames()
-    local t = {}
+    local names = {}
     for _,p in ipairs(Players:GetPlayers()) do
-        table.insert(t, p.Name)
+        table.insert(names, p.Name)
     end
-    return t
+    return names
 end
 
 local selectedPlayer = Players.LocalPlayer.Name
+local lastNames = getPlayerNames()
+
+-- Prepara el Dropdown (show only names, no numbers)
 local playerDropdown = statsSection:NewDropdown({
     Title = "Jugador",
-    Values = getPlayerNames(),
+    Values = lastNames,
     Default = selectedPlayer,
     Callback = function(val)
         selectedPlayer = val
@@ -97,19 +100,22 @@ local durabilityLabel = statsSection:NewTitle("Durabilidad: ...")
 local rebirthsLabel = statsSection:NewTitle("Renacimientos: ...")
 local killsLabel = statsSection:NewTitle("Kills: ...")
 
--- Actualiza nombres en tiempo real cuando entra o sale alguien
-Players.PlayerAdded:Connect(function()
-    playerDropdown.SetValues(getPlayerNames())
-end)
-Players.PlayerRemoving:Connect(function()
-    playerDropdown.SetValues(getPlayerNames())
-    if not Players:FindFirstChild(selectedPlayer) then
-        selectedPlayer = Players.LocalPlayer.Name
+-- Actualiza la lista de nombres en tiempo real
+local function updatePlayerList()
+    local actualNames = getPlayerNames()
+    lastNames = actualNames
+    playerDropdown.SetValues(actualNames)
+    -- Ajusta el seleccionado si se fue
+    if not table.find(actualNames, selectedPlayer) and #actualNames > 0 then
+        selectedPlayer = actualNames[1]
         playerDropdown.Set(selectedPlayer)
     end
-end)
+end
 
--- Refresca stats mostrados según el jugador que elijas
+Players.PlayerAdded:Connect(updatePlayerList)
+Players.PlayerRemoving:Connect(updatePlayerList)
+
+-- Refresca stats del jugador seleccionado
 task.spawn(function()
     while true do
         local player = Players:FindFirstChild(selectedPlayer)
@@ -134,6 +140,8 @@ task.spawn(function()
         task.wait(1)
     end
 end)
+
+
 
 
 
