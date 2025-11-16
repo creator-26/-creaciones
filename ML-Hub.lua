@@ -13,7 +13,7 @@ local Workspace = game:GetService('Workspace')
 
 -- -------------------- INFO TAB: Tiempo y ping -------------------------
 local infoTab = Window:NewTab({Title="Info"})
-local infoSection = infoTab:NewSection({Title="Status"})
+local infoSection = infoTab:NewSection({Title="Network Info"})
 local timeLabel = infoSection:NewTitle("Tiempo: 00:00:00")
 local pingLabel = infoSection:NewTitle("Ping: 0 ms")
 local fpsLabel = infoSection:NewTitle("FPS: 0") -- Nuevo campo FPS
