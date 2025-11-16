@@ -50,38 +50,13 @@ task.spawn(function()
 end)
 ----------------------------
 local Players = game:GetService("Players")
-
--- Obtiene los nombres de jugadores, igualito que DOCA:
-local function getPlayerNames()
-    local t = {}
-    for _, p in ipairs(Players:GetPlayers()) do
-        table.insert(t, p.Name)
-    end
-    return t
-end
-
--- Así armas el Dropdown (incluso puedes ponerlo como función directamente en Data):
+local infoTab = Window:NewTab({Title="Info"})
 local statsSection = infoTab:NewSection({
     Title = "Stats",
     Position = "Right"
 })
 
-local selectedPlayer = Players.LocalPlayer.Name
-local playerDropdown = statsSection:NewDropdown({
-    Title = "Jugador",
-    -- Fíjate que aquí Data usa una función que retorna LA LISTA DE NOMBRES!
-    Data = function() return getPlayerNames() end,
-    Default = selectedPlayer,
-    Callback = function(val)
-        selectedPlayer = val
-    end
-})
-
-local strengthLabel = statsSection:NewTitle("Fuerza: ...")
-local durabilityLabel = statsSection:NewTitle("Durabilidad: ...")
-local rebirthsLabel = statsSection:NewTitle("Renacimientos: ...")
-local killsLabel = statsSection:NewTitle("Kills: ...")
-
+-- Función formato corto
 local function shortNumber(n)
     n = tonumber(n)
     if not n then return "0" end
@@ -98,13 +73,32 @@ local function shortNumber(n)
     end
 end
 
-Players.PlayerAdded:Connect(function()
-    playerDropdown.SetValues(getPlayerNames())
-end)
-Players.PlayerRemoving:Connect(function()
-    playerDropdown.SetValues(getPlayerNames())
-end)
+-- SIEMPRE retorna nombres reales de jugadores
+local function getPlayerNames()
+    local t = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        table.insert(t, p.Name)
+    end
+    return t
+end
 
+local selectedPlayer = Players.LocalPlayer.Name
+
+local playerDropdown = statsSection:NewDropdown({
+    Title = "Jugador",
+    Data = getPlayerNames, -- ¡No uses paréntesis! Así refresca nombres cada vez.
+    Default = selectedPlayer,
+    Callback = function(val)
+        selectedPlayer = val
+    end
+})
+
+local strengthLabel = statsSection:NewTitle("Fuerza: ...")
+local durabilityLabel = statsSection:NewTitle("Durabilidad: ...")
+local rebirthsLabel = statsSection:NewTitle("Renacimientos: ...")
+local killsLabel = statsSection:NewTitle("Kills: ...")
+
+-- Actualiza los stats siempre del jugador seleccionado
 task.spawn(function()
     while true do
         local player = Players:FindFirstChild(selectedPlayer)
@@ -129,10 +123,7 @@ task.spawn(function()
         task.wait(1)
     end
 end)
-
-                    
-
-
+                
 
 
 
