@@ -51,7 +51,12 @@ end)
 --
 local Players = game:GetService("Players")
 
--- Formato para valores grandes
+local statsSection = infoTab:NewSection({
+    Title = "Stats",
+    Position = "Right"
+})
+
+-- Función para recortar números grandes
 local function shortNumber(n)
     n = tonumber(n)
     if not n then return "0" end
@@ -68,22 +73,19 @@ local function shortNumber(n)
     end
 end
 
--- Sección derecha (Stats) en Info
-local statsSection = infoTab:NewSection({
-    Title = "Stats",
-    Position = "Right"
-})
-
--- Dropdown para TODOS los jugadores y auto-actualizable
-local allPlayers = {}
-for _, p in ipairs(Players:GetPlayers()) do
-    table.insert(allPlayers, p.Name)
+-- dropdown siempre con los names verdaderos de los jugadores
+local function getPlayerNames()
+    local names = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        table.insert(names, p.Name)
+    end
+    return names
 end
 
 local selectedPlayer = Players.LocalPlayer.Name
 local playerDropdown = statsSection:NewDropdown({
     Title = "Jugador",
-    Values = allPlayers,
+    Values = getPlayerNames(),
     Default = selectedPlayer,
     Callback = function(value)
         selectedPlayer = value
@@ -95,6 +97,20 @@ local durabilityLabel = statsSection:NewTitle("Durabilidad: ...")
 local rebirthsLabel = statsSection:NewTitle("Renacimientos: ...")
 local agilityLabel = statsSection:NewTitle("Agilidad: ...")
 
+-- Auto-actualiza lista de nombres cuando se une/se va un jugador
+Players.PlayerAdded:Connect(function()
+    playerDropdown.SetValues(getPlayerNames())
+end)
+Players.PlayerRemoving:Connect(function()
+    playerDropdown.SetValues(getPlayerNames())
+    -- Si el seleccionado se desconecta, vuelve a ti
+    if not Players:FindFirstChild(selectedPlayer) then
+        selectedPlayer = Players.LocalPlayer.Name
+        playerDropdown.Set(selectedPlayer)
+    end
+end)
+
+-- Actualiza los stats mostrados del jugador seleccionado
 task.spawn(function()
     while true do
         local player = Players:FindFirstChild(selectedPlayer)
@@ -119,24 +135,6 @@ task.spawn(function()
     end
 end)
 
--- Mantén el dropdown siempre actualizado
-Players.PlayerAdded:Connect(function(p)
-    table.insert(allPlayers, p.Name)
-    playerDropdown.SetValues(allPlayers)
-end)
-Players.PlayerRemoving:Connect(function(p)
-    for i, name in ipairs(allPlayers) do
-        if name == p.Name then
-            table.remove(allPlayers, i)
-            break
-        end
-    end
-    playerDropdown.SetValues(allPlayers)
-    if selectedPlayer == p.Name then
-        selectedPlayer = Players.LocalPlayer.Name
-        playerDropdown.Set(selectedPlayer)
-    end
-end)
 
 
 -- -------------------- FARM TAB --------------------------
