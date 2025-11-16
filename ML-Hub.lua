@@ -51,7 +51,6 @@ end)
 ---------------------------
 local Players = game:GetService("Players")
 
--- Función para cantidad bonita
 local function shortNumber(n)
     n = tonumber(n)
     if not n then return "0" end
@@ -68,8 +67,8 @@ local function shortNumber(n)
     end
 end
 
--- Esta función DEBE retornarse sin paréntesis a Data
 local function getPlayerNames()
+    -- SIEMPRE crea una tabla NUEVA de nombres exactos
     local t = {}
     for _, p in ipairs(Players:GetPlayers()) do
         table.insert(t, p.Name)
@@ -79,14 +78,18 @@ end
 
 local selectedPlayer = Players.LocalPlayer.Name
 
+-- Debes crear la sección SOLO una vez, si ya existe reutiliza el objeto
 local statsSection = infoTab:NewSection({
     Title = "Stats",
     Position = "Right"
 })
 
+-- DEFINITIVO: el Data es función (NO uses paréntesis ni tabla estática)
 local playerDropdown = statsSection:NewDropdown({
     Title = "Jugador",
-    Data = getPlayerNames, -- ¡sin paréntesis aquí!
+    Data = function()
+        return getPlayerNames() -- Esto fuerza a la librería a consultar siempre la lista actual exacta
+    end,
     Default = selectedPlayer,
     Callback = function(val)
         selectedPlayer = val
@@ -97,6 +100,23 @@ local strengthLabel = statsSection:NewTitle("Fuerza: ...")
 local durabilityLabel = statsSection:NewTitle("Durabilidad: ...")
 local rebirthsLabel = statsSection:NewTitle("Renacimientos: ...")
 local killsLabel = statsSection:NewTitle("Kills: ...")
+
+-- Si aún no refresca, FORZA el update tras estos eventos:
+Players.PlayerAdded:Connect(function()
+    if playerDropdown.SetValues then
+        playerDropdown:SetValues(getPlayerNames())
+    end
+end)
+Players.PlayerRemoving:Connect(function()
+    if playerDropdown.SetValues then
+        playerDropdown:SetValues(getPlayerNames())
+        -- además, opcional: si se fue el seleccionado, pon a ti mismo
+        if not Players:FindFirstChild(selectedPlayer) then
+            selectedPlayer = Players.LocalPlayer.Name
+            if playerDropdown.Set then playerDropdown:Set(selectedPlayer) end
+        end
+    end
+end)
 
 task.spawn(function()
     while true do
@@ -122,9 +142,6 @@ task.spawn(function()
         task.wait(1)
     end
 end)
-                
-
-
 
 -- -------------------- FARM TAB --------------------------
 local mainTab = Window:NewTab({Title = "Farm y Utilidades"})
