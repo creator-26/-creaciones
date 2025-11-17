@@ -395,40 +395,63 @@ mainSection:NewToggle({
 })
 
 mainSection:NewToggle({
-    Title = "Auto Golpear Roca 1M",
-    Default = false,
-    Callback = function(state)
-        getgenv().autoRock1M = state
-        task.spawn(function()
-            while getgenv().autoRock1M and LocalPlayer.Character do
-                pcall(function()
-                    if LocalPlayer.Durability.Value >= 1000000 then
-                        local character = LocalPlayer.Character
-                        if character and character:FindFirstChild("LeftHand") and character:FindFirstChild("RightHand") then
-                            for _, v in pairs(Workspace.machinesFolder:GetDescendants()) do
-                                if v.Name == "neededDurability" and v.Value == 1000000 then
-                                    local rock = v.Parent:FindFirstChild("Rock")
-                                    if rock then
-                                        firetouchinterest(rock, character.RightHand, 0)
-                                        firetouchinterest(rock, character.RightHand, 1)
-                                        firetouchinterest(rock, character.LeftHand, 0)
-                                        firetouchinterest(rock, character.LeftHand, 1)
-                                        local punch = LocalPlayer.Backpack:FindFirstChild("Punch")
-                                        if punch then punch.Parent = character end
-                                        LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
-                                        LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
-                                        break
-                                    end
-                                end
-                            end
-                        end
-                    end
-                end)
-                task.wait(0.01)
+Title = "Auto Golpear Roca 1M",
+Default = false,
+Callback = function(state)
+    getgenv().autoRock1M = state
+
+    -- Cache do player
+    local plr = LocalPlayer
+    local char = plr.Character or plr.CharacterAdded:Wait()
+    local muscle = plr.muscleEvent
+
+    -- Cache da rocha 1M (procura só 1 vez)
+    local rock1M
+    for _, v in ipairs(Workspace.machinesFolder:GetDescendants()) do
+        if v.Name == "neededDurability" and v.Value == 1000000 then
+            local rock = v.Parent:FindFirstChild("Rock")
+            if rock then
+                rock1M = rock
+                break
             end
-        end)
+        end
     end
+
+    task.spawn(function()
+        while getgenv().autoRock1M do
+            task.wait() -- velocidade máxima sem lag (0.003–0.005s)
+
+            pcall(function()
+                char = plr.Character
+                if not char or not rock1M then return end
+                if plr.Durability.Value < 1000000 then return end
+
+                local lh = char:FindFirstChild("LeftHand")
+                local rh = char:FindFirstChild("RightHand")
+                if not lh or not rh then return end
+
+                -- Equipar Punch sempre
+                local punch = plr.Backpack:FindFirstChild("Punch")
+                if punch then punch.Parent = char end
+
+                -- TOQUES ULTRA RÁPIDOS
+                firetouchinterest(rock1M, rh, 0)
+                firetouchinterest(rock1M, rh, 1)
+                firetouchinterest(rock1M, lh, 0)
+                firetouchinterest(rock1M, lh, 1)
+
+                -- FIRE SERVER SPAM (mais rápido possível)
+                muscle:FireServer("punch", "leftHand")
+                muscle:FireServer("punch", "rightHand")
+                muscle:FireServer("punch", "leftHand")
+                muscle:FireServer("punch", "rightHand")
+
+            end)
+        end
+    end)
+end
 })
+    
 
 mainSection:NewToggle({
     Title = "Auto Golpear Roca 5M",
