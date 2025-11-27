@@ -1,6 +1,6 @@
--- Script Hub Seguro para Roblox (Local - Usa bajo tu propio riesgo, no abuses para evitar detecciones)
--- Funciones: Velocidad Ajustable (+/-), Vida Infinita (Godmode), Caída Lenta
--- Hub pequeño, arrastrable, adaptado para móvil, aparece centrado. Botón flotante H/+ para mostrar/ocultar.
+-- Script Hub Seguro para Roblox (Local - Usa bajo tu propio riesgo, no abuses)
+-- Funciones: Velocidad/Salto Ajustables (+/-), Vida Infinita, Caída Lenta
+-- Hub pequeño (260px), arrastrable, móvil OK, centrado al inicio.
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
@@ -14,12 +14,12 @@ local playerGui = player:WaitForChild("PlayerGui")
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "MiHub"
 screenGui.ResetOnSpawn = false
-screenGui.Parent = playerGui  -- Cambia a game:GetService("CoreGui") si tu executor lo requiere
+screenGui.Parent = playerGui
 
--- Frame principal (pequeño y centrado)
+-- Frame principal (260 alto para nueva función)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 260, 0, 200)
-mainFrame.Position = UDim2.new(0.5, -130, 0.5, -100)
+mainFrame.Size = UDim2.new(0, 260, 0, 260)
+mainFrame.Position = UDim2.new(0.5, -130, 0.5, -130)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
@@ -30,7 +30,7 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 12)
 mainCorner.Parent = mainFrame
 
--- Hacer arrastrable (funciona en PC y móvil)
+-- Arrastrable (PC/móvil)
 local dragging = false
 local dragStart = nil
 local startPos = nil
@@ -62,7 +62,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Barra de título
+-- Barra título
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
@@ -83,7 +83,7 @@ titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
--- Botón flotante para mostrar/ocultar (H cuando visible, + cuando oculto)
+-- Botón flotante H/+
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0, 55, 0, 55)
 toggleBtn.Position = UDim2.new(0.5, -27.5, 0.5, -27.5)
@@ -98,7 +98,7 @@ local toggleCorner = Instance.new("UICorner")
 toggleCorner.CornerRadius = UDim.new(1, 0)
 toggleCorner.Parent = toggleBtn
 
--- Arrastrable para botón flotante también
+-- Arrastrable toggle
 local draggingToggle = false
 local dragStartToggle = nil
 local startPosToggle = nil
@@ -130,7 +130,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Toggle visibilidad
+-- Toggle hub
 local hubVisible = true
 toggleBtn.MouseButton1Click:Connect(function()
     hubVisible = not hubVisible
@@ -139,24 +139,27 @@ toggleBtn.MouseButton1Click:Connect(function()
     toggleBtn.BackgroundColor3 = hubVisible and Color3.fromRGB(0, 170, 255) or Color3.fromRGB(255, 170, 0)
 end)
 
--- Variables
+-- Variables personaje
 local char = player.Character or player.CharacterAdded:Wait()
 local humanoid = char:WaitForChild("Humanoid")
 local currentSpeed = 16
+local currentJump = 50
 local minSpeed = 16
-local maxSpeed = 200  -- Máx para no abusar
+local maxSpeed = 200
+local minJump = 50
+local maxJump = 500
 local godEnabled = false
 local slowFallEnabled = false
 local godConnection = nil
 local slowFallConnection = nil
 
--- Función para nuevo personaje (respawn)
+-- Respawn handler
 local function onCharacterAdded(newChar)
     char = newChar
     humanoid = char:WaitForChild("Humanoid")
     humanoid.WalkSpeed = currentSpeed
+    humanoid.JumpPower = currentJump
     
-    -- Reiniciar si activados
     wait(0.1)
     if godEnabled then startGod() end
     if slowFallEnabled then startSlowFall() end
@@ -165,25 +168,25 @@ end
 player.CharacterAdded:Connect(onCharacterAdded)
 if player.Character then onCharacterAdded(player.Character) end
 
--- Speed: Botones +/-
+-- Speed Frame
 local speedFrame = Instance.new("Frame")
 speedFrame.Size = UDim2.new(1, -20, 0, 35)
 speedFrame.Position = UDim2.new(0, 10, 0, 45)
 speedFrame.BackgroundTransparency = 1
 speedFrame.Parent = mainFrame
 
-local minusBtn = Instance.new("TextButton")
-minusBtn.Size = UDim2.new(0.3, 0, 1, 0)
-minusBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
-minusBtn.Text = "-"
-minusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-minusBtn.TextScaled = true
-minusBtn.Font = Enum.Font.GothamBold
-minusBtn.Parent = speedFrame
+local minusSpeedBtn = Instance.new("TextButton")
+minusSpeedBtn.Size = UDim2.new(0.3, 0, 1, 0)
+minusSpeedBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+minusSpeedBtn.Text = "-"
+minusSpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minusSpeedBtn.TextScaled = true
+minusSpeedBtn.Font = Enum.Font.GothamBold
+minusSpeedBtn.Parent = speedFrame
 
-local btnCorner1 = Instance.new("UICorner")
-btnCorner1.CornerRadius = UDim.new(0, 8)
-btnCorner1.Parent = minusBtn
+local speedCorner1 = Instance.new("UICorner")
+speedCorner1.CornerRadius = UDim.new(0, 8)
+speedCorner1.Parent = minusSpeedBtn
 
 local speedLabel = Instance.new("TextLabel")
 speedLabel.Size = UDim2.new(0.4, 0, 1, 0)
@@ -195,19 +198,19 @@ speedLabel.TextScaled = true
 speedLabel.Font = Enum.Font.Gotham
 speedLabel.Parent = speedFrame
 
-local plusBtn = Instance.new("TextButton")
-plusBtn.Size = UDim2.new(0.3, 0, 1, 0)
-plusBtn.Position = UDim2.new(0.7, 0, 0, 0)
-plusBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
-plusBtn.Text = "+"
-plusBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-plusBtn.TextScaled = true
-plusBtn.Font = Enum.Font.GothamBold
-plusBtn.Parent = speedFrame
+local plusSpeedBtn = Instance.new("TextButton")
+plusSpeedBtn.Size = UDim2.new(0.3, 0, 1, 0)
+plusSpeedBtn.Position = UDim2.new(0.7, 0, 0, 0)
+plusSpeedBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+plusSpeedBtn.Text = "+"
+plusSpeedBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+plusSpeedBtn.TextScaled = true
+plusSpeedBtn.Font = Enum.Font.GothamBold
+plusSpeedBtn.Parent = speedFrame
 
-local btnCorner2 = Instance.new("UICorner")
-btnCorner2.CornerRadius = UDim.new(0, 8)
-btnCorner2.Parent = plusBtn
+local speedCorner2 = Instance.new("UICorner")
+speedCorner2.CornerRadius = UDim.new(0, 8)
+speedCorner2.Parent = plusSpeedBtn
 
 local function applySpeed()
     if humanoid then
@@ -216,17 +219,17 @@ local function applySpeed()
     end
 end
 
-minusBtn.MouseButton1Click:Connect(function()
+minusSpeedBtn.MouseButton1Click:Connect(function()
     currentSpeed = math.max(minSpeed, currentSpeed - 8)
     applySpeed()
 end)
 
-plusBtn.MouseButton1Click:Connect(function()
+plusSpeedBtn.MouseButton1Click:Connect(function()
     currentSpeed = math.min(maxSpeed, currentSpeed + 8)
     applySpeed()
 end)
 
--- Godmode Toggle
+-- Godmode
 local godBtn = Instance.new("TextButton")
 godBtn.Size = UDim2.new(1, -20, 0, 35)
 godBtn.Position = UDim2.new(0, 10, 0, 90)
@@ -251,24 +254,17 @@ local function startGod()
 end
 
 local function stopGod()
-    if godConnection then
-        godConnection:Disconnect()
-        godConnection = nil
-    end
+    if godConnection then godConnection:Disconnect() godConnection = nil end
 end
 
 godBtn.MouseButton1Click:Connect(function()
     godEnabled = not godEnabled
     godBtn.Text = "Vida Infinita: " .. (godEnabled and "ON" or "OFF")
     godBtn.BackgroundColor3 = godEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(60, 60, 60)
-    if godEnabled then
-        startGod()
-    else
-        stopGod()
-    end
+    if godEnabled then startGod() else stopGod() end
 end)
 
--- Caída Lenta Toggle
+-- Caída Lenta
 local slowFallBtn = Instance.new("TextButton")
 slowFallBtn.Size = UDim2.new(1, -20, 0, 35)
 slowFallBtn.Position = UDim2.new(0, 10, 0, 135)
@@ -294,21 +290,75 @@ local function startSlowFall()
 end
 
 local function stopSlowFall()
-    if slowFallConnection then
-        slowFallConnection:Disconnect()
-        slowFallConnection = nil
-    end
+    if slowFallConnection then slowFallConnection:Disconnect() slowFallConnection = nil end
 end
 
 slowFallBtn.MouseButton1Click:Connect(function()
     slowFallEnabled = not slowFallEnabled
     slowFallBtn.Text = "Caída Lenta: " .. (slowFallEnabled and "ON" or "OFF")
     slowFallBtn.BackgroundColor3 = slowFallEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(60, 60, 60)
-    if slowFallEnabled then
-        startSlowFall()
-    else
-        stopSlowFall()
-    end
+    if slowFallEnabled then startSlowFall() else stopSlowFall() end
 end)
 
-print("¡Hub cargado! Arrastra el botón H/+ y el hub. Usa con cuidadoo ⚠️")
+-- NUEVO: Jump Power Frame (abajo)
+local jumpFrame = Instance.new("Frame")
+jumpFrame.Size = UDim2.new(1, -20, 0, 35)
+jumpFrame.Position = UDim2.new(0, 10, 0, 180)
+jumpFrame.BackgroundTransparency = 1
+jumpFrame.Parent = mainFrame
+
+local minusJumpBtn = Instance.new("TextButton")
+minusJumpBtn.Size = UDim2.new(0.3, 0, 1, 0)
+minusJumpBtn.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+minusJumpBtn.Text = "-"
+minusJumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+minusJumpBtn.TextScaled = true
+minusJumpBtn.Font = Enum.Font.GothamBold
+minusJumpBtn.Parent = jumpFrame
+
+local jumpCorner1 = Instance.new("UICorner")
+jumpCorner1.CornerRadius = UDim.new(0, 8)
+jumpCorner1.Parent = minusJumpBtn
+
+local jumpLabel = Instance.new("TextLabel")
+jumpLabel.Size = UDim2.new(0.4, 0, 1, 0)
+jumpLabel.Position = UDim2.new(0.3, 0, 0, 0)
+jumpLabel.BackgroundTransparency = 1
+jumpLabel.Text = "50"
+jumpLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+jumpLabel.TextScaled = true
+jumpLabel.Font = Enum.Font.Gotham
+jumpLabel.Parent = jumpFrame
+
+local plusJumpBtn = Instance.new("TextButton")
+plusJumpBtn.Size = UDim2.new(0.3, 0, 1, 0)
+plusJumpBtn.Position = UDim2.new(0.7, 0, 0, 0)
+plusJumpBtn.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+plusJumpBtn.Text = "+"
+plusJumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+plusJumpBtn.TextScaled = true
+plusJumpBtn.Font = Enum.Font.GothamBold
+plusJumpBtn.Parent = jumpFrame
+
+local jumpCorner2 = Instance.new("UICorner")
+jumpCorner2.CornerRadius = UDim.new(0, 8)
+jumpCorner2.Parent = plusJumpBtn
+
+local function applyJump()
+    if humanoid then
+        humanoid.JumpPower = currentJump
+        jumpLabel.Text = tostring(math.floor(currentJump))
+    end
+end
+
+minusJumpBtn.MouseButton1Click:Connect(function()
+    currentJump = math.max(minJump, currentJump - 20)
+    applyJump()
+end)
+
+plusJumpBtn.MouseButton1Click:Connect(function()
+    currentJump = math.min(maxJump, currentJump + 20)
+    applyJump()
+end)
+
+print("¡Hub actualizado con Salto Ajustable! Usa con cuidado ⚠️")
