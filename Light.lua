@@ -60,8 +60,8 @@ local light = handle:FindFirstChildWhichIsA("SpotLight") or handle:FindFirstChil
 if not light then
     light = Instance.new("SpotLight")
     light.Angle = 70
-    light.Brightness = 2
-    light.Range = 25
+    light.Brightness = 5
+    light.Range = 40
     light.Face = Enum.NormalId.Front
     light.Enabled = false
     light.Parent = handle
