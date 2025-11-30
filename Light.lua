@@ -54,15 +54,12 @@ else
 end
 
 -- Luz
-local handle = flashlightTool:WaitForChild("Handle")
-local light = handle:FindFirstChildWhichIsA("SpotLight") or handle:FindFirstChildWhichIsA("PointLight")
+local light = handle:FindFirstChildWhichIsA("PointLight")
 
 if not light then
-    light = Instance.new("SpotLight")
-    light.Angle = 70
-    light.Brightness = 8
-    light.Range = 75
-    light.Face = Enum.NormalId.Front
+    light = Instance.new("PointLight")  -- luz esférica, tipo lámpara
+    light.Brightness = 5     -- puedes subir/bajar
+    light.Range = 40    -- cerca del centro, no tan lejos
     light.Enabled = false
     light.Parent = handle
 end
