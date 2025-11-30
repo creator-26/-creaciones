@@ -78,8 +78,8 @@ if not light then
 end
 
 -- Ajustes de lámpara (aquí controlas brillo y rango)
-light.Brightness = 8    -- sube/baja a tu gusto
-light.Range = 60        -- cuánto ilumina alrededor
+light.Brightness = 7    -- sube/baja a tu gusto
+light.Range = 50        -- cuánto ilumina alrededor
 light.Enabled = false   -- empieza apagada
 
 -- ================== ENCENDER / APAGAR ==================
