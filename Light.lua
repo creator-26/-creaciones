@@ -73,14 +73,15 @@ local function setLight(state)
     light.Enabled = on
 end
 
+-- Al equipar la lámpara, se enciende
 flashlightTool.Equipped:Connect(function()
-    setLight(false)
+    setLight(true)
 end)
 
+-- Al guardarla, se apaga
 flashlightTool.Unequipped:Connect(function()
     setLight(false)
 end)
 
-flashlightTool.Activated:Connect(function()
-    setLight(not on)
-end)
+-- No usamos Activated; la lámpara no cambia con click
+flashlightTool.Activated:Connect(function() end)
