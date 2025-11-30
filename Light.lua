@@ -58,8 +58,8 @@ local light = handle:FindFirstChildWhichIsA("PointLight")
 
 if not light then
     light = Instance.new("PointLight")  -- luz esférica, tipo lámpara
-    light.Brightness = 5     -- puedes subir/bajar
-    light.Range = 40    -- cerca del centro, no tan lejos
+    light.Brightness = 8     -- puedes subir/bajar
+    light.Range = 80   -- cerca del centro, no tan lejos
     light.Enabled = false
     light.Parent = handle
 end
