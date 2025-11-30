@@ -219,52 +219,12 @@ plusSpeed.MouseButton1Click:Connect(function()
     applySpeed()
 end)
 
--- === VIDA INFINITA ===
-local godBtn = Instance.new("TextButton")
-godBtn.Size = UDim2.new(1, -20, 0, 35)
-godBtn.Position = UDim2.new(0, 10, 0, 90)
-godBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
-godBtn.Text = "Vida Infinita: OFF"
-godBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
-godBtn.TextScaled = true
-godBtn.Font = Enum.Font.Gotham
-godBtn.Parent = mainFrame
 
-local godCorner = Instance.new("UICorner")
-godCorner.CornerRadius = UDim.new(0, 8)
-godCorner.Parent = godBtn
-
-local function startGod()
-    if connections.god then return end
-    connections.god = RunService.Heartbeat:Connect(function()
-        if humanoid and humanoid.Health < humanoid.MaxHealth and humanoid.Health > 0 then
-            humanoid.Health = humanoid.MaxHealth
-        end
-    end)
-end
-
-local function stopGod()
-    if connections.god then
-        connections.god:Disconnect()
-        connections.god = nil
-    end
-end
-
-godBtn.MouseButton1Click:Connect(function()
-    godEnabled = not godEnabled
-    godBtn.Text = "Vida Infinita: " .. (godEnabled and "ON" or "OFF")
-    godBtn.BackgroundColor3 = godEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(60, 60, 60)
-    if godEnabled then
-        startGod()
-    else
-        stopGod()
-    end
-end)
 
 -- === CAÍDA LENTA ===
 local slowFallBtn = Instance.new("TextButton")
 slowFallBtn.Size = UDim2.new(1, -20, 0, 35)
-slowFallBtn.Position = UDim2.new(0, 10, 0, 135)
+slowFallBtn.Position = UDim2.new(0, 10, 0, 90)
 slowFallBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 slowFallBtn.Text = "Caída Lenta: OFF"
 slowFallBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
@@ -307,7 +267,7 @@ end)
 -- === INFINITY JUMP FIJADO (PC + CELULAR) ===
 local infJumpBtn = Instance.new("TextButton")
 infJumpBtn.Size = UDim2.new(1, -20, 0, 35)
-infJumpBtn.Position = UDim2.new(0, 10, 0, 180)
+infJumpBtn.Position = UDim2.new(0, 10, 0, 135)
 infJumpBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 infJumpBtn.Text = "Infinity Jump: OFF"
 infJumpBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
