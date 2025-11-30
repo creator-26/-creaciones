@@ -15,8 +15,8 @@ gui.Parent = player:WaitForChild("PlayerGui")
 
 local button = Instance.new("ImageButton")
 button.Name = "ShiftLockButton"
-button.Size = UDim2.new(0, 50, 0, 50)
-button.Position = UDim2.new(1, -60, 1, -60) -- esquina inferior derecha
+button.Size = UDim2.new(0, 35, 0, 35)
+button.Position = UDim2.new(1, -50, 1, -50) -- esquina inferior derecha
 button.AnchorPoint = Vector2.new(1,1)
 button.BackgroundTransparency = 1
 button.Image = "rbxasset://textures/ui/mouseLock_off.png" -- icono muy parecido al de Roblox
