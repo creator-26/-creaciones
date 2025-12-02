@@ -16,7 +16,7 @@ screenGui.Parent = playerGui
 
 -- Frame principal (310px alto para más botones)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 260, 0, 240)
+mainFrame.Size = UDim2.new(0, 260, 0, 250)
 mainFrame.Position = UDim2.new(0.5, -130, 0.5, -120)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BackgroundTransparency = 0.1
@@ -310,7 +310,7 @@ infJumpBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- === CONTROL DE TAMAÑO ===
+-- === CONTROL DE TAMAÑO (CORREGIDO - Visible para todos) ===
 local sizeFrame = Instance.new("Frame")
 sizeFrame.Size = UDim2.new(1, -20, 0, 50)
 sizeFrame.Position = UDim2.new(0, 10, 0, 180)
@@ -354,17 +354,6 @@ local sizeDisplayCorner = Instance.new("UICorner")
 sizeDisplayCorner.CornerRadius = UDim.new(0, 8)
 sizeDisplayCorner.Parent = sizeDisplay
 
--- Texto del porcentaje
-local sizeLabel = Instance.new("TextLabel")
-sizeLabel.Size = UDim2.new(1, 0, 0.6, 0)
-sizeLabel.Position = UDim2.new(0, 0, 0.2, 0)
-sizeLabel.BackgroundTransparency = 1
-sizeLabel.Text = "100%"
-sizeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
-sizeLabel.TextScaled = true
-sizeLabel.Font = Enum.Font.GothamBold
-sizeLabel.Parent = sizeDisplay
-
 -- Texto "Normal" o "Gigante"
 local sizeStatus = Instance.new("TextLabel")
 sizeStatus.Size = UDim2.new(1, 0, 0.4, 0)
@@ -391,13 +380,62 @@ local sizeCorner2 = Instance.new("UICorner")
 sizeCorner2.CornerRadius = UDim.new(0, 8)
 sizeCorner2.Parent = plusSize
 
--- Función para aplicar el tamaño
+-- Función para aplicar el tamaño (CORREGIDA)
 local function applySize()
-    if not char then return end
+    if not char or not humanoid then return end
     
-    -- Escalar todas las partes del cuerpo
+    -- MÉTODO 1: Usar Humanoid.Scale (lo más efectivo)
+    if humanoid:FindFirstChild("BodyScale") then
+        humanoid.BodyScale:Destroy()
+    end
+    
+    if humanoid:FindFirstChild("BodyWidthScale") then
+        humanoid.BodyWidthScale:Destroy()
+    end
+    
+    if humanoid:FindFirstChild("BodyHeightScale") then
+        humanoid.BodyHeightScale:Destroy()
+    end
+    
+    if humanoid:FindFirstChild("BodyDepthScale") then
+        humanoid.BodyDepthScale:Destroy()
+    end
+    
+    if humanoid:FindFirstChild("HeadScale") then
+        humanoid.HeadScale:Destroy()
+    end
+    
+    -- Crear nuevos scales
+    local bodyScale = Instance.new("Scale")
+    bodyScale.Name = "BodyScale"
+    bodyScale.Scale = currentSize
+    bodyScale.Parent = humanoid
+    
+    local bodyWidthScale = Instance.new("Scale")
+    bodyWidthScale.Name = "BodyWidthScale"
+    bodyWidthScale.Scale = currentSize
+    bodyWidthScale.Parent = humanoid
+    
+    local bodyHeightScale = Instance.new("Scale")
+    bodyHeightScale.Name = "BodyHeightScale"
+    bodyHeightScale.Scale = currentSize
+    bodyHeightScale.Parent = humanoid
+    
+    local bodyDepthScale = Instance.new("Scale")
+    bodyDepthScale.Name = "BodyDepthScale"
+    bodyDepthScale.Scale = currentSize
+    bodyDepthScale.Parent = humanoid
+    
+    local headScale = Instance.new("Scale")
+    headScale.Name = "HeadScale"
+    headScale.Scale = currentSize
+    headScale.Parent = humanoid
+    
+    -- MÉTODO 2: Ajustar también las partes individuales (para tu vista local)
+    wait(0.1)
     for _, part in pairs(char:GetChildren()) do
         if part:IsA("BasePart") then
+            -- Guardar tamaño original si no existe
             local originalSize = part:FindFirstChild("OriginalSize")
             if not originalSize then
                 originalSize = Instance.new("Vector3Value")
@@ -406,29 +444,14 @@ local function applySize()
                 originalSize.Parent = part
             end
             
-            -- Aplicar nuevo tamaño basado en el tamaño original
+            -- Aplicar tamaño
             part.Size = originalSize.Value * currentSize
-            
-            -- También ajustar las uniones si existen
-            local weld = part:FindFirstChildOfClass("Weld")
-            if weld then
-                local originalC1 = weld:FindFirstChild("OriginalC1")
-                if not originalC1 then
-                    originalC1 = Instance.new("CFrameValue")
-                    originalC1.Name = "OriginalC1"
-                    originalC1.Value = weld.C1
-                    originalC1.Parent = weld
-                end
-                weld.C1 = originalC1.Value * CFrame.new(0, 0, 0) * currentSize
-            end
         end
     end
     
-    -- Ajustar fuerza del humanoide si existe
-    if humanoid then
-        humanoid.HipHeight = humanoid.HipHeight * currentSize
-        humanoid.JumpHeight = humanoid.JumpHeight * currentSize
-    end
+    -- Ajustar otras propiedades
+    humanoid.HipHeight = 2 * currentSize
+    humanoid.JumpHeight = 7.2 * currentSize
     
     -- Actualizar display
     local percent = math.floor(currentSize * 100)
@@ -453,7 +476,7 @@ local function applySize()
     end
 end
 
--- Función para resetear tamaño (volver a normal)
+-- Función para resetear tamaño
 local function resetSize()
     currentSize = 1
     applySize()
@@ -461,16 +484,16 @@ end
 
 -- Conectar botones
 minusSize.MouseButton1Click:Connect(function()
-    currentSize = math.max(0.1, currentSize - 0.1) -- Mínimo 10%
+    currentSize = math.max(0.1, currentSize - 0.1)
     applySize()
 end)
 
 plusSize.MouseButton1Click:Connect(function()
-    currentSize = math.min(5, currentSize + 0.1) -- Máximo 500%
+    currentSize = math.min(5, currentSize + 0.1)
     applySize()
 end)
 
--- Botón derecho para resetear a tamaño normal
+-- Botón derecho para resetear
 sizeDisplay.InputBegan:Connect(function(input)
     if input.UserInputType == Enum.UserInputType.MouseButton2 then
         resetSize()
@@ -494,5 +517,6 @@ resetCorner.Parent = resetSizeBtn
 
 resetSizeBtn.MouseButton1Click:Connect(resetSize)
 
-
+            
+            
 print("¡Mi Hub v4.1 cargado! Con Control de Tamaño ✅")
