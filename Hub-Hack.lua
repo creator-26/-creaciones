@@ -1,4 +1,4 @@
--- Mi Hub v4 - Infinity Jump FIJADO (PC + MÓVIL), Velocidad, Vida Infinita, Caída Lenta
+-- Mi Hub v4 - Infinity Jump FIJADO (PC + MÓVIL), Velocidad, Vida Infinita, Caída Lenta, Control de Tamaño
 -- ¡Infinity Jump ahora PERFECTO en celular! Usa JumpRequest interno de Roblox.
 
 local Players = game:GetService("Players")
@@ -14,10 +14,10 @@ screenGui.Name = "MiHub"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Frame principal (260px alto)
+-- Frame principal (310px alto para más botones)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 260, 0, 260)
-mainFrame.Position = UDim2.new(0.5, -130, 0.5, -130)
+mainFrame.Size = UDim2.new(0, 260, 0, 240)
+mainFrame.Position = UDim2.new(0.5, -130, 0.5, -120)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
@@ -142,6 +142,7 @@ local currentSpeed = 16
 local infJumpEnabled = false
 local godEnabled = false
 local slowFallEnabled = false
+local currentSize = 1 -- Tamaño normal (1 = 100%)
 local connections = {}
 
 -- Respawn handler
@@ -153,6 +154,11 @@ local function onCharacterAdded(newChar)
     if godEnabled then startGod() end
     if slowFallEnabled then startSlowFall() end
     if infJumpEnabled then startInfJump() end
+    -- Aplicar tamaño actual al respawnear
+    if currentSize ~= 1 then
+        wait(0.5)
+        applySize()
+    end
 end
 
 player.CharacterAdded:Connect(onCharacterAdded)
@@ -218,8 +224,6 @@ plusSpeed.MouseButton1Click:Connect(function()
     currentSpeed = math.min(200, currentSpeed + 8)
     applySpeed()
 end)
-
-
 
 -- === CAÍDA LENTA ===
 local slowFallBtn = Instance.new("TextButton")
@@ -306,4 +310,189 @@ infJumpBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-print("¡Mi Hub v4 cargado! Infinity Jump FIJADO para MÓVIL 🚀")
+-- === CONTROL DE TAMAÑO ===
+local sizeFrame = Instance.new("Frame")
+sizeFrame.Size = UDim2.new(1, -20, 0, 50)
+sizeFrame.Position = UDim2.new(0, 10, 0, 180)
+sizeFrame.BackgroundTransparency = 1
+sizeFrame.Parent = mainFrame
+
+-- Título "Tamaño" arriba
+local sizeTitle = Instance.new("TextLabel")
+sizeTitle.Size = UDim2.new(1, 0, 0, 15)
+sizeTitle.BackgroundTransparency = 1
+sizeTitle.Text = "Tamaño"
+sizeTitle.TextColor3 = Color3.fromRGB(200, 200, 200)
+sizeTitle.TextScaled = true
+sizeTitle.Font = Enum.Font.Gotham
+sizeTitle.TextYAlignment = Enum.TextYAlignment.Bottom
+sizeTitle.Parent = sizeFrame
+
+-- Botón -
+local minusSize = Instance.new("TextButton")
+minusSize.Size = UDim2.new(0.25, 0, 0.7, 0)
+minusSize.Position = UDim2.new(0, 0, 0.3, 0)
+minusSize.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+minusSize.Text = "-"
+minusSize.TextColor3 = Color3.fromRGB(255, 255, 255)
+minusSize.TextScaled = true
+minusSize.Font = Enum.Font.GothamBold
+minusSize.Parent = sizeFrame
+
+local sizeCorner1 = Instance.new("UICorner")
+sizeCorner1.CornerRadius = UDim.new(0, 8)
+sizeCorner1.Parent = minusSize
+
+-- Display del tamaño
+local sizeDisplay = Instance.new("Frame")
+sizeDisplay.Size = UDim2.new(0.5, 0, 0.7, 0)
+sizeDisplay.Position = UDim2.new(0.25, 0, 0.3, 0)
+sizeDisplay.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+sizeDisplay.Parent = sizeFrame
+
+local sizeDisplayCorner = Instance.new("UICorner")
+sizeDisplayCorner.CornerRadius = UDim.new(0, 8)
+sizeDisplayCorner.Parent = sizeDisplay
+
+-- Texto del porcentaje
+local sizeLabel = Instance.new("TextLabel")
+sizeLabel.Size = UDim2.new(1, 0, 0.6, 0)
+sizeLabel.Position = UDim2.new(0, 0, 0.2, 0)
+sizeLabel.BackgroundTransparency = 1
+sizeLabel.Text = "100%"
+sizeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+sizeLabel.TextScaled = true
+sizeLabel.Font = Enum.Font.GothamBold
+sizeLabel.Parent = sizeDisplay
+
+-- Texto "Normal" o "Gigante"
+local sizeStatus = Instance.new("TextLabel")
+sizeStatus.Size = UDim2.new(1, 0, 0.4, 0)
+sizeStatus.Position = UDim2.new(0, 0, 0.6, 0)
+sizeStatus.BackgroundTransparency = 1
+sizeStatus.Text = "Normal"
+sizeStatus.TextColor3 = Color3.fromRGB(180, 180, 180)
+sizeStatus.TextScaled = true
+sizeStatus.Font = Enum.Font.Gotham
+sizeStatus.Parent = sizeDisplay
+
+-- Botón +
+local plusSize = Instance.new("TextButton")
+plusSize.Size = UDim2.new(0.25, 0, 0.7, 0)
+plusSize.Position = UDim2.new(0.75, 0, 0.3, 0)
+plusSize.BackgroundColor3 = Color3.fromRGB(50, 200, 50)
+plusSize.Text = "+"
+plusSize.TextColor3 = Color3.fromRGB(255, 255, 255)
+plusSize.TextScaled = true
+plusSize.Font = Enum.Font.GothamBold
+plusSize.Parent = sizeFrame
+
+local sizeCorner2 = Instance.new("UICorner")
+sizeCorner2.CornerRadius = UDim.new(0, 8)
+sizeCorner2.Parent = plusSize
+
+-- Función para aplicar el tamaño
+local function applySize()
+    if not char then return end
+    
+    -- Escalar todas las partes del cuerpo
+    for _, part in pairs(char:GetChildren()) do
+        if part:IsA("BasePart") then
+            local originalSize = part:FindFirstChild("OriginalSize")
+            if not originalSize then
+                originalSize = Instance.new("Vector3Value")
+                originalSize.Name = "OriginalSize"
+                originalSize.Value = part.Size
+                originalSize.Parent = part
+            end
+            
+            -- Aplicar nuevo tamaño basado en el tamaño original
+            part.Size = originalSize.Value * currentSize
+            
+            -- También ajustar las uniones si existen
+            local weld = part:FindFirstChildOfClass("Weld")
+            if weld then
+                local originalC1 = weld:FindFirstChild("OriginalC1")
+                if not originalC1 then
+                    originalC1 = Instance.new("CFrameValue")
+                    originalC1.Name = "OriginalC1"
+                    originalC1.Value = weld.C1
+                    originalC1.Parent = weld
+                end
+                weld.C1 = originalC1.Value * CFrame.new(0, 0, 0) * currentSize
+            end
+        end
+    end
+    
+    -- Ajustar fuerza del humanoide si existe
+    if humanoid then
+        humanoid.HipHeight = humanoid.HipHeight * currentSize
+        humanoid.JumpHeight = humanoid.JumpHeight * currentSize
+    end
+    
+    -- Actualizar display
+    local percent = math.floor(currentSize * 100)
+    sizeLabel.Text = percent .. "%"
+    
+    -- Cambiar texto según tamaño
+    if currentSize < 0.5 then
+        sizeStatus.Text = "Mini"
+        sizeLabel.TextColor3 = Color3.fromRGB(100, 200, 255)
+    elseif currentSize < 0.8 then
+        sizeStatus.Text = "Pequeño"
+        sizeLabel.TextColor3 = Color3.fromRGB(150, 255, 150)
+    elseif currentSize < 1.2 then
+        sizeStatus.Text = "Normal"
+        sizeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    elseif currentSize < 2 then
+        sizeStatus.Text = "Grande"
+        sizeLabel.TextColor3 = Color3.fromRGB(255, 200, 100)
+    else
+        sizeStatus.Text = "Gigante"
+        sizeLabel.TextColor3 = Color3.fromRGB(255, 100, 100)
+    end
+end
+
+-- Función para resetear tamaño (volver a normal)
+local function resetSize()
+    currentSize = 1
+    applySize()
+end
+
+-- Conectar botones
+minusSize.MouseButton1Click:Connect(function()
+    currentSize = math.max(0.1, currentSize - 0.1) -- Mínimo 10%
+    applySize()
+end)
+
+plusSize.MouseButton1Click:Connect(function()
+    currentSize = math.min(5, currentSize + 0.1) -- Máximo 500%
+    applySize()
+end)
+
+-- Botón derecho para resetear a tamaño normal
+sizeDisplay.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton2 then
+        resetSize()
+    end
+end)
+
+-- Botón para reset rápido
+local resetSizeBtn = Instance.new("TextButton")
+resetSizeBtn.Size = UDim2.new(1, -20, 0, 30)
+resetSizeBtn.Position = UDim2.new(0, 10, 0, 240)
+resetSizeBtn.BackgroundColor3 = Color3.fromRGB(70, 70, 70)
+resetSizeBtn.Text = "Resetear Tamaño"
+resetSizeBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+resetSizeBtn.TextScaled = true
+resetSizeBtn.Font = Enum.Font.Gotham
+resetSizeBtn.Parent = mainFrame
+
+local resetCorner = Instance.new("UICorner")
+resetCorner.CornerRadius = UDim.new(0, 8)
+resetCorner.Parent = resetSizeBtn
+
+resetSizeBtn.MouseButton1Click:Connect(resetSize)
+
+
+print("¡Mi Hub v4.1 cargado! Con Control de Tamaño ✅")
