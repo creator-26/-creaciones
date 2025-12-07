@@ -52,28 +52,43 @@
                 <i class="ph-fill ph-plus-circle text-blue-600"></i> Nuevo Préstamo
             </h2>
             <form id="loan-form" class="space-y-4">
+                
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Nombre del Cliente</label>
                     <input type="text" id="cliente" required placeholder="Ej. Juan Pérez" 
                         class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800">
                 </div>
+
                 <div class="grid grid-cols-2 gap-3">
                     <div>
                         <label class="block text-sm font-medium text-gray-700 mb-1">Monto (S/)</label>
                         <input type="number" id="monto" required min="1" step="any" placeholder="0.00" 
                             class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800">
                     </div>
+                    
                     <div>
-                        <label class="block text-sm font-medium text-gray-700 mb-1">Semanas</label>
-                        <input type="number" id="semanas" required min="1" value="1" 
-                            class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800">
+                        <div class="flex items-center gap-1 mb-1">
+                            <div class="relative">
+                                <select id="tiempo-unidad" 
+                                    class="appearance-none bg-transparent font-medium text-gray-700 text-sm pr-4 focus:outline-none cursor-pointer">
+                                    <option value="semanas">Semanas</option>
+                                    <option value="meses">Meses</option>
+                                </select>
+                                <i class="ph-bold ph-caret-down absolute right-0 top-1/2 -translate-y-1/2 text-xs text-gray-500 pointer-events-none"></i>
+                            </div>
+                        </div>
+
+                        <input type="number" id="tiempo-cantidad" required min="1" value="1" 
+                            class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800 text-center font-bold">
                     </div>
                 </div>
+                
                 <div>
                     <label class="block text-sm font-medium text-gray-700 mb-1">Fecha</label>
                     <input type="date" id="fecha" required 
                         class="w-full p-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none text-gray-800">
                 </div>
+
                 <button type="submit" 
                     class="w-full bg-blue-600 active:bg-blue-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-blue-200 transition-all transform active:scale-95 flex justify-center items-center gap-2">
                     <i class="ph-bold ph-check"></i> Registrar Préstamo
@@ -83,8 +98,10 @@
 
         <section>
             <h3 class="text-gray-500 text-sm font-semibold uppercase mb-3 px-1">Historial de Clientes</h3>
-            <div id="lista-prestamos" class="space-y-3"></div>
+            <div id="lista-prestamos" class="space-y-3">
+                </div>
         </section>
+
     </main>
 
     <div id="modal-csv" class="fixed inset-0 bg-black/80 z-[60] hidden flex justify-center items-center p-4">
@@ -106,7 +123,7 @@
     <script>
         // --- CONFIGURACIÓN ---
         let prestamos = JSON.parse(localStorage.getItem('mis_prestamos')) || [];
-        const TASA_INTERES_SEMANAL = 0.10;
+        const TASA_INTERES_SEMANAL = 0.10; // 10%
 
         // Elementos DOM
         const form = document.getElementById('loan-form');
@@ -116,11 +133,12 @@
         
         document.getElementById('fecha').valueAsDate = new Date();
 
+        // Formateador de dinero
         const moneyFmt = new Intl.NumberFormat('es-MX', {
             style: 'currency', currency: 'MXN', minimumFractionDigits: 0, maximumFractionDigits: 2
         });
 
-        // --- FUNCIONES CORE ---
+        // --- FUNCIONES ---
         function guardar() {
             localStorage.setItem('mis_prestamos', JSON.stringify(prestamos));
             renderizar();
@@ -185,28 +203,44 @@
             totalGananciaEl.innerText = moneyFmt.format(sumaGanancia);
         }
 
-        // --- EVENTOS ---
         form.addEventListener('submit', (e) => {
             e.preventDefault();
+            
             const cliente = document.getElementById('cliente').value;
             const monto = parseFloat(document.getElementById('monto').value);
-            const semanas = parseInt(document.getElementById('semanas').value);
             const fecha = document.getElementById('fecha').value;
-            const interesTotal = monto * TASA_INTERES_SEMANAL * semanas;
+            
+            // Lógica de Tiempo
+            const cantidadTiempo = parseInt(document.getElementById('tiempo-cantidad').value);
+            const unidadTiempo = document.getElementById('tiempo-unidad').value;
+
+            // Si es meses, multiplica por 4
+            let semanasReales = cantidadTiempo;
+            if (unidadTiempo === 'meses') {
+                semanasReales = cantidadTiempo * 4;
+            }
+
+            const interesTotal = monto * TASA_INTERES_SEMANAL * semanasReales;
+            const total = monto + interesTotal;
 
             const nuevo = {
                 id: Date.now(),
-                cliente, monto, semanas, fecha,
+                cliente, monto, 
+                semanas: semanasReales, 
+                fecha,
                 totalInteres: interesTotal,
-                totalDevolver: monto + interesTotal,
+                totalDevolver: total,
                 estado: 'Pendiente'
             };
             prestamos.push(nuevo);
             
+            // Reset
             document.getElementById('cliente').value = '';
             document.getElementById('monto').value = '';
-            document.getElementById('semanas').value = '1';
+            document.getElementById('tiempo-cantidad').value = '1';
+            document.getElementById('tiempo-unidad').value = 'semanas';
             document.getElementById('cliente').focus();
+
             guardar();
         });
 
@@ -225,25 +259,15 @@
             }
         };
 
-        // --- EXPORTAR Y COMPARTIR ---
         window.compartirCSV = () => {
             if(prestamos.length === 0) return alert("No hay datos para compartir");
-
-            // Generar texto separado por tabuladores para Excel
             let csv = "Cliente\tFecha\tMonto\tSemanas\tInterés\tTotal\tEstado\n";
             prestamos.forEach(p => {
                 csv += `${p.cliente}\t${p.fecha}\t${p.monto}\t${p.semanas}\t${p.totalInteres}\t${p.totalDevolver}\t${p.estado}\n`;
             });
 
-            // Intentar usar menú nativo del celular
             if (navigator.share) {
-                navigator.share({
-                    title: 'Reporte Préstamos',
-                    text: csv
-                }).catch(err => {
-                    console.log("Error al compartir o cancelado:", err);
-                    mostrarModal(csv); // Si falla o cancelan, mostramos el modal igual
-                });
+                navigator.share({ title: 'Reporte Préstamos', text: csv }).catch(err => mostrarModal(csv));
             } else {
                 mostrarModal(csv);
             }
