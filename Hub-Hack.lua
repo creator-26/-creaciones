@@ -296,6 +296,11 @@ local function stopInfJump()
 end
 
 infJumpBtn.MouseButton1Click:Connect(function()
+        local noFallEnabled = false
+local noFallConnection = nil
+local RAY_LENGTH = 1000
+local HOVER_HEIGHT = 3 -- Altura constante sobre el "suelo invisible"
+        
     infJumpEnabled = not infJumpEnabled
     infJumpBtn.Text = "Infinity Jump: " .. (infJumpEnabled and "ON" or "OFF")
     infJumpBtn.BackgroundColor3 = infJumpEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(60, 60, 60)
@@ -305,5 +310,59 @@ infJumpBtn.MouseButton1Click:Connect(function()
         stopInfJump()
     end
 end)
+-- === NO CAER (suelo invisible) ===
+local noFallBtn = Instance.new("TextButton")
+noFallBtn.Size = UDim2.new(1, -20, 0, 35)
+noFallBtn.Position = UDim2.new(0, 10, 0, 180)
+noFallBtn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+noFallBtn.Text = "No Caer: OFF"
+noFallBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+noFallBtn.TextScaled = true
+noFallBtn.Font = Enum.Font.Gotham
+noFallBtn.Parent = mainFrame
+
+local noFallCorner = Instance.new("UICorner")
+noFallCorner.CornerRadius = UDim.new(0, 8)
+noFallCorner.Parent = noFallBtn
+
+     local function startNoFall()
+    if noFallConnection then return end
+    noFallConnection = RunService.Heartbeat:Connect(function()
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+        if not hrp then return end
+
+        local ray = Ray.new(hrp.Position, Vector3.new(0, -RAY_LENGTH, 0))
+        local hit, pos = workspace:FindPartOnRay(ray, char)
+
+        if not hit then
+            -- No hay suelo debajo: flota
+            hrp.Position = Vector3.new(hrp.Position.X, pos.Y + HOVER_HEIGHT, hrp.Position.Z)
+            hrp.Velocity = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z)
+        end
+    end)
+end
+
+local function stopNoFall()
+    if noFallConnection then
+        noFallConnection:Disconnect()
+        noFallConnection = nil
+    end
+end
+
+noFallBtn.MouseButton1Click:Connect(function()
+    noFallEnabled = not noFallEnabled
+    noFallBtn.Text = "No Caer: " .. (noFallEnabled and "ON" or "OFF")
+    noFallBtn.BackgroundColor3 = noFallEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(60, 60, 60)
+    if noFallEnabled then
+        startNoFall()
+    else
+        stopNoFall()
+    end
+end)
+
+-- Respawn handler (agrega esto dentro de `onCharacterAdded`)
+if noFallEnabled then startNoFall() end
+
+
 
 print("¡Mi Hub v4 cargado! Infinity Jump FIJADO para MÓVIL 🚀")
