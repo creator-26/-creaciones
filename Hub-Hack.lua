@@ -1,4 +1,4 @@
--- Mi Hub v4 - Infinity Jump FIJADO (PC + MÓVIL), Velocidad, Vida Infinita, Caída Lenta
+-- Mi Hub v4 - Infinity Jump FIJADO (PC + MÓVIL), Velocidad, Vida Infinita, Caída Lenta, No Caer
 -- ¡Infinity Jump ahora PERFECTO en celular! Usa JumpRequest interno de Roblox.
 
 local Players = game:GetService("Players")
@@ -14,10 +14,10 @@ screenGui.Name = "MiHub"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Frame principal (260px alto)
+-- Frame principal (ahora 285px alto para el nuevo botón)
 local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 260, 0, 250)
-mainFrame.Position = UDim2.new(0.5, -130, 0.5, -130)
+mainFrame.Size = UDim2.new(0, 260, 0, 285)
+mainFrame.Position = UDim2.new(0.5, -130, 0.5, -142.5)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
@@ -42,7 +42,6 @@ mainFrame.InputBegan:Connect(function(input)
         dragging = true
         dragStart = input.Position
         startPos = mainFrame.Position
-        
         local conn
         conn = input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
@@ -109,7 +108,6 @@ toggleBtn.InputBegan:Connect(function(input)
         draggingToggle = true
         dragStartToggle = input.Position
         startPosToggle = toggleBtn.Position
-        
         local conn
         conn = input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
@@ -142,6 +140,7 @@ local currentSpeed = 16
 local infJumpEnabled = false
 local godEnabled = false
 local slowFallEnabled = false
+local noFallEnabled = false
 local connections = {}
 
 -- Respawn handler
@@ -149,10 +148,11 @@ local function onCharacterAdded(newChar)
     char = newChar
     humanoid = newChar:WaitForChild("Humanoid")
     humanoid.WalkSpeed = currentSpeed
-    wait(0.1)
+    task.wait(0.1)
     if godEnabled then startGod() end
     if slowFallEnabled then startSlowFall() end
     if infJumpEnabled then startInfJump() end
+    if noFallEnabled then startNoFall() end
 end
 
 player.CharacterAdded:Connect(onCharacterAdded)
@@ -218,8 +218,6 @@ plusSpeed.MouseButton1Click:Connect(function()
     currentSpeed = math.min(200, currentSpeed + 8)
     applySpeed()
 end)
-
-
 
 -- === CAÍDA LENTA ===
 local slowFallBtn = Instance.new("TextButton")
@@ -296,11 +294,6 @@ local function stopInfJump()
 end
 
 infJumpBtn.MouseButton1Click:Connect(function()
-        local noFallEnabled = false
-local noFallConnection = nil
-local RAY_LENGTH = 1000
-local HOVER_HEIGHT = 3 -- Altura constante sobre el "suelo invisible"
-        
     infJumpEnabled = not infJumpEnabled
     infJumpBtn.Text = "Infinity Jump: " .. (infJumpEnabled and "ON" or "OFF")
     infJumpBtn.BackgroundColor3 = infJumpEnabled and Color3.fromRGB(0, 255, 0) or Color3.fromRGB(60, 60, 60)
@@ -310,6 +303,7 @@ local HOVER_HEIGHT = 3 -- Altura constante sobre el "suelo invisible"
         stopInfJump()
     end
 end)
+
 -- === NO CAER (suelo invisible) ===
 local noFallBtn = Instance.new("TextButton")
 noFallBtn.Size = UDim2.new(1, -20, 0, 35)
@@ -325,7 +319,11 @@ local noFallCorner = Instance.new("UICorner")
 noFallCorner.CornerRadius = UDim.new(0, 8)
 noFallCorner.Parent = noFallBtn
 
-     local function startNoFall()
+local noFallConnection = nil
+local RAY_LENGTH = 1000
+local HOVER_HEIGHT = 3
+
+local function startNoFall()
     if noFallConnection then return end
     noFallConnection = RunService.Heartbeat:Connect(function()
         local hrp = char:FindFirstChild("HumanoidRootPart")
@@ -335,7 +333,6 @@ noFallCorner.Parent = noFallBtn
         local hit, pos = workspace:FindPartOnRay(ray, char)
 
         if not hit then
-            -- No hay suelo debajo: flota
             hrp.Position = Vector3.new(hrp.Position.X, pos.Y + HOVER_HEIGHT, hrp.Position.Z)
             hrp.Velocity = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z)
         end
@@ -360,9 +357,4 @@ noFallBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- Respawn handler (agrega esto dentro de `onCharacterAdded`)
-if noFallEnabled then startNoFall() end
-
-
-
-print("¡Mi Hub v4 cargado! Infinity Jump FIJADO para MÓVIL 🚀")
+print("¡Mi Hub v4 cargado! Infinity Jump FIJADO para MÓVIL 🚀 + No Caer activado")
