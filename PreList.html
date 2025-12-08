@@ -131,7 +131,12 @@
         const totalCobrarEl = document.getElementById('total-por-cobrar');
         const totalGananciaEl = document.getElementById('total-ganancia');
         
-        document.getElementById('fecha').valueAsDate = new Date();
+        const hoy = new Date();
+        const anio = hoy.getFullYear();
+        const mes = String(hoy.getMonth() + 1).padStart(2, '0');
+        const dia = String(hoy.getDate()).padStart(2, '0');
+        document.getElementById('fecha').value = `${anio}-${mes}-${dia}`;
+        
 
         // Formateador de dinero
         const moneyFmt = new Intl.NumberFormat('es-PE', {
@@ -176,7 +181,8 @@
                     <div class="flex justify-between items-start pl-2">
                         <div>
                             <h3 class="font-bold text-gray-800 text-lg leading-tight">${p.cliente}</h3>
-                            <span class="text-xs text-gray-500">${new Date(p.fecha).toLocaleDateString()} &bull; ${p.semanas} sem.</span>
+                            <span class="text-xs text-gray-500">${p.fecha.split('-')[2]}/${p.fecha.split('-')[1]}/${p.fecha.split('-')[0]}
+                            &bull; ${p.semanas} sem.</span>
                         </div>
                         <div class="text-right">
                             <span class="block font-bold text-blue-700 text-lg">${moneyFmt.format(p.totalDevolver)}</span>
