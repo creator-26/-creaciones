@@ -1,6 +1,4 @@
--- Mi Hub v4 - Infinity Jump FIJADO (PC + MÓVIL), Velocidad, Vida Infinita, Caída Lenta, No Caer
--- ¡Infinity Jump ahora PERFECTO en celular! Usa JumpRequest interno de Roblox.
-
+-- Mi Hub v5 - Infinity Jump, Velocidad, Caída Lenta, SUELO INVISIBLE LOCAL
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
@@ -14,12 +12,11 @@ screenGui.Name = "MiHub"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = playerGui
 
--- Frame principal (ahora 285px alto para el nuevo botón)
+-- Frame principal
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 260, 0, 285)
 mainFrame.Position = UDim2.new(0.5, -130, 0.5, -142.5)
 mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
-mainFrame.BackgroundTransparency = 0.1
 mainFrame.BorderSizePixel = 0
 mainFrame.Parent = screenGui
 
@@ -27,7 +24,7 @@ local mainCorner = Instance.new("UICorner")
 mainCorner.CornerRadius = UDim.new(0, 12)
 mainCorner.Parent = mainFrame
 
--- Arrastrable PROPIO (PC + MÓVIL perfecto)
+-- Arrastrable
 local dragging = false
 local dragStart = nil
 local startPos = nil
@@ -58,7 +55,7 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Título (barra superior arrastrable también)
+-- Título
 local titleBar = Instance.new("Frame")
 titleBar.Size = UDim2.new(1, 0, 0, 35)
 titleBar.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
@@ -73,13 +70,13 @@ local titleLabel = Instance.new("TextLabel")
 titleLabel.Size = UDim2.new(0.8, 0, 1, 0)
 titleLabel.Position = UDim2.new(0, 10, 0, 0)
 titleLabel.BackgroundTransparency = 1
-titleLabel.Text = "Mi Hub v4"
+titleLabel.Text = "Mi Hub v5"
 titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
 titleLabel.TextScaled = true
 titleLabel.Font = Enum.Font.GothamBold
 titleLabel.Parent = titleBar
 
--- Botón flotante H/+ (también arrastrable)
+-- Botón flotante H/+
 local toggleBtn = Instance.new("TextButton")
 toggleBtn.Size = UDim2.new(0, 55, 0, 55)
 toggleBtn.Position = UDim2.new(0.5, -27.5, 0.5, -27.5)
@@ -124,7 +121,6 @@ UserInputService.InputChanged:Connect(function(input)
     end
 end)
 
--- Toggle hub
 local hubVisible = true
 toggleBtn.MouseButton1Click:Connect(function()
     hubVisible = not hubVisible
@@ -138,18 +134,15 @@ local char = player.Character or player.CharacterAdded:Wait()
 local humanoid = char:WaitForChild("Humanoid")
 local currentSpeed = 16
 local infJumpEnabled = false
-local godEnabled = false
 local slowFallEnabled = false
 local noFallEnabled = false
 local connections = {}
 
--- Respawn handler
 local function onCharacterAdded(newChar)
     char = newChar
     humanoid = newChar:WaitForChild("Humanoid")
     humanoid.WalkSpeed = currentSpeed
     task.wait(0.1)
-    if godEnabled then startGod() end
     if slowFallEnabled then startSlowFall() end
     if infJumpEnabled then startInfJump() end
     if noFallEnabled then startNoFall() end
@@ -158,7 +151,7 @@ end
 player.CharacterAdded:Connect(onCharacterAdded)
 if player.Character then onCharacterAdded(player.Character) end
 
--- === VELOCIDAD Ajustable ===
+-- === VELOCIDAD ===
 local speedFrame = Instance.new("Frame")
 speedFrame.Size = UDim2.new(1, -20, 0, 35)
 speedFrame.Position = UDim2.new(0, 10, 0, 45)
@@ -262,7 +255,7 @@ slowFallBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- === INFINITY JUMP FIJADO (PC + CELULAR) ===
+-- === INFINITY JUMP ===
 local infJumpBtn = Instance.new("TextButton")
 infJumpBtn.Size = UDim2.new(1, -20, 0, 35)
 infJumpBtn.Position = UDim2.new(0, 10, 0, 135)
@@ -304,7 +297,49 @@ infJumpBtn.MouseButton1Click:Connect(function()
     end
 end)
 
--- === NO CAER (suelo invisible) ===
+-- === SUELO INVISIBLE LOCAL ===
+local floorPart = nil
+local floorConnection = nil
+
+local function createFloor()
+    if floorPart then return end
+    floorPart = Instance.new("Part")
+    floorPart.Size = Vector3.new(50, 1, 50)
+    floorPart.Transparency = 1
+    floorPart.CanCollide = true
+    floorPart.Anchored = true
+    floorPart.Parent = workspace
+end
+
+local function destroyFloor()
+    if floorPart then
+        floorPart:Destroy()
+        floorPart = nil
+    end
+end
+
+local function updateFloor()
+    if not floorPart then return end
+    local hrp = char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        floorPart.Position = Vector3.new(hrp.Position.X, hrp.Position.Y - 5, hrp.Position.Z)
+    end
+end
+
+local function startNoFall()
+    createFloor()
+    if floorConnection then return end
+    floorConnection = RunService.Heartbeat:Connect(updateFloor)
+end
+
+local function stopNoFall()
+    if floorConnection then
+        floorConnection:Disconnect()
+        floorConnection = nil
+    end
+    destroyFloor()
+end
+
 local noFallBtn = Instance.new("TextButton")
 noFallBtn.Size = UDim2.new(1, -20, 0, 35)
 noFallBtn.Position = UDim2.new(0, 10, 0, 180)
@@ -319,33 +354,6 @@ local noFallCorner = Instance.new("UICorner")
 noFallCorner.CornerRadius = UDim.new(0, 8)
 noFallCorner.Parent = noFallBtn
 
-local noFallConnection = nil
-local RAY_LENGTH = 1000
-local HOVER_HEIGHT = 3
-
-local function startNoFall()
-    if noFallConnection then return end
-    noFallConnection = RunService.Heartbeat:Connect(function()
-        local hrp = char:FindFirstChild("HumanoidRootPart")
-        if not hrp then return end
-
-        local ray = Ray.new(hrp.Position, Vector3.new(0, -RAY_LENGTH, 0))
-        local hit, pos = workspace:FindPartOnRay(ray, char)
-
-        if not hit then
-            hrp.Position = Vector3.new(hrp.Position.X, pos.Y + HOVER_HEIGHT, hrp.Position.Z)
-            hrp.Velocity = Vector3.new(hrp.Velocity.X, 0, hrp.Velocity.Z)
-        end
-    end)
-end
-
-local function stopNoFall()
-    if noFallConnection then
-        noFallConnection:Disconnect()
-        noFallConnection = nil
-    end
-end
-
 noFallBtn.MouseButton1Click:Connect(function()
     noFallEnabled = not noFallEnabled
     noFallBtn.Text = "No Caer: " .. (noFallEnabled and "ON" or "OFF")
@@ -357,4 +365,4 @@ noFallBtn.MouseButton1Click:Connect(function()
     end
 end)
 
-print("¡Mi Hub v4 cargado! Infinity Jump FIJADO para MÓVIL 🚀 + No Caer activado")
+print("¡Mi Hub v5 cargado! Suelo invisible local activado ✅")
