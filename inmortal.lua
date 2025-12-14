@@ -153,7 +153,7 @@ local function toggle()
 end
 
 -- Respawn automático
-player.CharacterAdded:Connect(function(char) task.wait(0.5) if enabled then godOn(char) end end)
+player.CharacterAdded:Connect(function(char) task.wait(0.5) if enabled and godOn then pcall(god0n, char) end end)
 
 button.MouseButton1Click:Connect(toggle)
 UserInputService.InputBegan:Connect(function(i,gp)
