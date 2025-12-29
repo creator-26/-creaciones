@@ -1,68 +1,105 @@
---// MM2 Aura ESP + Hub cuadrado + Speed slider (MÓVIL)
---// by k2#9922
+--// MM2 Aura ESP + Speed Hack + Toggle Hub (FIXED & IMPROVED)
+--// by k2#9922 (modified for immediate role detection, square draggable hub, speed toggle)
 
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 
 local localPlayer = Players.LocalPlayer
-local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
-local humanoid = character:WaitForChild("Humanoid")
+local camera = workspace.CurrentCamera
 
---// Auras (igual que antes)
+--// Tabla de auras
 local auras = {}
+
+--// Detectar rol en tiempo real (check backpack y character para detectar inmediatamente después de inicio de ronda)
 local function getRole(player)
-	local char = player.Character
-	if not char then return "Innocent" end
-	local knife = char:FindFirstChild("Knife") or char:FindFirstChild("KnifeMesh")
-	local gun = char:FindFirstChild("Gun") or char:FindFirstChild("RevolverMesh")
-	if knife then return "Murderer" end
-	if gun then return "Sheriff" end
-	return "Innocent"
+    local char = player.Character
+    if not char then return "Innocent" end
+    local backpack = player:FindFirstChild("Backpack")
+    local knife = (char:FindFirstChild("Knife") or (backpack and backpack:FindFirstChild("Knife")))
+    local gun = (char:FindFirstChild("Gun") or (backpack and backpack:FindFirstChild("Gun")))
+    if knife then return "Murderer" end
+    if gun then return "Sheriff" end
+    return "Innocent"
 end
+
+--// Actualizar color del aura
 local function updateAura(player)
-	local h = auras[player]
-	if h then
-		local role = getRole(player)
-		h.FillColor = role=="Murderer" and Color3.fromRGB(255,50,50) or
-		              role=="Sheriff" and Color3.fromRGB(50,150,255) or
-		              Color3.fromRGB(255,255,255)
-		h.FillTransparency = 0.35
-	end
+    local highlight = auras[player]
+    if not highlight then return end
+    local role = getRole(player)
+    local color = role == "Murderer" and Color3.fromRGB(255,50,50) or
+                  role == "Sheriff" and Color3.fromRGB(50,150,255) or
+                  Color3.fromRGB(255,255,255)
+    highlight.FillColor = color
+    highlight.FillTransparency = 0.35   -- mucho más visible
+    highlight.OutlineTransparency = 1
 end
+
+--// Crear aura
 local function createAura(player)
-	local hl = Instance.new("Highlight", game.CoreGui)
-	hl.Name = player.Name.."_Aura"
-	hl.Adornee = player.Character or player.CharacterAdded:Wait()
-	auras[player] = hl
-	updateAura(player)
-	player.CharacterAdded:Connect(function(c)
-		hl.Adornee = c
-		updateAura(c)
-	end)
+    local highlight = Instance.new("Highlight")
+    highlight.Name = player.Name.."_Aura"
+    highlight.Parent = game.CoreGui
+    highlight.Adornee = player.Character or player.CharacterAdded:Wait()
+    auras[player] = highlight
+    updateAura(player)
+
+    player.CharacterAdded:Connect(function(char)
+        highlight.Adornee = char
+        updateAura(player)
+    end)
 end
-local function removeAura(player) if auras[player] then auras[player]:Destroy(); auras[player]=nil end end
+
+--// Limpiar al salir
+local function removeAura(player)
+    if auras[player] then
+        auras[player]:Destroy()
+        auras[player] = nil
+    end
+end
+
+--// Conectar jugadores
 Players.PlayerAdded:Connect(createAura)
 Players.PlayerRemoving:Connect(removeAura)
 for _,p in pairs(Players:GetPlayers()) do if p~=localPlayer then createAura(p) end end
-RunService.RenderStepped:Connect(function() for pl,_ in pairs(auras) do updateAura(pl) end end)
 
---// UI: Hub cuadrado
+--// Actualizar colores cada frame (para detección inmediata al inicio de ronda)
+RunService.RenderStepped:Connect(function()
+    for plr, _ in pairs(auras) do updateAura(plr) end
+end)
+
+--// Función para aplicar speed hack
+local speedEnabled = false
+local defaultSpeed = 16
+local boostedSpeed = 32  -- Ajusta este valor para más rápido (ej: 50 para muy rápido)
+
+local function applySpeed()
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+        local humanoid = localPlayer.Character.Humanoid
+        humanoid.WalkSpeed = speedEnabled and boostedSpeed or defaultSpeed
+    end
+end
+
+--// Reaplicar speed al respawn
+localPlayer.CharacterAdded:Connect(applySpeed)
+
+--// UI Hub cuadrado draggable (no scrollable por ahora, ya que hay pocos botones; se puede agregar si agregas más features)
 local ScreenGui = Instance.new("ScreenGui", game.CoreGui)
 local Hub = Instance.new("Frame")
-Hub.Size = UDim2.new(0,180,0,220)
-Hub.Position = UDim2.new(0.5,-90,05,-90,0.5,-110)
-Hub.BackgroundColor3 = Color3.new(0.05,0.05,0.05)
-Hub.BackgroundTransparency = 0.25
+Hub.Size = UDim2.new(0, 150, 0, 150)  -- Cuadrado no tan grande
+Hub.Position = UDim2.new(0.5, -75, 0.8, 0)  -- Centrado abajo
+Hub.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+Hub.BackgroundTransparency = 0.3
 Hub.BorderSizePixel = 0
 Hub.Active = true
-Hub.Draggable = true
+Hub.Draggable = true  -- Desplazable (draggable)
 Hub.Parent = ScreenGui
 
---// Título
+--// Etiqueta título
 local Title = Instance.new("TextLabel")
-Title.Size = UDim2.new(1,0,0,30)
-Title.Position = UDim2.new(0,0,0,0)
+Title.Size = UDim2.new(1, 0, 0.2, 0)
+Title.Position = UDim2.new(0, 0, 0, 0)
 Title.BackgroundTransparency = 1
 Title.Text = "MM2 Hub"
 Title.TextColor3 = Color3.new(1,1,1)
@@ -71,82 +108,47 @@ Title.TextScaled = true
 Title.Parent = Hub
 
 --// Botón Aura
-local AuraBtn = Instance.new("TextButton")
-AuraBtn.Size = UDim2.new(0,150,0,40)
-AuraBtn.Position = UDim2.new(0.5,-75,0,40)
-AuraBtn.BackgroundColor3 = Color3.new(1,1,1)
-AuraBtn.BackgroundTransparency = 0.3
-AuraBtn.Text = "Aura: ON"
-AuraBtn.TextColor3 = Color3.new(0,0,0)
-AuraBtn.Font = Enum.Font.GothamBold
-AuraBtn.TextScaled = true
-AuraBtn.Parent = Hub
+local AuraButton = Instance.new("TextButton")
+AuraButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+AuraButton.Position = UDim2.new(0.1, 0, 0.3, 0)
+AuraButton.BackgroundColor3 = Color3.new(1,1,1)
+AuraButton.BackgroundTransparency = 0.5
+AuraButton.Text = "Aura ON"
+AuraButton.TextColor3 = Color3.new(0,0,0)
+AuraButton.Font = Enum.Font.GothamBold
+AuraButton.TextScaled = true
+AuraButton.Parent = Hub
 
---// Texto Speed
-local SpeedLabel = Instance.new("TextLabel")
-SpeedLabel.Size = UDim2.new(0,150,0,25)
-SpeedLabel.Position = UDim2.new(0.5,-75,0,95)
-SpeedLabel.BackgroundTransparency = 1
-SpeedLabel.Text = "Speed"
-SpeedLabel.TextColor3 = Color3.new(1,1,1)
-SpeedLabel.Font = Enum.Font.GothamBold
-SpeedLabel.TextScaled = true
-SpeedLabel.Parent = Hub
-
---// Slider Speed
-local Slider = Instance.new("Frame")
-Slider.Size = UDim2.new(0,150,0,20)
-Slider.Position = UDim2.new(0.5,-75,0,125)
-Slider.BackgroundColor3 = Color3.new(0.2,0.2,0.2)
-Slider.BorderSizePixel = 0
-Slider.Parent = Hub
-
-local Fill = Instance.new("Frame")
-Fill.Size = UDim2.new(0.5,0,1,0)
-Fill.BackgroundColor3 = Color3.fromRGB(0,150,255)
-Fill.BorderSizePixel = 0
-Fill.Parent = Slider
-
-local Thumb = Instance.new("TextButton")
-Thumb.Size = UDim2.new(0,15,0,30)
-Thumb.Position = UDim2.new(0.5,-7,0.5,-15)
-Thumb.BackgroundColor3 = Color3.new(1,1,1)
-Thumb.Text = ""
-Thumb.Parent = Slider
-
---// Lógica slider
-local speedVal = 16
-local dragging = false
-local function updateSpeed(x)
-	local abs = Slider.AbsolutePosition.X
-	local size = Slider.AbsoluteSize.X
-	local percent = math.clamp((x-abs)/size,0,1)
-	Fill.Size = UDim2.new(percent,0,1,0)
-	Thumb.Position = UDim2.new(percent,-7,0.5,-15)
-	speedVal = 16 + percent*84   -- 16-100
-	if humanoid then humanoid.WalkSpeed = speedVal end
-end
-Thumb.MouseButton1Down:Connect(function() dragging = true end)
-UserInputService.InputEnded:Connect(function(i) if i.UserInputType==Enum.UserInputType.MouseButton1 then dragging=false end end)
-UserInputService.TouchEnded:Connect(function() dragging=false end)
-UserInputService.InputChanged:Connect(function(i)
-	if dragging and (i.UserInputType==Enum.UserInputType.MouseMovement or i.UserInputType==Enum.UserInputType.Touch) then
-		updateSpeed(i.Position.X)
-	end
-end)
-
---// Toggle Aura
 local auraEnabled = true
-AuraBtn.MouseButton1Click:Connect(function()
-	auraEnabled = not auraEnabled
-	AuraBtn.Text = auraEnabled and "Aura: ON" or "Aura: OFF"
-	for _,h in pairs(game.CoreGui:GetChildren()) do
-		if h:IsA("Highlight") then h.Enabled = auraEnabled end
-	end
+AuraButton.MouseButton1Click:Connect(function()
+    auraEnabled = not auraEnabled
+    AuraButton.Text = auraEnabled and "Aura ON" or "Aura OFF"
+    for _, h in pairs(game.CoreGui:GetChildren()) do
+        if h:IsA("Highlight") then h.Enabled = auraEnabled end
+    end
 end)
 
---// Aplicar speed al respawn
-localPlayer.CharacterAdded:Connect(function(char)
-	humanoid = char:WaitForChild("Humanoid")
-	humanoid.WalkSpeed = speedVal
+--// Botón Speed
+local SpeedButton = Instance.new("TextButton")
+SpeedButton.Size = UDim2.new(0.8, 0, 0.2, 0)
+SpeedButton.Position = UDim2.new(0.1, 0, 0.6, 0)
+SpeedButton.BackgroundColor3 = Color3.new(1,1,1)
+SpeedButton.BackgroundTransparency = 0.5
+SpeedButton.Text = "Speed OFF"
+SpeedButton.TextColor3 = Color3.new(0,0,0)
+SpeedButton.Font = Enum.Font.GothamBold
+SpeedButton.TextScaled = true
+SpeedButton.Parent = Hub
+
+SpeedButton.MouseButton1Click:Connect(function()
+    speedEnabled = not speedEnabled
+    SpeedButton.Text = speedEnabled and "Speed ON" or "Speed OFF"
+    applySpeed()
 end)
+
+--// Si quieres hacerlo scrollable, agrega un ScrollingFrame dentro de Hub
+--// Por ejemplo:
+--// local Scroll = Instance.new("ScrollingFrame", Hub)
+--// Scroll.Size = UDim2.new(1,0,0.8,0)
+--// Scroll.Position = UDim2.new(0,0,0.2,0)
+--// Luego mueve los botones dentro de Scroll y ajusta CanvasSize si agregas más.
