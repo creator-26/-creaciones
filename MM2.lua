@@ -72,7 +72,7 @@ end)
 --// Función para aplicar speed hack
 local speedEnabled = false
 local defaultSpeed = 16
-local boostedSpeed = 32  -- Ajusta este valor para más rápido (ej: 50 para muy rápido)
+local boostedSpeed = 28  -- Ajusta este valor para más rápido (ej: 50 para muy rápido)
 
 local function applySpeed()
     if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
@@ -128,24 +128,48 @@ AuraButton.MouseButton1Click:Connect(function()
     end
 end)
 
---// Botón Speed
-local SpeedButton = Instance.new("TextButton")
-SpeedButton.Size = UDim2.new(0.8, 0, 0.2, 0)
-SpeedButton.Position = UDim2.new(0.1, 0, 0.6, 0)
-SpeedButton.BackgroundColor3 = Color3.new(1,1,1)
-SpeedButton.BackgroundTransparency = 0.5
-SpeedButton.Text = "Speed OFF"
-SpeedButton.TextColor3 = Color3.new(0,0,0)
-SpeedButton.Font = Enum.Font.GothamBold
-SpeedButton.TextScaled = true
-SpeedButton.Parent = Hub
+--// Botón Speed con Slider
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Size = UDim2.new(0.8, 0, 0.15, 0)
+SpeedLabel.Position = UDim2.new(0.1, 0, 0.45, 0)
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Text = "Speed: 16"
+SpeedLabel.TextColor3 = Color3.new(1,1,1)
+SpeedLabel.Font = Enum.Font.GothamBold
+SpeedLabel.TextScaled = true
+SpeedLabel.Parent = Hub
+
+local SpeedSlider = Instance.new("TextButton")
+SpeedSlider.Size = UDim2.new(0.8, 0, 0.15, 0)
+SpeedSlider.Position = UDim2.new(0.1, 0, 0.6, 0)
+SpeedSlider.BackgroundColor3 = Color3.new(0.4,0.4,0.4)
+SpeedSlider.Text = "Ajustar Speed (16-28)"
+SpeedSlider.TextColor3 = Color3.new(1,1,1)
+SpeedSlider.Font = Enum.Font.Gotham
+SpeedSlider.TextScaled = true
+SpeedSlider.Parent = Hub
+
+local currentSpeed = 16
+
+local function updateSpeed()
+    if localPlayer.Character and localPlayer.Character:FindFirstChild("Humanoid") then
+        localPlayer.Character.Humanoid.WalkSpeed = currentSpeed
+    end
+    SpeedLabel.Text = "Speed: " .. currentSpeed
+    SpeedButton.Text = currentSpeed > 16 and "Speed ON" or "Speed OFF"
+end
+
+SpeedSlider.MouseButton1Click:Connect(function()
+    currentSpeed = currentSpeed + 4
+    if currentSpeed > 28 then currentSpeed = 16 end
+    updateSpeed()
+end)
 
 SpeedButton.MouseButton1Click:Connect(function()
     speedEnabled = not speedEnabled
-    SpeedButton.Text = speedEnabled and "Speed ON" or "Speed OFF"
-    applySpeed()
+    currentSpeed = speedEnabled and 28 or 16  -- Valor por defecto cuando activas
+    updateSpeed()
 end)
-
 --// Si quieres hacerlo scrollable, agrega un ScrollingFrame dentro de Hub
 --// Por ejemplo:
 --// local Scroll = Instance.new("ScrollingFrame", Hub)
