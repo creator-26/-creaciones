@@ -1,6 +1,8 @@
 -- Auto Kill Supremo Hub CELULAR 2026 - ULTRA FAST KILL A TODOS
 -- Optimizado para Delta, Fluxus, CodeX - Mata simultáneo y rapidísimo
--- Tecla Insert o botón para ocultar/mostrar
+-- Diseño mejorado: Letras más pequeñas, mejor encaje
+-- Botón flotante para ocultar/mostrar (presiona para toggle)
+-- X oculta, pero puedes mostrar con el botón flotante
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -82,66 +84,66 @@ task.spawn(function()
     end
 end)
 
--- GUI CELULAR (botones grandes)
+-- GUI CELULAR (diseño mejorado: más compacto, letras más pequeñas)
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "KillHubMobile"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 350, 0, 500)  -- Más grande para móvil
-frame.Position = UDim2.new(0.5, -175, 0.5, -250)
+frame.Size = UDim2.new(0, 280, 0, 320)  -- Más compacto para mejor encaje en móvil
+frame.Position = UDim2.new(0.5, -140, 0.5, -160)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.Active = true
 frame.Draggable = true
 frame.Parent = screenGui
 
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 50)
+title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-title.Text = "AUTO KILL SUPREMO CELULAR"
+title.Text = "AUTO KILL SUPREMO"
 title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 24
+title.TextSize = 18  -- Letras más pequeñas
 title.Parent = frame
 
-local y = 60
+local y = 40
 
--- Toggle Principal (grande)
+-- Toggle Principal
 local btnOn = Instance.new("TextButton")
-btnOn.Size = UDim2.new(1, -30, 0, 60)
-btnOn.Position = UDim2.new(0, 15, 0, y)
+btnOn.Size = UDim2.new(1, -20, 0, 35)
+btnOn.Position = UDim2.new(0, 10, 0, y)
 btnOn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 btnOn.Text = "AUTO KILL: OFF"
-btnOn.TextSize = 28
+btnOn.TextSize = 16  -- Más pequeño
 btnOn.Parent = frame
 btnOn.MouseButton1Click:Connect(function()
     _G.AutoKillEnabled = not _G.AutoKillEnabled
     btnOn.Text = "AUTO KILL: "..(_G.AutoKillEnabled and "ON" or "OFF")
     btnOn.BackgroundColor3 = _G.AutoKillEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 0, 0)
 end)
-y += 80
+y += 45
 
 -- Kill Todos
 local btnAll = Instance.new("TextButton")
-btnAll.Size = UDim2.new(1, -30, 0, 60)
-btnAll.Position = UDim2.new(0, 15, 0, y)
+btnAll.Size = UDim2.new(1, -20, 0, 35)
+btnAll.Position = UDim2.new(0, 10, 0, y)
 btnAll.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 btnAll.Text = "MATAR A TODOS: ON"
-btnAll.TextSize = 24
+btnAll.TextSize = 16
 btnAll.Parent = frame
 btnAll.MouseButton1Click:Connect(function()
     _G.AutoKillAll = not _G.AutoKillAll
     btnAll.Text = "MATAR A TODOS: "..(_G.AutoKillAll and "ON" or "OFF")
 end)
-y += 80
+y += 45
 
 -- Target Player
 local targetBox = Instance.new("TextBox")
-targetBox.Size = UDim2.new(1, -30, 0, 50)
-targetBox.Position = UDim2.new(0, 15, 0, y)
+targetBox.Size = UDim2.new(1, -20, 0, 35)
+targetBox.Position = UDim2.new(0, 10, 0, y)
 targetBox.PlaceholderText = "Nombre jugador específico"
-targetBox.TextSize = 20
+targetBox.TextSize = 14
 targetBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 targetBox.TextColor3 = Color3.new(1,1,1)
 targetBox.Parent = frame
@@ -151,14 +153,14 @@ targetBox.FocusLost:Connect(function(enter)
         StarterGui:SetCore("SendNotification",{Title="Kill Hub",Text="Target: ".._G.TargetPlayerName,Duration=3})
     end
 end)
-y += 70
+y += 45
 
 -- Whitelist
 local whiteBox = Instance.new("TextBox")
-whiteBox.Size = UDim2.new(1, -30, 0, 50)
-whiteBox.Position = UDim2.new(0, 15, 0, y)
+whiteBox.Size = UDim2.new(1, -20, 0, 35)
+whiteBox.Position = UDim2.new(0, 10, 0, y)
 whiteBox.PlaceholderText = "Agregar a Whitelist"
-whiteBox.TextSize = 20
+whiteBox.TextSize = 14
 whiteBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 whiteBox.TextColor3 = Color3.new(1,1,1)
 whiteBox.Parent = frame
@@ -169,32 +171,45 @@ whiteBox.FocusLost:Connect(function(enter)
         whiteBox.Text = ""
     end
 end)
-y += 70
+y += 45
 
--- Ocultar botón
+-- Botón X (oculta pero no destruye)
 local hideBtn = Instance.new("TextButton")
-hideBtn.Size = UDim2.new(0, 40, 0, 40)
-hideBtn.Position = UDim2.new(1, -45, 0, 5)
+hideBtn.Size = UDim2.new(0, 25, 0, 25)
+hideBtn.Position = UDim2.new(1, -30, 0, 3)
 hideBtn.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 hideBtn.Text = "X"
-hideBtn.TextSize = 30
+hideBtn.TextSize = 18
 hideBtn.Parent = frame
 hideBtn.MouseButton1Click:Connect(function() frame.Visible = false end)
 
--- Esquinas redondeadas para mejor look móvil
-local corner = Instance.new("UICorner", frame) corner.CornerRadius = UDim.new(0, 15)
+-- Esquinas redondeadas
+local corner = Instance.new("UICorner", frame) corner.CornerRadius = UDim.new(0, 10)
 for _, obj in pairs(frame:GetChildren()) do
     if obj:IsA("GuiButton") or obj:IsA("TextBox") then
-        Instance.new("UICorner", obj).CornerRadius = UDim.new(0, 10)
+        Instance.new("UICorner", obj).CornerRadius = UDim.new(0, 8)
     end
 end
 
--- Toggle con Insert
+-- BOTÓN FLOTANTE PARA MOSTRAR/OCULTAR
+local floatBtn = Instance.new("TextButton")
+floatBtn.Size = UDim2.new(0, 50, 0, 50)
+floatBtn.Position = UDim2.new(0.95, -50, 0.95, -50)  -- Esquina inferior derecha
+floatBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+floatBtn.Text = "Hub"
+floatBtn.TextSize = 14
+floatBtn.Parent = screenGui
+floatBtn.MouseButton1Click:Connect(function()
+    frame.Visible = not frame.Visible
+end)
+local floatCorner = Instance.new("UICorner", floatBtn) floatCorner.CornerRadius = UDim.new(1, 0)  -- Círculo
+
+-- Toggle con Insert también
 UserInputService.InputBegan:Connect(function(inp)
     if inp.KeyCode == Enum.KeyCode.Insert then
         frame.Visible = not frame.Visible
     end
 end)
 
-StarterGui:SetCore("SendNotification",{Title="Kill Supremo Celular",Text="Listo! Activa y revienta todos al mismo tiempo 🔥",Duration=6})
-print("Auto Kill Supremo Celular cargado - ULTRA FAST 2026")
+StarterGui:SetCore("SendNotification",{Title="Kill Supremo Celular",Text="Mejorado! Botón flotante para toggle 🔥",Duration=5})
+print("Auto Kill Supremo Celular cargado - Diseño mejorado 2026")
