@@ -194,7 +194,7 @@ end
 -- BOTÓN FLOTANTE PARA MOSTRAR/OCULTAR
 local floatBtn = Instance.new("TextButton")
 floatBtn.Size = UDim2.new(0, 50, 0, 50)
-floatBtn.Position = UDim2.new(0.95, -50, 0.95, -50)  -- Esquina inferior derecha
+floatBtn.Position = UDim2.new(0.95, -50, 0.2, -50)  -- Esquina inferior derecha
 floatBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
 floatBtn.Text = "Hub"
 floatBtn.TextSize = 14
