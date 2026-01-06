@@ -1,10 +1,11 @@
--- Auto Kill Supremo Hub CELULAR 2026 - COMPLETO Y FIJADO
--- Single player por PARTE del nombre + NO se bugea "todos" + GUI siempre aparece
+-- Auto Kill Supremo Hub CELULAR 2026 - CON LISTA JUGADORES + ESPECTEAR
+-- Hub rectangular ancho | Lista derecha auto-actualizable | Spectate con click
 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
+local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
 
 _G.AutoKillEnabled = false
@@ -12,18 +13,7 @@ _G.AutoKillAll = true
 _G.TargetPlayerName = ""
 _G.Whitelist = {"MissSherya"}
 
--- Buscar jugador por PARTE del nombre (ignore mayúsculas)
-local function findTarget(inputName)
-    if inputName == "" then return nil end
-    local lowerInput = inputName:lower()
-    for _, plr in pairs(Players:GetPlayers()) do
-        if plr ~= LocalPlayer and plr.Name:lower():find(lowerInput) then
-            return plr
-        end
-    end
-    return nil
-end
-
+-- ================== FUNCIONES AUTO KILL (igual que antes, con fixes) ==================
 local function isWhitelisted(plr)
     for _, name in ipairs(_G.Whitelist) do
         if plr.Name:lower() == name:lower() then return true end
@@ -48,7 +38,6 @@ local function isValidTarget(plr)
     return true
 end
 
--- Auto join brawl
 local function autoJoinBrawl()
     local rEvents = ReplicatedStorage:FindFirstChild("rEvents")
     if rEvents and rEvents:FindFirstChild("brawlEvent") then
@@ -56,7 +45,6 @@ local function autoJoinBrawl()
     end
 end
 
--- LOOP PRINCIPAL (con delay para no bug)
 task.spawn(function()
     while task.wait(0.03) do
         if not _G.AutoKillEnabled then continue end
@@ -79,34 +67,33 @@ task.spawn(function()
                     if isValidTarget(plr) then table.insert(targets, plr) end
                 end
             else
-                local target = findTarget(_G.TargetPlayerName)
-                if target then table.insert(targets, target) end
+                local found = nil
+                local lower = _G.TargetPlayerName:lower()
+                for _, plr in pairs(Players:GetPlayers()) do
+                    if plr.Name:lower():find(lower) then found = plr; break end
+                end
+                if found then table.insert(targets, found) end
             end
             
             for _, plr in pairs(targets) do
                 local root = plr.Character.HumanoidRootPart
-                if left then
-                    firetouchinterest(root, left, 0)
-                    firetouchinterest(root, left, 1)
-                end
-                if right then
-                    firetouchinterest(root, right, 0)
-                    firetouchinterest(root, right, 1)
-                end
+                if left then firetouchinterest(root, left, 0) firetouchinterest(root, left, 1) end
+                if right then firetouchinterest(root, right, 0) firetouchinterest(root, right, 1) end
             end
         end
     end
 end)
 
--- ================== GUI COMPLETA ==================
+-- ================== GUI RECTANGULAR CON LISTA DERECHA ==================
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "KillHubMobile"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
+-- Frame principal más ancho
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 280, 0, 320)
-frame.Position = UDim2.new(0.5, -140, 0.5, -160)
+frame.Size = UDim2.new(0, 500, 0, 320)  -- Ancho 500 para lista derecha
+frame.Position = UDim2.new(0.5, -250, 0.5, -160)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.Active = true
 frame.Draggable = true
@@ -115,18 +102,20 @@ frame.Parent = screenGui
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
-title.Text = "AUTO KILL SUPREMO"
+title.Text = "AUTO KILL SUPREMO + SPECTATE"
 title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 18
 title.Parent = frame
 
-local y = 40
+-- ================== CONTROLES IZQUIERDA ==================
+local leftY = 40
+local leftX = 10
+local widthLeft = 230
 
--- Toggle Auto Kill
 local btnOn = Instance.new("TextButton")
-btnOn.Size = UDim2.new(1, -20, 0, 35)
-btnOn.Position = UDim2.new(0, 10, 0, y)
+btnOn.Size = UDim2.new(0, widthLeft, 0, 35)
+btnOn.Position = UDim2.new(0, leftX, 0, leftY)
 btnOn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 btnOn.Text = "AUTO KILL: OFF"
 btnOn.TextSize = 16
@@ -136,12 +125,11 @@ btnOn.MouseButton1Click:Connect(function()
     btnOn.Text = "AUTO KILL: "..(_G.AutoKillEnabled and "ON" or "OFF")
     btnOn.BackgroundColor3 = _G.AutoKillEnabled and Color3.fromRGB(0, 200, 0) or Color3.fromRGB(200, 0, 0)
 end)
-y += 45
+leftY += 45
 
--- Matar a Todos
 local btnAll = Instance.new("TextButton")
-btnAll.Size = UDim2.new(1, -20, 0, 35)
-btnAll.Position = UDim2.new(0, 10, 0, y)
+btnAll.Size = UDim2.new(0, widthLeft, 0, 35)
+btnAll.Position = UDim2.new(0, leftX, 0, leftY)
 btnAll.BackgroundColor3 = Color3.fromRGB(0, 170, 255)
 btnAll.Text = "MATAR A TODOS: ON"
 btnAll.TextSize = 16
@@ -150,31 +138,27 @@ btnAll.MouseButton1Click:Connect(function()
     _G.AutoKillAll = not _G.AutoKillAll
     btnAll.Text = "MATAR A TODOS: "..(_G.AutoKillAll and "ON" or "OFF")
 end)
-y += 45
+leftY += 45
 
--- Target Player
 local targetBox = Instance.new("TextBox")
-targetBox.Size = UDim2.new(1, -20, 0, 35)
-targetBox.Position = UDim2.new(0, 10, 0, y)
+targetBox.Size = UDim2.new(0, widthLeft, 0, 35)
+targetBox.Position = UDim2.new(0, leftX, 0, leftY)
 targetBox.PlaceholderText = "Parte del nombre"
 targetBox.TextSize = 14
 targetBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 targetBox.TextColor3 = Color3.new(1,1,1)
 targetBox.Parent = frame
 targetBox.FocusLost:Connect(function(enter)
-    if enter and targetBox.Text ~= "" then
+    if enter then
         _G.TargetPlayerName = targetBox.Text
-        local found = findTarget(_G.TargetPlayerName)
-        local msg = found and ("Target: "..found.Name) or "No encontrado"
-        StarterGui:SetCore("SendNotification",{Title="Kill Hub",Text=msg,Duration=4})
+        StarterGui:SetCore("SendNotification",{Title="Kill Hub",Text="Target: ".._G.TargetPlayerName,Duration=3})
     end
 end)
-y += 45
+leftY += 45
 
--- Whitelist
 local whiteBox = Instance.new("TextBox")
-whiteBox.Size = UDim2.new(1, -20, 0, 35)
-whiteBox.Position = UDim2.new(0, 10, 0, y)
+whiteBox.Size = UDim2.new(0, widthLeft, 0, 35)
+whiteBox.Position = UDim2.new(0, leftX, 0, leftY)
 whiteBox.PlaceholderText = "Agregar a Whitelist"
 whiteBox.TextSize = 14
 whiteBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
@@ -183,10 +167,87 @@ whiteBox.Parent = frame
 whiteBox.FocusLost:Connect(function(enter)
     if enter and whiteBox.Text ~= "" then
         table.insert(_G.Whitelist, whiteBox.Text)
-        StarterGui:SetCore("SendNotification",{Title="Kill Hub",Text="Whitelist: "..whiteBox.Text,Duration=3})
+        StarterGui:SetCore("SendNotification",{Title="Kill Hub",Text="Whitelist + "..whiteBox.Text,Duration=3})
         whiteBox.Text = ""
     end
 end)
+leftY += 50
+
+-- Botón Espectear (abajo izquierda)
+local spectateBtn = Instance.new("TextButton")
+spectateBtn.Size = UDim2.new(0, widthLeft, 0, 35)
+spectateBtn.Position = UDim2.new(0, leftX, 0, leftY)
+spectateBtn.BackgroundColor3 = Color3.fromRGB(100, 100, 255)
+spectateBtn.Text = "Actualizar Lista"
+spectateBtn.TextSize = 16
+spectateBtn.Parent = frame
+
+-- ================== LISTA JUGADORES DERECHA ==================
+local listFrame = Instance.new("ScrollingFrame")
+listFrame.Size = UDim2.new(0, 240, 0, 250)
+listFrame.Position = UDim2.new(0, 250, 0, 40)
+listFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+listFrame.BorderSizePixel = 0
+listFrame.ScrollBarThickness = 8
+listFrame.Parent = frame
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Padding = UDim.new(0, 2)
+listLayout.Parent = listFrame
+
+-- Función para actualizar lista
+local currentSpectate = nil
+local function updatePlayerList()
+    for _, child in pairs(listFrame:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+    
+    -- Agregar "Ninguno" para desespectear
+    local noneBtn = Instance.new("TextButton")
+    noneBtn.Size = UDim2.new(1, -10, 0, 30)
+    noneBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
+    noneBtn.Text = "[Ninguno]"
+    noneBtn.TextColor3 = Color3.new(1,1,1)
+    noneBtn.TextSize = 14
+    noneBtn.Parent = listFrame
+    noneBtn.MouseButton1Click:Connect(function()
+        Camera.CameraSubject = LocalPlayer.Character.Humanoid
+        currentSpectate = nil
+    end)
+    
+    for _, plr in pairs(Players:GetPlayers()) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -10, 0, 30)
+        btn.BackgroundColor3 = (plr == LocalPlayer) and Color3.fromRGB(0, 150, 0) or Color3.fromRGB(70, 70, 70)
+        btn.Text = plr.Name .. (plr == LocalPlayer and " (Tú)" or "")
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.TextSize = 14
+        btn.Parent = listFrame
+        
+        btn.MouseButton1Click:Connect(function()
+            if plr.Character and plr.Character:FindFirstChild("Humanoid") then
+                Camera.CameraSubject = plr.Character.Humanoid
+                currentSpectate = plr
+                StarterGui:SetCore("SendNotification",{Title="Spectate",Text="Especteando: "..plr.Name,Duration=3})
+            end
+        end)
+    end
+    
+    listFrame.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+end
+
+-- Actualizar al abrir y cada 3 segundos
+spectateBtn.MouseButton1Click:Connect(updatePlayerList)
+task.spawn(function()
+    while task.wait(3) do
+        if frame.Visible then
+            updatePlayerList()
+        end
+    end
+end)
+
+-- Actualizar al cargar
+updatePlayerList()
 
 -- Botón X
 local hideBtn = Instance.new("TextButton")
@@ -198,34 +259,26 @@ hideBtn.TextSize = 18
 hideBtn.Parent = frame
 hideBtn.MouseButton1Click:Connect(function() frame.Visible = false end)
 
+-- Bolita flotante
+local floatBtn = Instance.new("TextButton")
+floatBtn.Size = UDim2.new(0, 50, 0, 50)
+floatBtn.Position = UDim2.new(0.95, -50, 0.08, 40)  -- Arriba derecha como querías
+floatBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
+floatBtn.Text = "Hub"
+floatBtn.TextSize = 14
+floatBtn.Parent = screenGui
+floatBtn.MouseButton1Click:Connect(function() frame.Visible = not frame.Visible end)
+Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(1, 0)
+
 -- Esquinas redondeadas
 local corner = Instance.new("UICorner")
 corner.CornerRadius = UDim.new(0, 10)
 corner.Parent = frame
 for _, obj in pairs(frame:GetChildren()) do
-    if obj:IsA("GuiButton") or obj:IsA("TextBox") then
+    if obj:IsA("GuiButton") or obj:IsA("TextBox") or obj:IsA("ScrollingFrame") then
         Instance.new("UICorner", obj).CornerRadius = UDim.new(0, 8)
     end
 end
 
--- BOTÓN FLOTANTE
-local floatBtn = Instance.new("TextButton")
-floatBtn.Size = UDim2.new(0, 50, 0, 50)
-floatBtn.Position = UDim2.new(0.95, -50, 0.1, -50)
-floatBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
-floatBtn.Text = "Hub"
-floatBtn.TextSize = 14
-floatBtn.Parent = screenGui
-floatBtn.MouseButton1Click:Connect(function()
-    frame.Visible = not frame.Visible
-end)
-Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(1, 0)
-
--- Notificación de carga
-StarterGui:SetCore("SendNotification",{
-    Title = "Kill Supremo",
-    Text = "Hub cargado! Usa la bolita verde para mostrar/ocultar",
-    Duration = 6
-})
-
-print("Auto Kill Supremo Hub CELULAR cargado correctamente!")
+StarterGui:SetCore("SendNotification",{Title="Kill Supremo",Text="Hub con lista + spectate cargado! 🔥",Duration=6})
+print("Auto Kill + Spectate Hub cargado!")
