@@ -1,20 +1,29 @@
--- Auto Kill Supremo Hub CELULAR 2026 - ULTRA FAST KILL A TODOS
--- Optimizado para Delta, Fluxus, CodeX - Mata simultáneo y rapidísimo
--- Diseño mejorado: Letras más pequeñas, mejor encaje
--- Botón flotante para ocultar/mostrar (presiona para toggle)
--- X oculta, pero puedes mostrar con el botón flotante
+-- Auto Kill Supremo Hub CELULAR 2026 - COMPLETO Y FIJADO
+-- Single player por PARTE del nombre + NO se bugea "todos" + GUI siempre aparece
 
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local StarterGui = game:GetService("StarterGui")
 local LocalPlayer = Players.LocalPlayer
 
 _G.AutoKillEnabled = false
-_G.AutoKillAll = true  -- true = mata a TODOS | false = solo al target
+_G.AutoKillAll = true
 _G.TargetPlayerName = ""
-_G.Whitelist = {"MissSherya"}  -- Agrega nombres aquí o con la GUI
+_G.Whitelist = {"MissSherya"}
 
--- Whitelist check
+-- Buscar jugador por PARTE del nombre (ignore mayúsculas)
+local function findTarget(inputName)
+    if inputName == "" then return nil end
+    local lowerInput = inputName:lower()
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr ~= LocalPlayer and plr.Name:lower():find(lowerInput) then
+            return plr
+        end
+    end
+    return nil
+end
+
 local function isWhitelisted(plr)
     for _, name in ipairs(_G.Whitelist) do
         if plr.Name:lower() == name:lower() then return true end
@@ -22,16 +31,15 @@ local function isWhitelisted(plr)
     return false
 end
 
--- Equipar Punch rápido
 local function equipPunch()
-    local char = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local char = LocalPlayer.Character
+    if not char then return end
     local backpack = LocalPlayer.Backpack
     if char:FindFirstChild("Punch") then return end
     local tool = backpack:FindFirstChild("Punch")
     if tool then tool.Parent = char end
 end
 
--- Valid target
 local function isValidTarget(plr)
     if plr == LocalPlayer or isWhitelisted(plr) then return false end
     local char = plr.Character
@@ -40,35 +48,41 @@ local function isValidTarget(plr)
     return true
 end
 
--- ULTRA FAST KILL LOOP (mata a todos al mismo tiempo)
+-- Auto join brawl
+local function autoJoinBrawl()
+    local rEvents = ReplicatedStorage:FindFirstChild("rEvents")
+    if rEvents and rEvents:FindFirstChild("brawlEvent") then
+        pcall(function() rEvents.brawlEvent:FireServer("joinBrawl") end)
+    end
+end
+
+-- LOOP PRINCIPAL (con delay para no bug)
 task.spawn(function()
-    while task.wait() do  -- wait() = lo más rápido posible
+    while task.wait(0.03) do
         if not _G.AutoKillEnabled then continue end
         if not LocalPlayer.Character or not LocalPlayer.Character:FindFirstChild("HumanoidRootPart") then continue end
         
         equipPunch()
+        autoJoinBrawl()
         
         local char = LocalPlayer.Character
-        local left = char:FindFirstChild("LeftHand") or char:FindFirstChild("Left Hand")
-        local right = char:FindFirstChild("RightHand") or char:FindFirstChild("Right Hand")
+        local left = char:FindFirstChild("LeftHand")
+        local right = char:FindFirstChild("RightHand")
         
         if left or right then
-            -- Spamear punches ultra rápido
             pcall(function() LocalPlayer.muscleEvent:FireServer("punch", "leftHand") end)
             pcall(function() LocalPlayer.muscleEvent:FireServer("punch", "rightHand") end)
             
-            -- Recopilar TODOS los targets primero (para matar simultáneo)
             local targets = {}
             if _G.AutoKillAll then
                 for _, plr in pairs(Players:GetPlayers()) do
                     if isValidTarget(plr) then table.insert(targets, plr) end
                 end
             else
-                local target = Players:FindFirstChild(_G.TargetPlayerName)
-                if target and isValidTarget(target) then targets = {target} end
+                local target = findTarget(_G.TargetPlayerName)
+                if target then table.insert(targets, target) end
             end
             
-            -- Tocar a TODOS al mismo tiempo (sin wait entre jugadores)
             for _, plr in pairs(targets) do
                 local root = plr.Character.HumanoidRootPart
                 if left then
@@ -84,14 +98,14 @@ task.spawn(function()
     end
 end)
 
--- GUI CELULAR (diseño mejorado: más compacto, letras más pequeñas)
+-- ================== GUI COMPLETA ==================
 local screenGui = Instance.new("ScreenGui")
 screenGui.Name = "KillHubMobile"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 280, 0, 320)  -- Más compacto para mejor encaje en móvil
+frame.Size = UDim2.new(0, 280, 0, 320)
 frame.Position = UDim2.new(0.5, -140, 0.5, -160)
 frame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
 frame.Active = true
@@ -104,18 +118,18 @@ title.BackgroundColor3 = Color3.fromRGB(0, 170, 0)
 title.Text = "AUTO KILL SUPREMO"
 title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.GothamBold
-title.TextSize = 18  -- Letras más pequeñas
+title.TextSize = 18
 title.Parent = frame
 
 local y = 40
 
--- Toggle Principal
+-- Toggle Auto Kill
 local btnOn = Instance.new("TextButton")
 btnOn.Size = UDim2.new(1, -20, 0, 35)
 btnOn.Position = UDim2.new(0, 10, 0, y)
 btnOn.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
 btnOn.Text = "AUTO KILL: OFF"
-btnOn.TextSize = 16  -- Más pequeño
+btnOn.TextSize = 16
 btnOn.Parent = frame
 btnOn.MouseButton1Click:Connect(function()
     _G.AutoKillEnabled = not _G.AutoKillEnabled
@@ -124,7 +138,7 @@ btnOn.MouseButton1Click:Connect(function()
 end)
 y += 45
 
--- Kill Todos
+-- Matar a Todos
 local btnAll = Instance.new("TextButton")
 btnAll.Size = UDim2.new(1, -20, 0, 35)
 btnAll.Position = UDim2.new(0, 10, 0, y)
@@ -142,15 +156,17 @@ y += 45
 local targetBox = Instance.new("TextBox")
 targetBox.Size = UDim2.new(1, -20, 0, 35)
 targetBox.Position = UDim2.new(0, 10, 0, y)
-targetBox.PlaceholderText = "Nombre jugador específico"
+targetBox.PlaceholderText = "Parte del nombre"
 targetBox.TextSize = 14
 targetBox.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
 targetBox.TextColor3 = Color3.new(1,1,1)
 targetBox.Parent = frame
 targetBox.FocusLost:Connect(function(enter)
-    if enter then
+    if enter and targetBox.Text ~= "" then
         _G.TargetPlayerName = targetBox.Text
-        StarterGui:SetCore("SendNotification",{Title="Kill Hub",Text="Target: ".._G.TargetPlayerName,Duration=3})
+        local found = findTarget(_G.TargetPlayerName)
+        local msg = found and ("Target: "..found.Name) or "No encontrado"
+        StarterGui:SetCore("SendNotification",{Title="Kill Hub",Text=msg,Duration=4})
     end
 end)
 y += 45
@@ -167,13 +183,12 @@ whiteBox.Parent = frame
 whiteBox.FocusLost:Connect(function(enter)
     if enter and whiteBox.Text ~= "" then
         table.insert(_G.Whitelist, whiteBox.Text)
-        StarterGui:SetCore("SendNotification",{Title="Kill Hub",Text="Whitelist + "..whiteBox.Text,Duration=3})
+        StarterGui:SetCore("SendNotification",{Title="Kill Hub",Text="Whitelist: "..whiteBox.Text,Duration=3})
         whiteBox.Text = ""
     end
 end)
-y += 45
 
--- Botón X (oculta pero no destruye)
+-- Botón X
 local hideBtn = Instance.new("TextButton")
 hideBtn.Size = UDim2.new(0, 25, 0, 25)
 hideBtn.Position = UDim2.new(1, -30, 0, 3)
@@ -184,17 +199,19 @@ hideBtn.Parent = frame
 hideBtn.MouseButton1Click:Connect(function() frame.Visible = false end)
 
 -- Esquinas redondeadas
-local corner = Instance.new("UICorner", frame) corner.CornerRadius = UDim.new(0, 10)
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = frame
 for _, obj in pairs(frame:GetChildren()) do
     if obj:IsA("GuiButton") or obj:IsA("TextBox") then
         Instance.new("UICorner", obj).CornerRadius = UDim.new(0, 8)
     end
 end
 
--- BOTÓN FLOTANTE PARA MOSTRAR/OCULTAR
+-- BOTÓN FLOTANTE
 local floatBtn = Instance.new("TextButton")
 floatBtn.Size = UDim2.new(0, 50, 0, 50)
-floatBtn.Position = UDim2.new(0.95, -50, 0.2, -50)  -- Esquina inferior derecha
+floatBtn.Position = UDim2.new(0.95, -50, 0.1, -50)
 floatBtn.BackgroundColor3 = Color3.fromRGB(0, 200, 0)
 floatBtn.Text = "Hub"
 floatBtn.TextSize = 14
@@ -202,14 +219,13 @@ floatBtn.Parent = screenGui
 floatBtn.MouseButton1Click:Connect(function()
     frame.Visible = not frame.Visible
 end)
-local floatCorner = Instance.new("UICorner", floatBtn) floatCorner.CornerRadius = UDim.new(1, 0)  -- Círculo
+Instance.new("UICorner", floatBtn).CornerRadius = UDim.new(1, 0)
 
--- Toggle con Insert también
-UserInputService.InputBegan:Connect(function(inp)
-    if inp.KeyCode == Enum.KeyCode.Insert then
-        frame.Visible = not frame.Visible
-    end
-end)
+-- Notificación de carga
+StarterGui:SetCore("SendNotification",{
+    Title = "Kill Supremo",
+    Text = "Hub cargado! Usa la bolita verde para mostrar/ocultar",
+    Duration = 6
+})
 
-StarterGui:SetCore("SendNotification",{Title="Kill Supremo Celular",Text="Mejorado! Botón flotante para toggle 🔥",Duration=5})
-print("Auto Kill Supremo Celular cargado - Diseño mejorado 2026")
+print("Auto Kill Supremo Hub CELULAR cargado correctamente!")
