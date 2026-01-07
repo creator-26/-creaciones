@@ -463,7 +463,7 @@ btnClose.Parent = mainFrame
 
 local floatBtn = Instance.new("TextButton")
 floatBtn.Size = UDim2.new(0, 50, 0, 50)
-floatBtn.Position = UDim2.new(0.95, -50, 0.04, 40)
+floatBtn.Position = UDim2.new(0.95, -50, 0.1, 40)
 floatBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
 floatBtn.Text = "HUB"
 floatBtn.TextSize = 14
