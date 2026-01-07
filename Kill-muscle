@@ -144,7 +144,7 @@ local function startAutoKill()
                 end
                 
                 -- Pequeña pausa para evitar sobrecarga
-                task.wait(0.05)
+                task.wait(0.03)
             end
         end
     end)
@@ -196,7 +196,7 @@ mainFrame.Parent = screenGui
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-title.Text = "AUTO KILL SUPREMO - HORIZONTAL"
+title.Text = "AUTO KILL SUPREMO - ALEXANDER 26"
 title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.GothamBold
 title.TextSize = 16
