@@ -1,0 +1,565 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Para mi Camila 🌹</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400&family=Dancing+Script:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --rose:       #c9415c;
+    --rose-light: #f4869a;
+    --blush:      #fce4ec;
+    --cream:      #fff9f5;
+    --gold:       #c8973a;
+    --ink:        #2a1420;
+    --muted:      #7a4a58;
+  }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--cream);
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    color: var(--ink);
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  /* ── CANVAS DE PÉTALOS ── */
+  #petals-canvas {
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  /* ── HERO ── */
+  .hero {
+    position: relative;
+    min-height: 100svh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 2rem 1.5rem 4rem;
+    background: radial-gradient(ellipse 120% 100% at 50% 0%, #fddde6 0%, var(--cream) 70%);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle 300px at 10% 80%, rgba(201,65,92,.08) 0%, transparent 70%),
+      radial-gradient(circle 200px at 90% 20%, rgba(244,134,154,.10) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .date-badge {
+    display: inline-block;
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.1rem;
+    color: var(--rose);
+    background: rgba(201,65,92,.08);
+    border: 1px solid rgba(201,65,92,.25);
+    border-radius: 999px;
+    padding: .35rem 1.2rem;
+    margin-bottom: 1.6rem;
+    animation: fadeDown .8s ease both;
+    letter-spacing: .03em;
+  }
+
+  .hero-eyebrow {
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(1.3rem, 5vw, 1.8rem);
+    color: var(--muted);
+    animation: fadeDown .9s .1s ease both;
+    margin-bottom: .4rem;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(3rem, 13vw, 5.5rem);
+    font-weight: 700;
+    font-style: italic;
+    line-height: 1.05;
+    color: var(--rose);
+    text-shadow: 0 2px 24px rgba(201,65,92,.18);
+    animation: fadeUp 1s .2s ease both;
+    margin-bottom: 1rem;
+  }
+
+  .hero-title span {
+    display: block;
+    font-size: clamp(2rem, 9vw, 3.8rem);
+    font-style: normal;
+    font-weight: 400;
+    color: var(--gold);
+  }
+
+  .heart-big {
+    font-size: 4rem;
+    display: block;
+    animation: pulse 1.6s ease-in-out infinite, fadeUp 1s .4s ease both;
+    margin: .6rem auto;
+    filter: drop-shadow(0 4px 16px rgba(201,65,92,.4));
+  }
+
+  .hero-sub {
+    font-size: clamp(1.05rem, 3.8vw, 1.3rem);
+    color: var(--muted);
+    font-style: italic;
+    max-width: 320px;
+    line-height: 1.7;
+    animation: fadeUp 1s .55s ease both;
+    margin-top: .6rem;
+  }
+
+  .scroll-hint {
+    position: absolute;
+    bottom: 1.8rem;
+    left: 50%;
+    transform: translateX(-50%);
+    color: var(--rose-light);
+    font-size: .8rem;
+    letter-spacing: .12em;
+    text-transform: uppercase;
+    animation: bounce 2s infinite;
+    font-family: 'Cormorant Garamond', serif;
+  }
+
+  /* ── SECTIONS ── */
+  section {
+    position: relative;
+    z-index: 1;
+    padding: 3.5rem 1.5rem;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.7rem, 7vw, 2.4rem);
+    font-style: italic;
+    color: var(--rose);
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  /* ── QUOTE STRIP ── */
+  .quote-strip {
+    background: linear-gradient(135deg, var(--rose) 0%, #a02a45 100%);
+    padding: 3rem 2rem;
+    text-align: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .quote-strip::before {
+    content: '❝';
+    position: absolute;
+    top: -.3rem;
+    left: 1rem;
+    font-size: 7rem;
+    opacity: .12;
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+  .quote-strip blockquote {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.2rem, 5vw, 1.75rem);
+    font-style: italic;
+    line-height: 1.55;
+    max-width: 340px;
+    margin: 0 auto 1rem;
+    position: relative;
+  }
+  .quote-strip cite {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: .95rem;
+    opacity: .75;
+    letter-spacing: .08em;
+  }
+
+  /* ── CARDS ── */
+  .cards-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  .card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 1.6rem 1.5rem;
+    border: 1px solid rgba(201,65,92,.12);
+    box-shadow: 0 4px 24px rgba(201,65,92,.07);
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity .6s ease, transform .6s ease, box-shadow .3s;
+    will-change: opacity, transform;
+  }
+  .card.visible {
+    opacity: 1;
+    transform: none;
+  }
+  .card:hover { box-shadow: 0 8px 32px rgba(201,65,92,.15); }
+
+  .card-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    line-height: 1;
+    margin-top: .1rem;
+  }
+
+  .card h3 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1.1rem;
+    color: var(--rose);
+    margin-bottom: .4rem;
+  }
+
+  .card p {
+    font-size: 1rem;
+    line-height: 1.65;
+    color: var(--muted);
+    font-style: italic;
+  }
+
+  /* ── PROMISES ── */
+  .promises-bg {
+    background: linear-gradient(175deg, #fce4ec 0%, var(--cream) 100%);
+  }
+
+  .promise-list {
+    max-width: 380px;
+    margin: 0 auto;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .promise-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: .8rem;
+    font-size: 1.05rem;
+    line-height: 1.6;
+    color: var(--ink);
+    opacity: 0;
+    transform: translateX(-20px);
+    transition: opacity .5s ease, transform .5s ease;
+  }
+  .promise-list li.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .promise-list li::before {
+    content: '♡';
+    color: var(--rose);
+    font-size: 1.1rem;
+    flex-shrink: 0;
+    margin-top: .1rem;
+  }
+
+  /* ── DATE SECTION ── */
+  .date-section {
+    text-align: center;
+    background: var(--ink);
+    color: #fff;
+    padding: 4rem 1.5rem;
+    overflow: hidden;
+    position: relative;
+  }
+  .date-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,65,92,.2) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .date-label {
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.2rem;
+    color: var(--rose-light);
+    margin-bottom: 1rem;
+    letter-spacing: .05em;
+  }
+
+  .date-number {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(4rem, 22vw, 7rem);
+    font-weight: 700;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 2px var(--rose-light);
+    position: relative;
+  }
+
+  .date-month {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(1.4rem, 6vw, 2rem);
+    font-style: italic;
+    color: var(--gold);
+    margin-top: .4rem;
+    letter-spacing: .15em;
+  }
+
+  .date-note {
+    margin-top: 1.5rem;
+    font-size: 1rem;
+    color: rgba(255,255,255,.6);
+    max-width: 260px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  /* ── CLOSING ── */
+  .closing {
+    text-align: center;
+    padding: 4rem 1.5rem 5rem;
+    background: radial-gradient(ellipse 100% 80% at 50% 100%, #fddde6 0%, var(--cream) 60%);
+  }
+
+  .closing-msg {
+    font-family: 'Dancing Script', cursive;
+    font-size: clamp(1.5rem, 7vw, 2.5rem);
+    color: var(--rose);
+    line-height: 1.5;
+    max-width: 340px;
+    margin: 0 auto 1.5rem;
+  }
+
+  .signature {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: 1rem;
+    font-style: italic;
+    color: var(--muted);
+    letter-spacing: .05em;
+  }
+
+  .hearts-row {
+    display: flex;
+    justify-content: center;
+    gap: .5rem;
+    font-size: 1.4rem;
+    margin: 1.5rem 0;
+  }
+  .hearts-row span {
+    animation: pulse var(--d, 1.4s) ease-in-out infinite;
+    animation-delay: var(--delay, 0s);
+  }
+
+  /* ── ANIMATIONS ── */
+  @keyframes fadeDown {
+    from { opacity:0; transform: translateY(-20px); }
+    to   { opacity:1; transform: none; }
+  }
+  @keyframes fadeUp {
+    from { opacity:0; transform: translateY(24px); }
+    to   { opacity:1; transform: none; }
+  }
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50%       { transform: scale(1.18); }
+  }
+  @keyframes bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50%       { transform: translateX(-50%) translateY(7px); }
+  }
+  @keyframes floatPetal {
+    0%   { transform: translateY(-20px) rotate(0deg) translateX(0); opacity: 0; }
+    10%  { opacity: 1; }
+    90%  { opacity: .7; }
+    100% { transform: translateY(105vh) rotate(720deg) translateX(60px); opacity: 0; }
+  }
+</style>
+</head>
+<body>
+
+<canvas id="petals-canvas"></canvas>
+
+<!-- HERO -->
+<section class="hero">
+  <span class="date-badge">18 de mayo · Nuestra fecha 🌹</span>
+  <p class="hero-eyebrow">Para mi pequeñuela linda,</p>
+  <h1 class="hero-title">
+    Camila
+    <span>te amo</span>
+  </h1>
+  <span class="heart-big">❤️</span>
+  <p class="hero-sub">Eres lo más bonito que me ha pasado, y quiero que sepas cuánto te valoro.</p>
+  <p class="scroll-hint">▾ sigue leyendo ▾</p>
+</section>
+
+<!-- QUOTE STRIP -->
+<div class="quote-strip">
+  <blockquote>
+    "Amarte es fácil. Lo difícil es imaginar un día sin pensar en ti."
+  </blockquote>
+  <cite>— siempre tuyo</cite>
+</div>
+
+<!-- MENSAJES DE AMOR -->
+<section style="background: var(--cream);">
+  <h2 class="section-title">Lo que siento por ti</h2>
+  <div class="cards-grid">
+    <div class="card">
+      <span class="card-icon">💕</span>
+      <div>
+        <h3>Eres mi pequeñuela linda</h3>
+        <p>Hay algo en tu forma de ser que me derrite el corazón cada vez. No importa el día que haya tenido — tú lo conviertes en algo mejor.</p>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-icon">🌟</span>
+      <div>
+        <h3>Creo en ti con todo</h3>
+        <p>Tienes una fuerza increíble dentro de ti, Camila. Cada decisión que tomas con sabiduría me hace querer aplaudirte desde aquí.</p>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-icon">🌹</span>
+      <div>
+        <h3>Te cuido desde el alma</h3>
+        <p>Quiero que te cuides mucho — que duermas bien, que comas rico, que te rodees de lo que te hace bien. Porque mereces todo lo lindo del mundo.</p>
+      </div>
+    </div>
+    <div class="card">
+      <span class="card-icon">✨</span>
+      <div>
+        <h3>Tu futuro me emociona</h3>
+        <p>Sueño con todo lo que vas a lograr. Toma buenas decisiones, no por mí — sino por esa versión tuya que merece brillar con su propio luz.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROMISES -->
+<section class="promises-bg">
+  <h2 class="section-title">Mis promesas para ti</h2>
+  <ul class="promise-list">
+    <li>Estar presente cuando me necesites, siempre.</li>
+    <li>Celebrar cada uno de tus logros como si fueran los míos.</li>
+    <li>Recordarte lo valiosa que eres en los días grises.</li>
+    <li>Nunca dejar de hacerte sentir especial.</li>
+    <li>Querer siempre lo mejor para ti, aunque eso sea lo más difícil.</li>
+    <li>Amarte con todo lo que soy, sin condiciones.</li>
+  </ul>
+</section>
+
+<!-- FECHA ESPECIAL -->
+<div class="date-section">
+  <p class="date-label">nuestra fecha especial</p>
+  <div class="date-number">18</div>
+  <p class="date-month">M A Y O</p>
+  <p class="date-note">Un día que quedó grabado en mi pecho para siempre. Gracias por existir, Camila.</p>
+</div>
+
+<!-- CIERRE -->
+<section class="closing">
+  <div class="hearts-row">
+    <span style="--d:1.2s; --delay:0s">💗</span>
+    <span style="--d:1.5s; --delay:.2s">❤️</span>
+    <span style="--d:1.1s; --delay:.4s">💕</span>
+    <span style="--d:1.4s; --delay:.1s">💖</span>
+    <span style="--d:1.3s; --delay:.3s">🌹</span>
+  </div>
+  <p class="closing-msg">
+    "Cuídate mucho, toma buenas decisiones,<br>y nunca olvides que te amo."
+  </p>
+  <p class="signature">Con todo mi amor · 18 de mayo · siempre contigo 🌹</p>
+</section>
+
+<script>
+  /* ── CANVAS PÉTALOS ── */
+  const canvas = document.getElementById('petals-canvas');
+  const ctx = canvas.getContext('2d');
+  let petals = [];
+
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+  resize();
+  window.addEventListener('resize', resize);
+
+  const colors = ['#f4869a','#c9415c','#f9b8c7','#e8637a','#fddde6','#e57196'];
+
+  function spawnPetal() {
+    petals.push({
+      x:    Math.random() * canvas.width,
+      y:    -20,
+      size: Math.random() * 9 + 5,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      speedY: Math.random() * 1.5 + .8,
+      speedX: (Math.random() - .5) * 1.2,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - .5) * .06,
+      opacity: Math.random() * .5 + .4,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: Math.random() * .04 + .01,
+    });
+  }
+
+  function drawHeart(x, y, size, color, alpha) {
+    ctx.save();
+    ctx.globalAlpha = alpha;
+    ctx.fillStyle = color;
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.bezierCurveTo(x, y - size * .3, x - size * .5, y - size * .8, x - size * .5, y - size * 1.1);
+    ctx.bezierCurveTo(x - size * .5, y - size * 1.7, x + size * .5, y - size * 1.7, x + size * .5, y - size * 1.1);
+    ctx.bezierCurveTo(x + size * .5, y - size * .8, x, y - size * .3, x, y);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  let frame = 0;
+  function animate() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (frame % 55 === 0) spawnPetal();
+    frame++;
+
+    petals = petals.filter(p => p.y < canvas.height + 30);
+    for (const p of petals) {
+      p.wobble  += p.wobbleSpeed;
+      p.x       += p.speedX + Math.sin(p.wobble) * .8;
+      p.y       += p.speedY;
+      p.rotation += p.rotSpeed;
+      ctx.save();
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rotation);
+      drawHeart(0, 0, p.size, p.color, p.opacity);
+      ctx.restore();
+    }
+    requestAnimationFrame(animate);
+  }
+  animate();
+
+  /* ── SCROLL REVEAL ── */
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) {
+        setTimeout(() => e.target.classList.add('visible'), i * 100);
+      }
+    });
+  }, { threshold: .15 });
+
+  document.querySelectorAll('.card, .promise-list li').forEach(el => obs.observe(el));
+</script>
+</body>
+</html>
