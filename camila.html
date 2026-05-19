@@ -386,6 +386,155 @@
     90%  { opacity: .7; }
     100% { transform: translateY(105vh) rotate(720deg) translateX(60px); opacity: 0; }
   }
+  @keyframes shimmer {
+    0%   { background-position: -200% center; }
+    100% { background-position:  200% center; }
+  }
+  @keyframes glowPulse {
+    0%, 100% { box-shadow: 0 0 18px rgba(200,151,58,.18); }
+    50%       { box-shadow: 0 0 38px rgba(200,151,58,.38); }
+  }
+
+  /* ── VERSÍCULOS ── */
+  .biblia-section {
+    background: linear-gradient(160deg, #1a0e14 0%, #2a1420 60%, #1c0f18 100%);
+    padding: 4rem 1.5rem;
+    position: relative;
+    overflow: hidden;
+  }
+  .biblia-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 70% 50% at 20% 30%, rgba(200,151,58,.07) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 40% at 80% 70%, rgba(201,65,92,.08) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .biblia-header {
+    text-align: center;
+    margin-bottom: 2.4rem;
+    position: relative;
+  }
+  .biblia-header .cross {
+    font-size: 2rem;
+    display: block;
+    margin-bottom: .5rem;
+    filter: drop-shadow(0 2px 10px rgba(200,151,58,.5));
+  }
+  .biblia-header h2 {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: clamp(1.6rem, 6.5vw, 2.2rem);
+    font-style: italic;
+    color: var(--gold);
+    margin-bottom: .4rem;
+  }
+  .biblia-header p {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: .9rem;
+    color: rgba(255,255,255,.4);
+    letter-spacing: .18em;
+    text-transform: uppercase;
+  }
+
+  .verse-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 1.4rem;
+    max-width: 420px;
+    margin: 0 auto;
+  }
+
+  .verse-card {
+    position: relative;
+    border-radius: 16px;
+    padding: 1.6rem 1.5rem 1.4rem;
+    background: rgba(255,255,255,.04);
+    border: 1px solid rgba(200,151,58,.2);
+    overflow: hidden;
+    opacity: 0;
+    transform: translateY(28px);
+    transition: opacity .65s ease, transform .65s ease;
+  }
+  .verse-card.visible {
+    opacity: 1;
+    transform: none;
+  }
+  .verse-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+    background-size: 200% auto;
+    animation: shimmer 3s linear infinite;
+  }
+  .verse-card:nth-child(odd) {
+    animation: glowPulse 4s ease-in-out infinite;
+  }
+
+  .verse-tag {
+    display: inline-block;
+    font-family: 'Dancing Script', cursive;
+    font-size: .85rem;
+    color: var(--gold);
+    background: rgba(200,151,58,.12);
+    border: 1px solid rgba(200,151,58,.25);
+    border-radius: 999px;
+    padding: .2rem .8rem;
+    margin-bottom: .9rem;
+    letter-spacing: .03em;
+  }
+
+  .verse-text {
+    font-family: 'Cormorant Garamond', Georgia, serif;
+    font-size: clamp(1.05rem, 4vw, 1.22rem);
+    font-style: italic;
+    line-height: 1.7;
+    color: rgba(255,255,255,.88);
+    margin-bottom: .9rem;
+    position: relative;
+    padding-left: 1.1rem;
+  }
+  .verse-text::before {
+    content: '"';
+    position: absolute;
+    left: 0;
+    top: -.1em;
+    font-size: 1.8em;
+    color: rgba(200,151,58,.4);
+    font-family: Georgia, serif;
+    line-height: 1;
+  }
+
+  .verse-ref {
+    font-family: 'Playfair Display', Georgia, serif;
+    font-size: .82rem;
+    font-weight: 700;
+    letter-spacing: .1em;
+    color: var(--gold);
+    text-align: right;
+    opacity: .85;
+  }
+
+  .verse-note {
+    margin-top: .7rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: .95rem;
+    color: rgba(255,255,255,.42);
+    font-style: italic;
+    line-height: 1.5;
+  }
+
+  .biblia-footer {
+    text-align: center;
+    margin-top: 2.5rem;
+    font-family: 'Dancing Script', cursive;
+    font-size: 1.15rem;
+    color: rgba(200,151,58,.6);
+    letter-spacing: .04em;
+  }
 </style>
 </head>
 <body>
@@ -459,6 +608,75 @@
     <li>Querer siempre lo mejor para ti, aunque eso sea lo más difícil.</li>
     <li>Amarte con todo lo que soy, sin condiciones.</li>
   </ul>
+</section>
+
+<!-- VERSÍCULOS BÍBLICOS -->
+<section class="biblia-section">
+  <div class="biblia-header">
+    <span class="cross">✝</span>
+    <h2>Palabras de Dios para ti</h2>
+    <p>Reina-Valera 1960</p>
+  </div>
+
+  <div class="verse-stack">
+
+    <div class="verse-card">
+      <span class="verse-tag">El amor verdadero</span>
+      <p class="verse-text">
+        El amor es sufrido, es benigno; el amor no tiene envidia, el amor no es jactancioso, no se envanece; no hace nada indebido, no busca lo suyo, no se irrita, no guarda rencor… Todo lo sufre, todo lo cree, todo lo espera, todo lo soporta.
+      </p>
+      <p class="verse-ref">1 Corintios 13:4-5, 7</p>
+      <p class="verse-note">Así es el amor que mereces recibir y dar, Camila.</p>
+    </div>
+
+    <div class="verse-card">
+      <span class="verse-tag">Tú eres preciosa</span>
+      <p class="verse-text">
+        Ponme como un sello sobre tu corazón, como una marca sobre tu brazo; porque fuerte es como la muerte el amor; duros como el Seol los celos; sus brasas, brasas de fuego, fuerte llama.
+      </p>
+      <p class="verse-ref">Cantares 8:6</p>
+      <p class="verse-note">Llevas mi corazón marcado, pequeñuela.</p>
+    </div>
+
+    <div class="verse-card">
+      <span class="verse-tag">Cuídate mucho</span>
+      <p class="verse-text">
+        ¿No sabéis que sois templo de Dios, y que el Espíritu de Dios mora en vosotros?
+      </p>
+      <p class="verse-ref">1 Corintios 3:16</p>
+      <p class="verse-note">Eres un templo sagrado, Camila. Cuída tu cuerpo, tu mente y tu alma con amor.</p>
+    </div>
+
+    <div class="verse-card">
+      <span class="verse-tag">Toma buenas decisiones</span>
+      <p class="verse-text">
+        Fíate de Jehová de todo tu corazón, y no te apoyes en tu propia prudencia. Reconócelo en todos tus caminos, y él enderezará tus veredas.
+      </p>
+      <p class="verse-ref">Proverbios 3:5-6</p>
+      <p class="verse-note">Cada decisión grande que tomes, ponla primero en Sus manos.</p>
+    </div>
+
+    <div class="verse-card">
+      <span class="verse-tag">Su amor por ti es infinito</span>
+      <p class="verse-text">
+        Porque yo sé los pensamientos que tengo acerca de vosotros, dice Jehová, pensamientos de paz, y no de mal, para daros el fin que esperáis.
+      </p>
+      <p class="verse-ref">Jeremías 29:11</p>
+      <p class="verse-note">Dios tiene un plan hermoso para tu vida. Confía en Él.</p>
+    </div>
+
+    <div class="verse-card">
+      <span class="verse-tag">Nuestro amor</span>
+      <p class="verse-text">
+        Mi amado es mío, y yo soy suya.
+      </p>
+      <p class="verse-ref">Cantares 2:16</p>
+      <p class="verse-note">Cinco palabras que lo dicen todo entre tú y yo. 🌹</p>
+    </div>
+
+  </div>
+
+  <p class="biblia-footer">✦ Su Palabra es lámpara a tus pies · Salmos 119:105 ✦</p>
 </section>
 
 <!-- FECHA ESPECIAL -->
