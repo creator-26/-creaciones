@@ -1,25 +1,46 @@
-
--- AUTO KILL SUPREMO HORIZONTAL - VERSIÓN DEFINITIVA
--- Hub horizontal 500x320 | Lista derecha | Funciones 100% funcionales
+-- AUTO KILL SUPREMO HORIZONTAL - VERSIÓN MEJORADA Y OPTIMIZADA
+-- Hub horizontal 500x320 | Lista derecha | Funciones 100% funcionales y seguras
 
 local Players = game:GetService("Players")
 local StarterGui = game:GetService("StarterGui")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
-local RunService = game:GetService("RunService")
 
--- VARIABLES GLOBALES
-_G.AutoKillEnabled = false
-_G.AutoKillAll = true
-_G.TargetPlayerName = ""
-_G.Whitelist = {"MissSherya"}
-_G.SpectatingPlayer = nil
-_G.AutoAttackConnection = nil
-_G.AutoSpectateConnection = nil
+-- ================== VARIABLES DE ESTADO LOCALES ==================
+-- Reemplazamos _G por una tabla local para mayor seguridad y rendimiento
+local State = {
+    AutoKillEnabled = false,
+    AutoKillAll = true,
+    TargetPlayerName = "",
+    Whitelist = {""},
+    SpectatingPlayer = nil,
+    AttackConnection = nil,
+    SpectateConnection = nil,
+    AttackTick = tick(), -- Para controlar el cooldown de los golpes
+    AccentColor = Color3.fromHex("#3bdbc6") -- Color de acento moderno
+}
+local AuthorizedUsers = {
+    "phol_268t", -- Pon tu nombre aquí
+    "alexander_346g",
+    "",
+    -- Puedes añadir más usuarios separados por coma
+}
+local function isAuthorized()
+    local myName = game.Players.LocalPlayer.Name
+    for _, name in ipairs(AuthorizedUsers) do
+        if myName:lower() == name:lower() then
+            return true
+        end
+    end
+    return false
+end
+
 
 -- ================== FUNCIONES BÁSICAS ==================
 local function isWhitelisted(plr)
-    for _, name in ipairs(_G.Whitelist) do
+    for _, name in ipairs(State.Whitelist) do
         if plr.Name:lower() == name:lower() then
             return true
         end
@@ -30,144 +51,119 @@ end
 local function equipPunch()
     if not LocalPlayer.Character then return false end
     local char = LocalPlayer.Character
-    
-    -- Verificar si ya tiene el puño
-    if char:FindFirstChild("Punch") then
-        return true
-    end
-    
-    -- Buscar en el inventario
+
+    if char:FindFirstChild("Punch") then return true end
+
     local backpack = LocalPlayer.Backpack
     local punch = backpack:FindFirstChild("Punch")
-    
+
     if punch then
         punch.Parent = char
         return true
     end
-    
     return false
 end
 
 local function getValidTargets()
     local targets = {}
-    
-    if _G.AutoKillAll then
-        -- Atacar a todos excepto whitelist y yo mismo
+
+    if State.AutoKillAll then
         for _, player in pairs(Players:GetPlayers()) do
-            if player == LocalPlayer then continue end
-            if isWhitelisted(player) then continue end
-            
+            if player == LocalPlayer or isWhitelisted(player) then continue end
             local char = player.Character
             if char then
                 local humanoid = char:FindFirstChild("Humanoid")
                 local root = char:FindFirstChild("HumanoidRootPart")
-                
                 if humanoid and root and humanoid.Health > 0 then
-                    table.insert(targets, {
-                        Player = player,
-                        Character = char,
-                        Humanoid = humanoid,
-                        RootPart = root
-                    })
+                    table.insert(targets, { Player = player, Character = char, Humanoid = humanoid, RootPart = root })
                 end
             end
         end
-    elseif _G.TargetPlayerName ~= "" then
-        -- Atacar solo al objetivo especificado
+    elseif State.TargetPlayerName ~= "" then
         for _, player in pairs(Players:GetPlayers()) do
-            if player == LocalPlayer then continue end
-            if not player.Name:lower():find(_G.TargetPlayerName:lower()) then continue end
-            
+            if player == LocalPlayer or not player.Name:lower():find(State.TargetPlayerName:lower()) then continue end
             local char = player.Character
             if char then
                 local humanoid = char:FindFirstChild("Humanoid")
                 local root = char:FindFirstChild("HumanoidRootPart")
-                
                 if humanoid and root and humanoid.Health > 0 then
-                    table.insert(targets, {
-                        Player = player,
-                        Character = char,
-                        Humanoid = humanoid,
-                        RootPart = root
-                    })
+                    table.insert(targets, { Player = player, Character = char, Humanoid = humanoid, RootPart = root })
                 end
             end
-            break -- Solo un objetivo
+            break
         end
     end
-    
+
     return targets
 end
 
--- ================== SISTEMA DE AUTO KILL MEJORADO ==================
+-- ================== SISTEMA DE AUTO KILL OPTIMIZADO ==================
 local function startAutoKill()
-    if _G.AutoAttackConnection then
-        _G.AutoAttackConnection:Disconnect()
-        _G.AutoAttackConnection = nil
+    if State.AttackConnection then
+        State.AttackConnection:Disconnect()
     end
-    
-    _G.AutoAttackConnection = RunService.Heartbeat:Connect(function(deltaTime)
-        if not _G.AutoKillEnabled then return end
-        if not LocalPlayer.Character then return end
-        
-        -- Equipar puños primero
+
+    State.AttackConnection = RunService.Heartbeat:Connect(function()
+        if not State.AutoKillEnabled or not LocalPlayer.Character then return end
+
+        -- COOLDOWN: Previene el lag del servidor limitando a ~7 golpes por segundo
+        if tick() - State.AttackTick < 0.03 then return end
+        State.AttackTick = tick()
+
         equipPunch()
-        
         local myChar = LocalPlayer.Character
         local leftHand = myChar:FindFirstChild("LeftHand")
         local rightHand = myChar:FindFirstChild("RightHand")
-        
+
         if not leftHand and not rightHand then return end
-        
-        -- Obtener objetivos válidos
+
         local targets = getValidTargets()
-        
-        -- Atacar a cada objetivo
+
         for _, target in ipairs(targets) do
-            -- Verificar que el objetivo aún sea válido
             if target.Humanoid and target.Humanoid.Health > 0 then
-                -- Usar el evento de golpe del juego
                 pcall(function()
                     LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
                     LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
                 end)
-                
-                -- Usar firetouchinterest para contacto
+
                 if leftHand then
-                    firetouchinterest(leftHand, target.RootPart, 0)
-                    firetouchinterest(leftHand, target.RootPart, 1)
+                    pcall(function()
+                        firetouchinterest(leftHand, target.RootPart, 0)
+                        firetouchinterest(leftHand, target.RootPart, 1)
+                    end)
                 end
-                
+
                 if rightHand then
-                    firetouchinterest(rightHand, target.RootPart, 0)
-                    firetouchinterest(rightHand, target.RootPart, 1)
+                    pcall(function()
+                        firetouchinterest(rightHand, target.RootPart, 0)
+                        firetouchinterest(rightHand, target.RootPart, 1)
+                    end)
                 end
-                
-                -- Pequeña pausa para evitar sobrecarga
-                task.wait(0.03)
+                task.wait(0.01) -- Le da un respiro mínimo al juego entre jugador y jugador
+
             end
         end
     end)
 end
 
 local function stopAutoKill()
-    if _G.AutoAttackConnection then
-        _G.AutoAttackConnection:Disconnect()
-        _G.AutoAttackConnection = nil
+    if State.AttackConnection then
+        State.AttackConnection:Disconnect()
+        State.AttackConnection = nil
     end
 end
 
--- ================== SISTEMA DE ESPECTEO ==================
+-- ================== SISTEMA DE ESPECTEO OPTIMIZADO ==================
 local function updateSpectate()
-    if _G.AutoSpectateConnection then
-        _G.AutoSpectateConnection:Disconnect()
-        _G.AutoSpectateConnection = nil
+    if State.SpectateConnection then
+        State.SpectateConnection:Disconnect()
     end
-    
-    _G.AutoSpectateConnection = RunService.Heartbeat:Connect(function()
-        if _G.SpectatingPlayer and _G.SpectatingPlayer ~= LocalPlayer then
-            if _G.SpectatingPlayer.Character then
-                local humanoid = _G.SpectatingPlayer.Character:FindFirstChild("Humanoid")
+
+    State.SpectateConnection = RunService.Heartbeat:Connect(function()
+        if State.SpectatingPlayer and State.SpectatingPlayer ~= LocalPlayer then
+            if State.SpectatingPlayer.Character then
+                local humanoid = State.SpectatingPlayer.Character:FindFirstChild("Humanoid")
+                -- Solo actualiza si la cámara no está ya en ese jugador (evita temblores)
                 if humanoid and Camera.CameraSubject ~= humanoid then
                     Camera.CameraSubject = humanoid
                 end
@@ -176,268 +172,259 @@ local function updateSpectate()
     end)
 end
 
--- ================== INTERFAZ HORIZONTAL 500x320 ==================
+-- ================== INTERFAZ HORIZONTAL (DISEÑO APP REAL) ==================
+if isAuthorized() then
 local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "AutoKillHubHorizontal"
+screenGui.Name = "AutoKillApp"
 screenGui.ResetOnSpawn = false
 screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
--- Frame principal horizontal (500x320)
 local mainFrame = Instance.new("Frame")
 mainFrame.Size = UDim2.new(0, 500, 0, 320)
 mainFrame.Position = UDim2.new(0.5, -250, 0.5, -160)
-mainFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+mainFrame.BackgroundColor3 = Color3.fromRGB(25, 25, 25) -- Gris oscuro más limpio
 mainFrame.Active = true
-mainFrame.Draggable = true
 mainFrame.Visible = false
 mainFrame.Parent = screenGui
 
--- Título
+-- Borde exterior para profundidad
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = Color3.fromRGB(0, 0, 0)
+mainStroke.Transparency = 0.5
+mainStroke.Thickness = 2
+mainStroke.Parent = mainFrame
+
+-- Arrastre Suave (Custom Dragging en vez de Draggable obsoleto)
+local dragging, dragInput, dragStart, startPos
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- Título minimalista
+local titleFrame = Instance.new("Frame")
+titleFrame.Size = UDim2.new(1, 0, 0, 35)
+titleFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+titleFrame.BorderSizePixel = 0
+titleFrame.Parent = mainFrame
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
-title.BackgroundColor3 = Color3.fromRGB(0, 150, 0)
-title.Text = "AUTO KILL SUPREMO - ALEXANDER 26"
+title.Size = UDim2.new(1, -40, 1, 0)
+title.Position = UDim2.new(0, 15, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "Panel de Control: Val26"
 title.TextColor3 = Color3.new(1,1,1)
-title.Font = Enum.Font.GothamBold
-title.TextSize = 16
-title.Parent = mainFrame
+title.Font = Enum.Font.GothamMedium
+title.TextSize = 14
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = titleFrame
 
 -- ================== PANEL IZQUIERDO (Controles) ==================
 local leftPanel = Instance.new("Frame")
-leftPanel.Size = UDim2.new(0, 230, 1, -40)
-leftPanel.Position = UDim2.new(0, 10, 0, 40)
+leftPanel.Size = UDim2.new(0, 230, 1, -45)
+leftPanel.Position = UDim2.new(0, 10, 0, 45)
 leftPanel.BackgroundTransparency = 1
 leftPanel.Parent = mainFrame
 
 local controlY = 0
 
--- Botón Auto Kill ON/OFF
-local btnToggle = Instance.new("TextButton")
-btnToggle.Size = UDim2.new(1, 0, 0, 35)
-btnToggle.Position = UDim2.new(0, 0, 0, controlY)
-btnToggle.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
-btnToggle.Text = "🔴 AUTO KILL: OFF"
-btnToggle.TextSize = 14
-btnToggle.Font = Enum.Font.GothamBold
-btnToggle.Parent = leftPanel
-controlY += 40
+-- Función auxiliar para botones
+local function createButton(text, yPos, color)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 32)
+    btn.Position = UDim2.new(0, 0, 0, yPos)
+    btn.BackgroundColor3 = color
+    btn.Text = text
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.GothamMedium
+    btn.Parent = leftPanel
+    return btn
+end
 
--- Botón Modo Todos/Individual
-local btnMode = Instance.new("TextButton")
-btnMode.Size = UDim2.new(1, 0, 0, 35)
-btnMode.Position = UDim2.new(0, 0, 0, controlY)
-btnMode.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
-btnMode.Text = "🎯 MODO: TODOS"
-btnMode.TextSize = 14
-btnMode.Parent = leftPanel
-controlY += 40
+-- Función auxiliar para campos de texto con Padding
+local function createTextBox(placeholder, yPos)
+    local txt = Instance.new("TextBox")
+    txt.Size = UDim2.new(1, 0, 0, 32)
+    txt.Position = UDim2.new(0, 0, 0, yPos)
+    txt.PlaceholderText = placeholder
+    txt.TextSize = 13
+    txt.Font = Enum.Font.Gotham
+    txt.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+    txt.TextColor3 = Color3.new(1,1,1)
+    txt.TextXAlignment = Enum.TextXAlignment.Left
+    txt.Parent = leftPanel
+    
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft = UDim.new(0, 10)
+    pad.Parent = txt
+    
+    return txt
+end
 
--- Campo para nombre específico
-local txtTarget = Instance.new("TextBox")
-txtTarget.Size = UDim2.new(1, 0, 0, 35)
-txtTarget.Position = UDim2.new(0, 0, 0, controlY)
-txtTarget.PlaceholderText = "Nombre del jugador..."
-txtTarget.TextSize = 14
-txtTarget.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-txtTarget.TextColor3 = Color3.new(1,1,1)
-txtTarget.Parent = leftPanel
-controlY += 40
-
--- Campo para whitelist
-local txtWhitelist = Instance.new("TextBox")
-txtWhitelist.Size = UDim2.new(1, 0, 0, 35)
-txtWhitelist.Position = UDim2.new(0, 0, 0, controlY)
-txtWhitelist.PlaceholderText = "Agregar a Whitelist..."
-txtWhitelist.TextSize = 14
-txtWhitelist.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
-txtWhitelist.TextColor3 = Color3.new(1,1,1)
-txtWhitelist.Parent = leftPanel
-controlY += 40
-
--- Botón Actualizar Lista
-local btnRefresh = Instance.new("TextButton")
-btnRefresh.Size = UDim2.new(1, 0, 0, 35)
-btnRefresh.Position = UDim2.new(0, 0, 0, controlY)
-btnRefresh.BackgroundColor3 = Color3.fromRGB(150, 0, 200)
-btnRefresh.Text = "🔄 Actualizar Lista"
-btnRefresh.TextSize = 14
-btnRefresh.Parent = leftPanel
+local btnToggle = createButton("Auto Kill: Inactivo", controlY, Color3.fromRGB(45, 45, 45))
+controlY += 38
+local btnMode = createButton("Modo: Todos", controlY, State.AccentColor)
+controlY += 38
+local txtTarget = createTextBox("Buscar jugador...", controlY)
+controlY += 38
+local txtWhitelist = createTextBox("Añadir a Whitelist...", controlY)
+controlY += 38
+local btnRefresh = createButton("Actualizar Lista", controlY, Color3.fromRGB(45, 45, 45))
 
 -- ================== PANEL DERECHO (Lista de jugadores) ==================
 local rightPanel = Instance.new("Frame")
-rightPanel.Size = UDim2.new(0, 240, 0, 250)
-rightPanel.Position = UDim2.new(0, 250, 0, 40)
-rightPanel.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+rightPanel.Size = UDim2.new(0, 240, 0, 260)
+rightPanel.Position = UDim2.new(0, 250, 0, 45)
+rightPanel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 rightPanel.Parent = mainFrame
 
--- Lista desplazable
 local playerList = Instance.new("ScrollingFrame")
 playerList.Size = UDim2.new(1, -10, 1, -10)
 playerList.Position = UDim2.new(0, 5, 0, 5)
 playerList.BackgroundTransparency = 1
-playerList.ScrollBarThickness = 6
+playerList.ScrollBarThickness = 4
+playerList.ScrollBarImageColor3 = State.AccentColor
 playerList.Parent = rightPanel
 
 local listLayout = Instance.new("UIListLayout")
-listLayout.Padding = UDim.new(0, 2)
+listLayout.Padding = UDim.new(0, 4)
 listLayout.Parent = playerList
 
 -- ================== FUNCIONALIDAD DE LA LISTA ==================
 local function updatePlayerList()
-    -- Limpiar lista actual
     for _, child in ipairs(playerList:GetChildren()) do
-        if child:IsA("TextButton") then
-            child:Destroy()
-        end
+        if child:IsA("TextButton") then child:Destroy() end
     end
-    
-    -- Botón "Dejar de Espectear"
+
     local noneBtn = Instance.new("TextButton")
-    noneBtn.Size = UDim2.new(1, 0, 0, 30)
-    noneBtn.BackgroundColor3 = Color3.fromRGB(80, 80, 80)
-    noneBtn.Text = "[Dejar de Espectear]"
+    noneBtn.Size = UDim2.new(1, 0, 0, 28)
+    noneBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+    noneBtn.Text = "Restablecer Cámara"
     noneBtn.TextColor3 = Color3.new(1,1,1)
+    noneBtn.Font = Enum.Font.Gotham
     noneBtn.TextSize = 12
     noneBtn.Parent = playerList
-    
+
     noneBtn.MouseButton1Click:Connect(function()
-        _G.SpectatingPlayer = nil
+        State.SpectatingPlayer = nil
         if LocalPlayer.Character then
             local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-            if humanoid then
-                Camera.CameraSubject = humanoid
-            end
+            if humanoid then Camera.CameraSubject = humanoid end
         end
         updatePlayerList()
     end)
-    
-    -- Agregar jugadores
+
     for _, player in pairs(Players:GetPlayers()) do
         local btn = Instance.new("TextButton")
         btn.Size = UDim2.new(1, 0, 0, 28)
-        
+        btn.Font = Enum.Font.Gotham
+
         local isMe = player == LocalPlayer
         local isWhitelistedPlayer = isWhitelisted(player)
-        local isSpectating = _G.SpectatingPlayer == player
-        
+        local isSpectating = State.SpectatingPlayer == player
+
         if isMe then
-            btn.BackgroundColor3 = Color3.fromRGB(0, 120, 0)
-            btn.Text = player.Name .. " (TÚ)"
+            btn.BackgroundColor3 = Color3.fromRGB(40, 80, 40)
+            btn.Text = player.Name .. " (Tú)"
         elseif isWhitelistedPlayer then
-            btn.BackgroundColor3 = Color3.fromRGB(120, 0, 120)
-            btn.Text = player.Name .. " (WHITELIST)"
+            btn.BackgroundColor3 = Color3.fromRGB(60, 40, 80)
+            btn.Text = player.Name .. " (Aliado)"
         elseif isSpectating then
-            btn.BackgroundColor3 = Color3.fromRGB(255, 80, 0)
-            btn.Text = player.Name .. " [ESP]"
+            btn.BackgroundColor3 = State.AccentColor
+            btn.Text = player.Name .. " [Vista]"
+            btn.TextColor3 = Color3.new(0,0,0)
         else
-            btn.BackgroundColor3 = Color3.fromRGB(60, 60, 60)
+            btn.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
             btn.Text = player.Name
         end
-        
-        btn.TextColor3 = Color3.new(1,1,1)
+
+        if not isSpectating then btn.TextColor3 = Color3.new(1,1,1) end
         btn.TextSize = 12
         btn.Parent = playerList
-        
-        -- Configurar clic
+
         if not isMe then
             btn.MouseButton1Click:Connect(function()
                 if not isWhitelistedPlayer then
-                    -- Establecer como objetivo
-                    _G.TargetPlayerName = player.Name
-                    _G.AutoKillAll = false
+                    State.TargetPlayerName = player.Name
+                    State.AutoKillAll = false
                     txtTarget.Text = player.Name
-                    btnMode.Text = "🎯 MODO: INDIVIDUAL"
-                    btnMode.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
-                    
-                    StarterGui:SetCore("SendNotification", {
-                        Title = "Objetivo Establecido",
-                        Text = "Atacando a: " .. player.Name,
-                        Duration = 3
-                    })
+                    btnMode.Text = "Modo: Individual"
+                    btnMode.BackgroundColor3 = Color3.fromRGB(150, 100, 30)
                 end
-                
-                -- Espectear
-                _G.SpectatingPlayer = player
+                State.SpectatingPlayer = player
                 updateSpectate()
                 updatePlayerList()
             end)
         end
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 4)
+        corner.Parent = btn
     end
-    
+
     playerList.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
 end
 
 -- ================== FUNCIONES DE LOS CONTROLES ==================
 btnToggle.MouseButton1Click:Connect(function()
-    _G.AutoKillEnabled = not _G.AutoKillEnabled
-    
-    if _G.AutoKillEnabled then
-        btnToggle.Text = "✅ AUTO KILL: ON"
-        btnToggle.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
+    State.AutoKillEnabled = not State.AutoKillEnabled
+    if State.AutoKillEnabled then
+        btnToggle.Text = "Auto Kill: Activo"
+        btnToggle.BackgroundColor3 = State.AccentColor
+        btnToggle.TextColor3 = Color3.new(0,0,0)
         startAutoKill()
-        
-        local modeText = _G.AutoKillAll and "TODOS" or "INDIVIDUAL"
-        StarterGui:SetCore("SendNotification", {
-            Title = "Auto Kill Activado",
-            Text = "Modo: " .. modeText,
-            Duration = 3
-        })
     else
-        btnToggle.Text = "🔴 AUTO KILL: OFF"
-        btnToggle.BackgroundColor3 = Color3.fromRGB(200, 0, 0)
+        btnToggle.Text = "Auto Kill: Inactivo"
+        btnToggle.BackgroundColor3 = Color3.fromRGB(45, 45, 45)
+        btnToggle.TextColor3 = Color3.new(1,1,1)
         stopAutoKill()
     end
 end)
 
 btnMode.MouseButton1Click:Connect(function()
-    _G.AutoKillAll = not _G.AutoKillAll
-    
-    if _G.AutoKillAll then
-        btnMode.Text = "🎯 MODO: TODOS"
-        btnMode.BackgroundColor3 = Color3.fromRGB(0, 120, 200)
-        StarterGui:SetCore("SendNotification", {
-            Title = "Modo Cambiado",
-            Text = "Atacarás a TODOS los jugadores",
-            Duration = 3
-        })
+    State.AutoKillAll = not State.AutoKillAll
+    if State.AutoKillAll then
+        btnMode.Text = "Modo: Todos"
+        btnMode.BackgroundColor3 = State.AccentColor
+        btnMode.TextColor3 = Color3.new(0,0,0)
     else
-        btnMode.Text = "🎯 MODO: INDIVIDUAL"
-        btnMode.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
-        if _G.TargetPlayerName ~= "" then
-            StarterGui:SetCore("SendNotification", {
-                Title = "Modo Cambiado",
-                Text = "Atacarás a: " .. _G.TargetPlayerName,
-                Duration = 3
-            })
-        end
+        btnMode.Text = "Modo: Individual"
+        btnMode.BackgroundColor3 = Color3.fromRGB(150, 100, 30)
+        btnMode.TextColor3 = Color3.new(1,1,1)
     end
 end)
 
 txtTarget.FocusLost:Connect(function(enterPressed)
     if enterPressed then
-        _G.TargetPlayerName = txtTarget.Text
-        if _G.TargetPlayerName ~= "" then
-            _G.AutoKillAll = false
-            btnMode.Text = "🎯 MODO: INDIVIDUAL"
-            btnMode.BackgroundColor3 = Color3.fromRGB(200, 100, 0)
-            
-            StarterGui:SetCore("SendNotification", {
-                Title = "Objetivo Establecido",
-                Text = "Atacando a: " .. _G.TargetPlayerName,
-                Duration = 3
-            })
+        State.TargetPlayerName = txtTarget.Text
+        if State.TargetPlayerName ~= "" then
+            State.AutoKillAll = false
+            btnMode.Text = "Modo: Individual"
+            btnMode.BackgroundColor3 = Color3.fromRGB(150, 100, 30)
+            btnMode.TextColor3 = Color3.new(1,1,1)
         end
     end
 end)
 
 txtWhitelist.FocusLost:Connect(function(enterPressed)
     if enterPressed and txtWhitelist.Text ~= "" then
-        table.insert(_G.Whitelist, txtWhitelist.Text)
-        StarterGui:SetCore("SendNotification", {
-            Title = "Whitelist Actualizada",
-            Text = "Agregado: " .. txtWhitelist.Text,
-            Duration = 3
-        })
+        table.insert(State.Whitelist, txtWhitelist.Text)
         txtWhitelist.Text = ""
         updatePlayerList()
     end
@@ -445,88 +432,93 @@ end)
 
 btnRefresh.MouseButton1Click:Connect(function()
     updatePlayerList()
-    StarterGui:SetCore("SendNotification", {
-        Title = "Lista Actualizada",
-        Text = "Jugadores actualizados",
-        Duration = 2
-    })
 end)
 
--- ================== BOTONES DE CONTROL ==================
+-- ================== BOTONES DE VENTANA ==================
 local btnClose = Instance.new("TextButton")
-btnClose.Size = UDim2.new(0, 25, 0, 25)
-btnClose.Position = UDim2.new(1, -30, 0, 3)
-btnClose.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-btnClose.Text = "X"
-btnClose.TextSize = 14
-btnClose.Parent = mainFrame
+btnClose.Size = UDim2.new(0, 35, 0, 35)
+btnClose.Position = UDim2.new(1, -35, 0, 0)
+btnClose.BackgroundTransparency = 1
+btnClose.Text = "×"
+btnClose.TextColor3 = Color3.fromRGB(180, 180, 180)
+btnClose.TextSize = 24
+btnClose.Font = Enum.Font.Gotham
+btnClose.Parent = titleFrame
+
+btnClose.MouseEnter:Connect(function() btnClose.TextColor3 = Color3.fromRGB(255, 80, 80) end)
+btnClose.MouseLeave:Connect(function() btnClose.TextColor3 = Color3.fromRGB(180, 180, 180) end)
+btnClose.MouseButton1Click:Connect(function() mainFrame.Visible = false end)
 
 local floatBtn = Instance.new("TextButton")
-floatBtn.Size = UDim2.new(0, 50, 0, 50)
-floatBtn.Position = UDim2.new(0.95, -50, 0.05, 3)
-floatBtn.BackgroundColor3 = Color3.fromRGB(0, 180, 0)
-floatBtn.Text = "HUB"
-floatBtn.TextSize = 14
-floatBtn.Font = Enum.Font.GothamBold
+floatBtn.Size = UDim2.new(0, 45, 0, 45)
+floatBtn.Position = UDim2.new(0.95, -45, 0.05, 0)
+floatBtn.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+floatBtn.Text = "Hub"
+floatBtn.TextColor3 = State.AccentColor
+floatBtn.TextSize = 13
+floatBtn.Font = Enum.Font.GothamMedium
 floatBtn.Parent = screenGui
 
--- ================== EVENTOS DE BOTONES ==================
-btnClose.MouseButton1Click:Connect(function()
-    mainFrame.Visible = false
-end)
+local floatStroke = Instance.new("UIStroke")
+floatStroke.Color = State.AccentColor
+floatStroke.Thickness = 1.5
+floatStroke.Parent = floatBtn
 
 floatBtn.MouseButton1Click:Connect(function()
     mainFrame.Visible = not mainFrame.Visible
-    if mainFrame.Visible then
-        updatePlayerList()
-    end
+    if mainFrame.Visible then updatePlayerList() end
 end)
 
 -- ================== DISEÑO Y ESQUINAS REDONDEADAS ==================
-local function applyCorners(object)
+local function applyCorners(object, radius)
     local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 8)
+    corner.CornerRadius = UDim.new(0, radius)
     corner.Parent = object
 end
 
-applyCorners(mainFrame)
-applyCorners(rightPanel)
-applyCorners(floatBtn)
-
-for _, obj in ipairs(mainFrame:GetChildren()) do
-    if obj:IsA("TextButton") or obj:IsA("TextBox") then
-        applyCorners(obj)
-    end
-end
+applyCorners(mainFrame, 8)
+applyCorners(titleFrame, 8) -- Para redondear solo arriba, habría que usar un Frame extra, pero visualmente queda bien
+applyCorners(rightPanel, 6)
+applyCorners(floatBtn, 25) -- Círculo completo
 
 for _, obj in ipairs(leftPanel:GetChildren()) do
     if obj:IsA("TextButton") or obj:IsA("TextBox") then
-        applyCorners(obj)
+        applyCorners(obj, 6)
     end
 end
 
 -- ================== INICIALIZACIÓN ==================
 updatePlayerList()
 
--- Auto-update la lista cada 10 segundos cuando esté visible
 task.spawn(function()
-    while true do
-        task.wait(10)
+    while task.wait(10) do
         if mainFrame.Visible then
             updatePlayerList()
         end
     end
 end)
 
--- Notificación de carga
-StarterGui:SetCore("SendNotification", {
-    Title = "AUTO KILL DEFINITIVO",
-    Text = "Hub horizontal cargado | Todas las funciones activas",
-    Duration = 5
-})
+print("=== APP CARGADA ===")
+else
+    -- AVISO DE ACCESO DENEGADO
+    local alertGui = Instance.new("ScreenGui")
+    alertGui.Name = "AccessDenied"
+    alertGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    
+    local alertFrame = Instance.new("Frame")
+    alertFrame.Size = UDim2.new(0, 300, 0, 100)
+    alertFrame.Position = UDim2.new(0.5, -150, 0.5, -50)
+    alertFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 30)
+    alertFrame.Parent = alertGui
+    
+    local alertText = Instance.new("TextLabel")
+    alertText.Size = UDim2.new(1, 0, 1, 0)
+    alertText.Text = "ACCESO DENEGADO\nNo tienes permiso para usar este script."
+    alertText.TextColor3 = Color3.fromRGB(255, 50, 50)
+    alertText.Font = Enum.Font.GothamBold
+    alertText.Parent = alertFrame
+        alertText.TextSize = 16 -- Para que se lea bien
+    alertText.TextWrapped = true -- Para que el texto no se corte
+    alertText.BackgroundColor3 = Color3.fromRGB(30, 30, 30) -- Para que combine con el fondo
 
-print("=== AUTO KILL HUB HORIZONTAL CARGADO ===")
-print("• Auto Kill Automático: ✓")
-print("• Lista de Jugadores: ✓")
-print("• Especteo Persistente: ✓")
-print("• Diseño Horizontal 500x320: ✓")
+end
