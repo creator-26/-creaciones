@@ -111,7 +111,7 @@ local function startAutoKill()
         if not State.AutoKillEnabled or not LocalPlayer.Character then return end
 
         -- COOLDOWN: Previene el lag del servidor limitando a ~7 golpes por segundo
-        if tick() - State.AttackTick < 0.03 then return end
+        if tick() - State.AttackTick < 0.02 then return end
         State.AttackTick = tick()
 
         equipPunch()
