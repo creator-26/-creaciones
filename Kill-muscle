@@ -25,7 +25,7 @@ local AuthorizedUsers = {
     "phol_268t", -- Pon tu nombre aquí
     "alexander_346g",
     "Walypro1234",
-    "",
+    "OSCAR70776",
     -- Puedes añadir más usuarios separados por coma
 }
 local function isAuthorized()
