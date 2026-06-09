@@ -28,6 +28,7 @@ local AuthorizedUsers = {
     "OSCAR70776",
     "JosephCJK108",
     "Maestrito24",
+    "venezuela_bugs",
     "",
     -- Puedes añadir más usuarios separados por coma
 }
