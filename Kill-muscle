@@ -288,6 +288,7 @@ controlY += 38
 local txtTarget = createTextBox("Buscar jugador...", controlY)
 controlY += 38
 local txtWhitelist = createTextBox("Añadir a Whitelist...", controlY)
+txtWhitelist.Text = "Añadir a Whitelist..."
 controlY += 38
 local btnRefresh = createButton("Actualizar Lista", controlY, Color3.fromRGB(45, 45, 45))
 
