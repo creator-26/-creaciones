@@ -1,0 +1,594 @@
+-- AUTO KILL SUPREMO - VERSIÓN FEMENINA CON BLACKLIST
+-- Diseño rosa/púrpura | Lista negra automática | Mismas funciones seguras
+
+local Players = game:GetService("Players")
+local StarterGui = game:GetService("StarterGui")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Camera = workspace.CurrentCamera
+local LocalPlayer = Players.LocalPlayer
+
+-- ================== VARIABLES DE ESTADO LOCALES ==================
+local State = {
+    AutoKillEnabled = false,
+    AutoKillAll = true,
+    TargetPlayerName = "",
+    Whitelist = {""},
+    Blacklist = {},                     -- NUEVA LISTA NEGRA
+    BlacklistAutoKill = true,           -- Activar ataque automático a blacklist
+    SpectatingPlayer = nil,
+    AttackConnection = nil,
+    SpectateConnection = nil,
+    AttackTick = tick(),
+    AccentColor = Color3.fromHex("#ff66b2")  -- Rosa chicle moderno
+}
+local AuthorizedUsers = {
+    "phol_268t",
+    "alexander_346g",
+    "Walypro1234",
+    "OSCAR70776",
+    "JosephCJK108",
+    "Maestrito24",
+    "",
+}
+local function isAuthorized()
+    local myName = game.Players.LocalPlayer.Name
+    for _, name in ipairs(AuthorizedUsers) do
+        if myName:lower() == name:lower() then
+            return true
+        end
+    end
+    return false
+end
+
+-- ================== FUNCIONES BÁSICAS ==================
+local function isWhitelisted(plr)
+    for _, name in ipairs(State.Whitelist) do
+        if plr.Name:lower() == name:lower() then
+            return true
+        end
+    end
+    return false
+end
+
+local function isBlacklisted(plr)
+    for _, name in ipairs(State.Blacklist) do
+        if plr.Name:lower() == name:lower() then
+            return true
+        end
+    end
+    return false
+end
+
+local function equipPunch()
+    if not LocalPlayer.Character then return false end
+    local char = LocalPlayer.Character
+    if char:FindFirstChild("Punch") then return true end
+    local backpack = LocalPlayer.Backpack
+    local punch = backpack:FindFirstChild("Punch")
+    if punch then
+        punch.Parent = char
+        return true
+    end
+    return false
+end
+
+local function getValidTargets()
+    local targets = {}
+    if State.AutoKillAll then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player == LocalPlayer or isWhitelisted(player) then continue end
+            local char = player.Character
+            if char then
+                local humanoid = char:FindFirstChild("Humanoid")
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if humanoid and root and humanoid.Health > 0 then
+                    table.insert(targets, { Player = player, Character = char, Humanoid = humanoid, RootPart = root })
+                end
+            end
+        end
+    elseif State.TargetPlayerName ~= "" then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player == LocalPlayer or not player.Name:lower():find(State.TargetPlayerName:lower()) then continue end
+            local char = player.Character
+            if char then
+                local humanoid = char:FindFirstChild("Humanoid")
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if humanoid and root and humanoid.Health > 0 then
+                    table.insert(targets, { Player = player, Character = char, Humanoid = humanoid, RootPart = root })
+                end
+            end
+            break
+        end
+    end
+    -- Priorizar blacklist si el modo automático de blacklist está activo
+    if State.BlacklistAutoKill then
+        for _, player in pairs(Players:GetPlayers()) do
+            if player == LocalPlayer then continue end
+            if isBlacklisted(player) then
+                local char = player.Character
+                if char then
+                    local humanoid = char:FindFirstChild("Humanoid")
+                    local root = char:FindFirstChild("HumanoidRootPart")
+                    if humanoid and root and humanoid.Health > 0 then
+                        -- Insertar al inicio para máxima prioridad
+                        table.insert(targets, 1, { Player = player, Character = char, Humanoid = humanoid, RootPart = root })
+                    end
+                end
+            end
+        end
+    end
+    return targets
+end
+
+-- ================== SISTEMA DE AUTO KILL OPTIMIZADO ==================
+local function startAutoKill()
+    if State.AttackConnection then
+        State.AttackConnection:Disconnect()
+    end
+    State.AttackConnection = RunService.Heartbeat:Connect(function()
+        -- Permitir ataque si AutoKillEnabled está activo O si hay blacklist y BlacklistAutoKill activo
+        local shouldAttack = State.AutoKillEnabled or (State.BlacklistAutoKill and #State.Blacklist > 0)
+        if not shouldAttack or not LocalPlayer.Character then return end
+
+        if tick() - State.AttackTick < 0.02 then return end
+        State.AttackTick = tick()
+
+        equipPunch()
+        local myChar = LocalPlayer.Character
+        local leftHand = myChar:FindFirstChild("LeftHand")
+        local rightHand = myChar:FindFirstChild("RightHand")
+        if not leftHand and not rightHand then return end
+
+        local targets = getValidTargets()
+        for _, target in ipairs(targets) do
+            if target.Humanoid and target.Humanoid.Health > 0 then
+                pcall(function()
+                    LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                    LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                end)
+                if leftHand then
+                    pcall(function()
+                        firetouchinterest(leftHand, target.RootPart, 0)
+                        firetouchinterest(leftHand, target.RootPart, 1)
+                    end)
+                end
+                if rightHand then
+                    pcall(function()
+                        firetouchinterest(rightHand, target.RootPart, 0)
+                        firetouchinterest(rightHand, target.RootPart, 1)
+                    end)
+                end
+                task.wait(0.01)
+            end
+        end
+    end)
+end
+
+local function stopAutoKill()
+    if State.AttackConnection then
+        State.AttackConnection:Disconnect()
+        State.AttackConnection = nil
+    end
+end
+
+-- ================== SISTEMA DE ESPECTEO ==================
+local function updateSpectate()
+    if State.SpectateConnection then
+        State.SpectateConnection:Disconnect()
+    end
+    State.SpectateConnection = RunService.Heartbeat:Connect(function()
+        if State.SpectatingPlayer and State.SpectatingPlayer ~= LocalPlayer then
+            if State.SpectatingPlayer.Character then
+                local humanoid = State.SpectatingPlayer.Character:FindFirstChild("Humanoid")
+                if humanoid and Camera.CameraSubject ~= humanoid then
+                    Camera.CameraSubject = humanoid
+                end
+            end
+        end
+    end)
+end
+
+-- ================== INTERFAZ HORIZONTAL (DISEÑO FEMENINO) ==================
+if isAuthorized() then
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "AutoKillApp"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, 500, 0, 340)  -- Un poco más alto para la blacklist
+mainFrame.Position = UDim2.new(0.5, -250, 0.5, -170)
+mainFrame.BackgroundColor3 = Color3.fromRGB(30, 20, 30)  -- Fondo púrpura oscuro elegante
+mainFrame.Active = true
+mainFrame.Visible = false
+mainFrame.Parent = screenGui
+
+local mainStroke = Instance.new("UIStroke")
+mainStroke.Color = Color3.fromRGB(255, 105, 180)  -- Rosa fuerte
+mainStroke.Transparency = 0.3
+mainStroke.Thickness = 2
+mainStroke.Parent = mainFrame
+
+-- Arrastre suave
+local dragging, dragInput, dragStart, startPos
+mainFrame.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true
+        dragStart = input.Position
+        startPos = mainFrame.Position
+        input.Changed:Connect(function()
+            if input.UserInputState == Enum.UserInputState.End then dragging = false end
+        end)
+    end
+end)
+mainFrame.InputChanged:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+end)
+UserInputService.InputChanged:Connect(function(input)
+    if input == dragInput and dragging then
+        local delta = input.Position - dragStart
+        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+-- Título
+local titleFrame = Instance.new("Frame")
+titleFrame.Size = UDim2.new(1, 0, 0, 35)
+titleFrame.BackgroundColor3 = Color3.fromRGB(20, 10, 20)
+titleFrame.BorderSizePixel = 0
+titleFrame.Parent = mainFrame
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, -40, 1, 0)
+title.Position = UDim2.new(0, 15, 0, 0)
+title.BackgroundTransparency = 1
+title.Text = "🌸 Panel de Control: Val26 🌸"
+title.TextColor3 = Color3.fromRGB(255, 200, 220)
+title.Font = Enum.Font.GothamMedium
+title.TextSize = 14
+title.TextXAlignment = Enum.TextXAlignment.Left
+title.Parent = titleFrame
+
+-- ================== PANEL IZQUIERDO (Controles) ==================
+local leftPanel = Instance.new("Frame")
+leftPanel.Size = UDim2.new(0, 230, 1, -45)
+leftPanel.Position = UDim2.new(0, 10, 0, 45)
+leftPanel.BackgroundTransparency = 1
+leftPanel.Parent = mainFrame
+
+local function createButton(text, yPos, color)
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(1, 0, 0, 30)
+    btn.Position = UDim2.new(0, 0, 0, yPos)
+    btn.BackgroundColor3 = color
+    btn.Text = text
+    btn.TextColor3 = Color3.new(1,1,1)
+    btn.TextSize = 12
+    btn.Font = Enum.Font.GothamMedium
+    btn.Parent = leftPanel
+    return btn
+end
+
+local function createTextBox(placeholder, yPos)
+    local txt = Instance.new("TextBox")
+    txt.Size = UDim2.new(1, 0, 0, 30)
+    txt.Position = UDim2.new(0, 0, 0, yPos)
+    txt.PlaceholderText = placeholder
+    txt.TextSize = 12
+    txt.Font = Enum.Font.Gotham
+    txt.BackgroundColor3 = Color3.fromRGB(45, 35, 45)
+    txt.TextColor3 = Color3.new(1,1,1)
+    txt.TextXAlignment = Enum.TextXAlignment.Left
+    txt.Parent = leftPanel
+    local pad = Instance.new("UIPadding")
+    pad.PaddingLeft = UDim.new(0, 10)
+    pad.Parent = txt
+    return txt
+end
+
+local controlY = 0
+
+local btnToggle = createButton("Auto Kill: Inactivo", controlY, Color3.fromRGB(70, 50, 70))
+controlY += 36
+local btnMode = createButton("Modo: Todos", controlY, State.AccentColor)
+controlY += 36
+local txtTarget = createTextBox("Buscar jugador...", controlY)
+controlY += 36
+local txtWhitelist = createTextBox("Añadir a Whitelist...", controlY)
+controlY += 36
+local btnRefresh = createButton("Actualizar Lista", controlY, Color3.fromRGB(70, 50, 70))
+controlY += 36
+
+-- ================== SECCIÓN BLACKLIST ==================
+local txtBlacklist = createTextBox("Añadir a Blacklist...", controlY)
+controlY += 36
+local btnAddBlacklist = createButton("➕ Añadir a Blacklist", controlY, Color3.fromRGB(120, 70, 100))
+controlY += 36
+local btnBlacklistToggle = createButton("Blacklist Kill: ON", controlY, Color3.fromRGB(200, 90, 130))
+controlY += 36
+
+-- ================== PANEL DERECHO (Lista de jugadores) ==================
+local rightPanel = Instance.new("Frame")
+rightPanel.Size = UDim2.new(0, 240, 0, 280)
+rightPanel.Position = UDim2.new(0, 250, 0, 45)
+rightPanel.BackgroundColor3 = Color3.fromRGB(40, 30, 40)
+rightPanel.Parent = mainFrame
+
+local playerList = Instance.new("ScrollingFrame")
+playerList.Size = UDim2.new(1, -10, 1, -10)
+playerList.Position = UDim2.new(0, 5, 0, 5)
+playerList.BackgroundTransparency = 1
+playerList.ScrollBarThickness = 4
+playerList.ScrollBarImageColor3 = State.AccentColor
+playerList.Parent = rightPanel
+
+local listLayout = Instance.new("UIListLayout")
+listLayout.Padding = UDim.new(0, 4)
+listLayout.Parent = playerList
+
+-- ================== FUNCIONALIDAD DE LA LISTA ==================
+local function updatePlayerList()
+    for _, child in ipairs(playerList:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+
+    local noneBtn = Instance.new("TextButton")
+    noneBtn.Size = UDim2.new(1, 0, 0, 28)
+    noneBtn.BackgroundColor3 = Color3.fromRGB(70, 50, 70)
+    noneBtn.Text = "Restablecer Cámara"
+    noneBtn.TextColor3 = Color3.new(1,1,1)
+    noneBtn.Font = Enum.Font.Gotham
+    noneBtn.TextSize = 12
+    noneBtn.Parent = playerList
+    noneBtn.MouseButton1Click:Connect(function()
+        State.SpectatingPlayer = nil
+        if LocalPlayer.Character then
+            local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+            if humanoid then Camera.CameraSubject = humanoid end
+        end
+        updatePlayerList()
+    end)
+
+    for _, player in pairs(Players:GetPlayers()) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 28)
+        btn.Font = Enum.Font.Gotham
+
+        local isMe = player == LocalPlayer
+        local isWhitelistedPlayer = isWhitelisted(player)
+        local isBlacklistedPlayer = isBlacklisted(player)
+        local isSpectating = State.SpectatingPlayer == player
+
+        if isMe then
+            btn.BackgroundColor3 = Color3.fromRGB(80, 60, 80)
+            btn.Text = player.Name .. " (Tú)"
+        elseif isBlacklistedPlayer then
+            btn.BackgroundColor3 = Color3.fromRGB(180, 60, 80)  -- Rojo rosado para blacklist
+            btn.Text = player.Name .. " ⛔"
+        elseif isWhitelistedPlayer then
+            btn.BackgroundColor3 = Color3.fromRGB(70, 60, 100)  -- Azul morado para aliados
+            btn.Text = player.Name .. " (Aliado)"
+        elseif isSpectating then
+            btn.BackgroundColor3 = State.AccentColor
+            btn.Text = player.Name .. " [Vista]"
+            btn.TextColor3 = Color3.new(0,0,0)
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(70, 60, 80)
+            btn.Text = player.Name
+        end
+
+        if not isSpectating then btn.TextColor3 = Color3.new(1,1,1) end
+        btn.TextSize = 12
+        btn.Parent = playerList
+
+        if not isMe then
+            btn.MouseButton1Click:Connect(function()
+                if not isWhitelistedPlayer and not isBlacklistedPlayer then
+                    State.TargetPlayerName = player.Name
+                    State.AutoKillAll = false
+                    txtTarget.Text = player.Name
+                    btnMode.Text = "Modo: Individual"
+                    btnMode.BackgroundColor3 = Color3.fromRGB(180, 130, 100)
+                end
+                State.SpectatingPlayer = player
+                updateSpectate()
+                updatePlayerList()
+            end)
+        end
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 4)
+        corner.Parent = btn
+    end
+
+    playerList.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+end
+
+-- ================== FUNCIONES DE LOS CONTROLES ==================
+btnToggle.MouseButton1Click:Connect(function()
+    State.AutoKillEnabled = not State.AutoKillEnabled
+    if State.AutoKillEnabled then
+        btnToggle.Text = "Auto Kill: Activo"
+        btnToggle.BackgroundColor3 = State.AccentColor
+        btnToggle.TextColor3 = Color3.new(0,0,0)
+        startAutoKill()
+    else
+        btnToggle.Text = "Auto Kill: Inactivo"
+        btnToggle.BackgroundColor3 = Color3.fromRGB(70, 50, 70)
+        btnToggle.TextColor3 = Color3.new(1,1,1)
+        stopAutoKill()
+    end
+end)
+
+btnMode.MouseButton1Click:Connect(function()
+    State.AutoKillAll = not State.AutoKillAll
+    if State.AutoKillAll then
+        btnMode.Text = "Modo: Todos"
+        btnMode.BackgroundColor3 = State.AccentColor
+        btnMode.TextColor3 = Color3.new(0,0,0)
+    else
+        btnMode.Text = "Modo: Individual"
+        btnMode.BackgroundColor3 = Color3.fromRGB(180, 130, 100)
+        btnMode.TextColor3 = Color3.new(1,1,1)
+    end
+end)
+
+txtTarget.FocusLost:Connect(function(enterPressed)
+    if enterPressed then
+        State.TargetPlayerName = txtTarget.Text
+        if State.TargetPlayerName ~= "" then
+            State.AutoKillAll = false
+            btnMode.Text = "Modo: Individual"
+            btnMode.BackgroundColor3 = Color3.fromRGB(180, 130, 100)
+            btnMode.TextColor3 = Color3.new(1,1,1)
+        end
+    end
+end)
+
+txtWhitelist.FocusLost:Connect(function(enterPressed)
+    if enterPressed and txtWhitelist.Text ~= "" then
+        table.insert(State.Whitelist, txtWhitelist.Text)
+        txtWhitelist.Text = ""
+        updatePlayerList()
+    end
+end)
+
+-- ================== FUNCIONALIDAD BLACKLIST ==================
+btnAddBlacklist.MouseButton1Click:Connect(function()
+    local name = txtBlacklist.Text
+    if name ~= "" then
+        -- Evitar duplicados
+        for _, n in ipairs(State.Blacklist) do
+            if n:lower() == name:lower() then return end
+        end
+        table.insert(State.Blacklist, name)
+        txtBlacklist.Text = ""
+        updatePlayerList()
+    end
+end)
+
+btnBlacklistToggle.MouseButton1Click:Connect(function()
+    State.BlacklistAutoKill = not State.BlacklistAutoKill
+    if State.BlacklistAutoKill then
+        btnBlacklistToggle.Text = "Blacklist Kill: ON"
+        btnBlacklistToggle.BackgroundColor3 = Color3.fromRGB(200, 90, 130)
+    else
+        btnBlacklistToggle.Text = "Blacklist Kill: OFF"
+        btnBlacklistToggle.BackgroundColor3 = Color3.fromRGB(70, 50, 70)
+    end
+end)
+
+btnRefresh.MouseButton1Click:Connect(function()
+    updatePlayerList()
+end)
+
+-- ================== BOTONES DE VENTANA ==================
+local btnClose = Instance.new("TextButton")
+btnClose.Size = UDim2.new(0, 35, 0, 35)
+btnClose.Position = UDim2.new(1, -35, 0, 0)
+btnClose.BackgroundTransparency = 1
+btnClose.Text = "×"
+btnClose.TextColor3 = Color3.fromRGB(220, 150, 170)
+btnClose.TextSize = 24
+btnClose.Font = Enum.Font.Gotham
+btnClose.Parent = titleFrame
+btnClose.MouseEnter:Connect(function() btnClose.TextColor3 = Color3.fromRGB(255, 80, 120) end)
+btnClose.MouseLeave:Connect(function() btnClose.TextColor3 = Color3.fromRGB(220, 150, 170) end)
+btnClose.MouseButton1Click:Connect(function() mainFrame.Visible = false end)
+
+local floatBtn = Instance.new("TextButton")
+floatBtn.Size = UDim2.new(0, 45, 0, 45)
+floatBtn.Position = UDim2.new(0.95, -45, 0.05, 0)
+floatBtn.BackgroundColor3 = Color3.fromRGB(30, 20, 30)
+floatBtn.Text = "🌸"
+floatBtn.TextColor3 = State.AccentColor
+floatBtn.TextSize = 20
+floatBtn.Font = Enum.Font.GothamMedium
+floatBtn.Parent = screenGui
+
+local floatStroke = Instance.new("UIStroke")
+floatStroke.Color = State.AccentColor
+floatStroke.Thickness = 1.5
+floatStroke.Parent = floatBtn
+
+floatBtn.MouseButton1Click:Connect(function()
+    mainFrame.Visible = not mainFrame.Visible
+    if mainFrame.Visible then updatePlayerList() end
+end)
+
+-- ================== DETECCIÓN DE ENTRADA DE JUGADORES (BLACKLIST) ==================
+Players.PlayerAdded:Connect(function(player)
+    if isBlacklisted(player) then
+        task.wait(2)  -- Esperar a que cargue el personaje
+        if State.BlacklistAutoKill then
+            -- Forzar un ataque inmediato aunque AutoKill esté apagado
+            local oldAutoKill = State.AutoKillEnabled
+            State.AutoKillEnabled = true
+            if not State.AttackConnection then
+                startAutoKill()
+            end
+            task.delay(3, function()  -- Restaurar estado después de 3 segundos
+                State.AutoKillEnabled = oldAutoKill
+                if not oldAutoKill and State.AttackConnection then
+                    stopAutoKill()
+                end
+            end)
+        end
+    end
+    if mainFrame.Visible then
+        updatePlayerList()
+    end
+end)
+
+-- ================== ESQUINAS REDONDEADAS ==================
+local function applyCorners(object, radius)
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, radius)
+    corner.Parent = object
+end
+
+applyCorners(mainFrame, 8)
+applyCorners(titleFrame, 8)
+applyCorners(rightPanel, 6)
+applyCorners(floatBtn, 25)
+
+for _, obj in ipairs(leftPanel:GetChildren()) do
+    if obj:IsA("TextButton") or obj:IsA("TextBox") then
+        applyCorners(obj, 6)
+    end
+end
+
+-- ================== INICIALIZACIÓN ==================
+updatePlayerList()
+
+task.spawn(function()
+    while task.wait(10) do
+        if mainFrame.Visible then
+            updatePlayerList()
+        end
+    end
+end)
+
+print("🌸 === APP FEMENINA CON BLACKLIST CARGADA === 🌸")
+else
+    local alertGui = Instance.new("ScreenGui")
+    alertGui.Name = "AccessDenied"
+    alertGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+
+    local alertFrame = Instance.new("Frame")
+    alertFrame.Size = UDim2.new(0, 300, 0, 100)
+    alertFrame.Position = UDim2.new(0.5, -150, 0.5, -50)
+    alertFrame.BackgroundColor3 = Color3.fromRGB(40, 20, 30)
+    alertFrame.Parent = alertGui
+
+    local alertText = Instance.new("TextLabel")
+    alertText.Size = UDim2.new(1, 0, 1, 0)
+    alertText.Text = "ACCESO DENEGADO\nNo tienes permiso para usar este script."
+    alertText.TextColor3 = Color3.fromRGB(255, 130, 160)
+    alertText.Font = Enum.Font.GothamBold
+    alertText.TextSize = 16
+    alertText.TextWrapped = true
+    alertText.BackgroundColor3 = Color3.fromRGB(40, 20, 30)
+    alertText.Parent = alertFrame
+end
