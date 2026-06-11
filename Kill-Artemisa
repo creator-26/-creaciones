@@ -265,7 +265,7 @@ if isAuthorized() then
     title.Size = UDim2.new(1, -40, 1, 0)
     title.Position = UDim2.new(0, 15, 0, 0)
     title.BackgroundTransparency = 1
-    title.Text = "💖 Panel Val26 – Reorganizado"
+    title.Text = "💖 Panel Artemisa – I love you"
     title.TextColor3 = Color3.fromRGB(255, 185, 210)
     title.Font = Enum.Font.GothamMedium
     title.TextSize = 14
@@ -349,7 +349,7 @@ if isAuthorized() then
         local noneBtn = Instance.new("TextButton")
         noneBtn.Size = UDim2.new(1, 0, 0, 26)
         noneBtn.BackgroundColor3 = Color3.fromRGB(55, 45, 60)
-        noneBtn.Text = "🔍 Cámara libre"
+        noneBtn.Text = "🔍 camara libre"
         noneBtn.TextColor3 = Color3.new(1,1,1)
         noneBtn.Font = Enum.Font.Gotham
         noneBtn.TextSize = 12
@@ -430,7 +430,7 @@ if isAuthorized() then
     blTitleCtrl.Size = UDim2.new(1, 0, 0, 20)
     blTitleCtrl.Position = UDim2.new(0, 5, 0, 4)
     blTitleCtrl.BackgroundTransparency = 1
-    blTitleCtrl.Text = "🔥 Blacklist"
+    blTitleCtrl.Text = "🔥 Lista negra"
     blTitleCtrl.TextColor3 = Color3.fromRGB(255, 150, 180)
     blTitleCtrl.Font = Enum.Font.GothamMedium
     blTitleCtrl.TextSize = 13
@@ -440,6 +440,7 @@ if isAuthorized() then
     txtBlacklist.Size = UDim2.new(1, -10, 0, 30)
     txtBlacklist.Position = UDim2.new(0, 5, 0, 30)
     txtBlacklist.PlaceholderText = "Nombre..."
+    txtBlacklist.Text = "" 
     txtBlacklist.TextSize = 13
     txtBlacklist.Font = Enum.Font.Gotham
     txtBlacklist.BackgroundColor3 = Color3.fromRGB(45, 35, 48)
@@ -516,6 +517,7 @@ if isAuthorized() then
  
 txt.Position = UDim2.new(0, 5, 0, yPos)
         txt.PlaceholderText = placeholder
+        txt.text = "" 
         txt.TextSize = 13
         txt.Font = Enum.Font.Gotham
         txt.BackgroundColor3 = Color3.fromRGB(45, 35, 48)
