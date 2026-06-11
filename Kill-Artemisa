@@ -54,11 +54,10 @@ end
 local AuthorizedUsers = {
     "phol_268t",
     "alexander_346g",
-    "Walypro1234",
-    "OSCAR70776",
-    "JosephCJK108",
-    "Maestrito24",
-    ""
+    "",
+    "",
+    "",
+    "",
 }
 local function isAuthorized()
     for _, name in ipairs(AuthorizedUsers) do
@@ -440,7 +439,7 @@ if isAuthorized() then
     txtBlacklist.Size = UDim2.new(1, -10, 0, 30)
     txtBlacklist.Position = UDim2.new(0, 5, 0, 30)
     txtBlacklist.PlaceholderText = "Nombre..."
-    txtBlacklist.Text = "" 
+    
     txtBlacklist.TextSize = 13
     txtBlacklist.Font = Enum.Font.Gotham
     txtBlacklist.BackgroundColor3 = Color3.fromRGB(45, 35, 48)
@@ -517,7 +516,6 @@ if isAuthorized() then
  
 txt.Position = UDim2.new(0, 5, 0, yPos)
         txt.PlaceholderText = placeholder
-        txt.text = "" 
         txt.TextSize = 13
         txt.Font = Enum.Font.Gotham
         txt.BackgroundColor3 = Color3.fromRGB(45, 35, 48)
