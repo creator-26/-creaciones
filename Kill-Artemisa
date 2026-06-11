@@ -1,5 +1,5 @@
--- AUTO KILL SUPREMO – PANEL REORGANIZADO + BLACKLIST PERSISTENTE
--- Izquierda: Jugadores + Controles Blacklist | Derecha: Ajustes + Lista Negra
+-- AUTO KILL SUPREMO – ERROR CORREGIDO + BLACKLIST MÁS ARRIBA
+-- updateUI ahora definida al inicio para evitar nil
 
 local Players = game:GetService("Players")
 local UserInputService = game:GetService("UserInputService")
@@ -44,7 +44,6 @@ local State = {
     AccentColor = Color3.fromHex("#ff77aa")
 }
 
--- Guardar cambios automáticamente
 local function saveWhitelist()
     saveTableToFile("muscle_whitelist.txt", State.Whitelist)
 end
@@ -104,7 +103,6 @@ end
 
 local function getValidTargets()
     local targets = {}
-
     if State.AutoKillAll then
         for _, player in pairs(Players:GetPlayers()) do
             if player == LocalPlayer or isWhitelisted(player) then continue end
@@ -132,7 +130,7 @@ local function getValidTargets()
         end
     end
 
-    -- Prioridad a jugadores en blacklist (se añaden al final para no alterar orden)
+    -- Prioridad a blacklist
     if State.BlacklistAutoKill then
         for _, player in pairs(Players:GetPlayers()) do
             if player == LocalPlayer then continue end
@@ -148,7 +146,6 @@ local function getValidTargets()
             end
         end
     end
-
     return targets
 end
 
@@ -157,20 +154,16 @@ local function startAutoKill()
     if State.AttackConnection then
         State.AttackConnection:Disconnect()
     end
-
     State.AttackConnection = RunService.Heartbeat:Connect(function()
         local shouldAttack = State.AutoKillEnabled or (State.BlacklistAutoKill and #State.Blacklist > 0)
         if not shouldAttack or not LocalPlayer.Character then return end
-
         if tick() - State.AttackTick < 0.025 then return end
         State.AttackTick = tick()
-
         equipPunch()
         local myChar = LocalPlayer.Character
         local leftHand = myChar:FindFirstChild("LeftHand")
         local rightHand = myChar:FindFirstChild("RightHand")
         if not leftHand and not rightHand then return end
-
         local targets = getValidTargets()
         for _, target in ipairs(targets) do
             if target.Humanoid and target.Humanoid.Health > 0 then
@@ -241,7 +234,6 @@ if isAuthorized() then
     mainStroke.Thickness = 2
     mainStroke.Parent = mainFrame
 
-    -- Arrastre suave
     local dragging, dragInput, dragStart, startPos
     mainFrame.InputBegan:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
@@ -293,6 +285,32 @@ if isAuthorized() then
     btnClose.MouseLeave:Connect(function() btnClose.TextColor3 = Color3.fromRGB(220, 150, 170) end)
     btnClose.MouseButton1Click:Connect(function() mainFrame.Visible = false end)
 
+    -- ================== FUNCIÓN updateUI (DEFINIDA AL INICIO) ==================
+    local btnToggle, btnMode, txtTarget  -- se asignarán después
+
+    local function updateUI()
+        if not btnToggle then return end  -- seguridad si se llama antes de crearse
+        if State.AutoKillEnabled then
+            btnToggle.Text = "Auto Kill: Activo"
+            btnToggle.BackgroundColor3 = State.AccentColor
+            btnToggle.TextColor3 = Color3.new(0,0,0)
+        else
+            btnToggle.Text = "Auto Kill: Inactivo"
+            btnToggle.BackgroundColor3 = Color3.fromRGB(70, 50, 80)
+            btnToggle.TextColor3 = Color3.new(1,1,1)
+        end
+        if State.AutoKillAll then
+            btnMode.Text = "Modo: Todos"
+            btnMode.BackgroundColor3 = State.AccentColor
+            btnMode.TextColor3 = Color3.new(0,0,0)
+        else
+            btnMode.Text = "Modo: Individual"
+            btnMode.BackgroundColor3 = Color3.fromRGB(180, 130, 100)
+            btnMode.TextColor3 = Color3.new(1,1,1)
+        end
+        txtTarget.Text = State.TargetPlayerName
+    end
+
     -- ================== PANEL IZQUIERDO ==================
     local leftPanel = Instance.new("Frame")
     leftPanel.Size = UDim2.new(0, 240, 1, -45)
@@ -300,7 +318,7 @@ if isAuthorized() then
     leftPanel.BackgroundColor3 = Color3.fromRGB(32, 24, 36)
     leftPanel.Parent = mainFrame
 
-    -- Lista de jugadores (ocupa la mitad superior)
+    -- Lista de jugadores (45% superior)
     local playerListTitle = Instance.new("TextLabel")
     playerListTitle.Size = UDim2.new(1, -10, 0, 20)
     playerListTitle.Position = UDim2.new(0, 5, 0, 4)
@@ -312,7 +330,7 @@ if isAuthorized() then
     playerListTitle.Parent = leftPanel
 
     local playerList = Instance.new("ScrollingFrame")
-    playerList.Size = UDim2.new(1, -10, 0.5, -30)
+    playerList.Size = UDim2.new(1, -10, 0.45, -30)  -- antes era 0.5, ahora más pequeño
     playerList.Position = UDim2.new(0, 5, 0, 26)
     playerList.BackgroundTransparency = 1
     playerList.ScrollBarThickness = 4
@@ -382,7 +400,7 @@ if isAuthorized() then
                     if not isWhitelistedPlayer and not isBlacklistedPlayer then
                         State.TargetPlayerName = player.Name
                         State.AutoKillAll = false
-                        updateUI()
+                        updateUI()  -- ahora seguro, updateUI ya existe
                     end
                     State.SpectatingPlayer = player
                     updateSpectate()
@@ -398,10 +416,10 @@ if isAuthorized() then
         playerList.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
     end
 
-    -- Controles de Blacklist (mitad inferior del panel izquierdo)
+    -- Controles de Blacklist (empiezan en 48%, mucho más arriba)
     local blacklistControlsFrame = Instance.new("Frame")
-    blacklistControlsFrame.Size = UDim2.new(1, -10, 0.5, -10)
-    blacklistControlsFrame.Position = UDim2.new(0, 5, 0.5, 5)
+    blacklistControlsFrame.Size = UDim2.new(1, -10, 0.48, -10)  -- ocupa de 48% hasta abajo
+    blacklistControlsFrame.Position = UDim2.new(0, 5, 0.48, 5)  -- antes era 0.5
     blacklistControlsFrame.BackgroundColor3 = Color3.fromRGB(35, 25, 35)
     blacklistControlsFrame.Parent = leftPanel
     local blCtrlCorner = Instance.new("UICorner")
@@ -495,7 +513,8 @@ if isAuthorized() then
     local function createTextBox(parent, placeholder, yPos)
         local txt = Instance.new("TextBox")
         txt.Size = UDim2.new(1, -10, 0, 30)
-        txt.Position = UDim2.new(0, 5, 0, yPos)
+ 
+txt.Position = UDim2.new(0, 5, 0, yPos)
         txt.PlaceholderText = placeholder
         txt.TextSize = 13
         txt.Font = Enum.Font.Gotham
@@ -513,17 +532,17 @@ if isAuthorized() then
     end
 
     local cY = 0
-    local btnToggle = createButton(controlsFrame, "Auto Kill: Inactivo", cY, Color3.fromRGB(70, 50, 80))
+    btnToggle = createButton(controlsFrame, "Auto Kill: Inactivo", cY, Color3.fromRGB(70, 50, 80))  -- globales
     cY += 36
-    local btnMode = createButton(controlsFrame, "Modo: Todos", cY, State.AccentColor)
+    btnMode = createButton(controlsFrame, "Modo: Todos", cY, State.AccentColor)
     cY += 36
-    local txtTarget = createTextBox(controlsFrame, "🎯 Buscar jugador...", cY)
+    txtTarget = createTextBox(controlsFrame, "🎯 Buscar jugador...", cY)
     cY += 36
     local txtWhitelist = createTextBox(controlsFrame, "🛡️ Añadir Whitelist...", cY)
     cY += 36
     local btnRefresh = createButton(controlsFrame, "🔄 Actualizar lista", cY, Color3.fromRGB(70, 50, 80), 28)
 
-    -- Lista negra (solo nombres, en el panel derecho)
+    -- Lista negra (panel derecho)
     local blacklistFrame = Instance.new("Frame")
     blacklistFrame.Size = UDim2.new(1, 0, 1, -180)
     blacklistFrame.Position = UDim2.new(0, 0, 0, 180)
@@ -610,29 +629,7 @@ if isAuthorized() then
         blacklistScrolling.CanvasSize = UDim2.new(0, 0, 0, blListLayout.AbsoluteContentSize.Y)
     end
 
-    -- ================== FUNCIONES DE UI ==================
-    local function updateUI()
-        if State.AutoKillEnabled then
-            btnToggle.Text = "Auto Kill: Activo"
-            btnToggle.BackgroundColor3 = State.AccentColor
-            btnToggle.TextColor3 = Color3.new(0,0,0)
-        else
-            btnToggle.Text = "Auto Kill: Inactivo"
-            btnToggle.BackgroundColor3 = Color3.fromRGB(70, 50, 80)
-            btnToggle.TextColor3 = Color3.new(1,1,1)
-        end
-        if State.AutoKillAll then
-            btnMode.Text = "Modo: Todos"
-            btnMode.BackgroundColor3 = State.AccentColor
-            btnMode.TextColor3 = Color3.new(0,0,0)
-        else
-            btnMode.Text = "Modo: Individual"
-            btnMode.BackgroundColor3 = Color3.fromRGB(180, 130, 100)
-            btnMode.TextColor3 = Color3.new(1,1,1)
-        end
-        txtTarget.Text = State.TargetPlayerName
-    end
-
+    -- ================== CONEXIONES DE BOTONES ==================
     btnToggle.MouseButton1Click:Connect(function()
         State.AutoKillEnabled = not State.AutoKillEnabled
         updateUI()
@@ -696,7 +693,7 @@ if isAuthorized() then
         end
     end)
 
-    -- ================== BOTÓN FLOTANTE ==================
+    -- Botón flotante
     local floatBtn = Instance.new("TextButton")
     floatBtn.Size = UDim2.new(0, 45, 0, 45)
     floatBtn.Position = UDim2.new(0.95, -45, 0.05, 0)
@@ -720,7 +717,7 @@ if isAuthorized() then
         end
     end)
 
-    -- ================== DETECCIÓN DE ENTRADA ==================
+    -- Detección de entrada de jugadores
     Players.PlayerAdded:Connect(function(player)
         if isBlacklisted(player) and State.BlacklistAutoKill then
             task.wait(2)
@@ -737,7 +734,7 @@ if isAuthorized() then
         end
     end)
 
-    -- ================== ESQUINAS REDONDEADAS ==================
+    -- Esquinas redondeadas
     local function applyCorners(object, radius)
         local corner = Instance.new("UICorner")
         corner.CornerRadius = UDim.new(0, radius)
@@ -747,9 +744,10 @@ if isAuthorized() then
     applyCorners(titleFrame, 10)
     applyCorners(leftPanel, 8)
 
-    -- ================== INICIALIZACIÓN ==================
+    -- Inicialización
     updatePlayerList()
     updateBlacklistUI()
+    updateUI()  -- ahora actualiza los botones al iniciar
 
     task.spawn(function()
         while task.wait(10) do
@@ -759,7 +757,7 @@ if isAuthorized() then
         end
     end)
 
-    print("💖 === PANEL REORGANIZADO Y CORREGIDO CARGADO ===")
+    print("💖 === PANEL CORREGIDO Y REUBICADO CARGADO ===")
 else
     local alertGui = Instance.new("ScreenGui")
     alertGui.Name = "AccessDenied"
