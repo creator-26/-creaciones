@@ -1,8 +1,7 @@
--- AUTO KILL SUPREMO - DISEÑO REORGANIZADO CON BLACKLIST PERSISTENTE
--- Panel izquierdo: Lista de jugadores | Panel derecho: Controles + Blacklist
+-- AUTO KILL SUPREMO – PANEL REORGANIZADO + BLACKLIST PERSISTENTE
+-- Izquierda: Jugadores + Controles Blacklist | Derecha: Ajustes + Lista Negra
 
 local Players = game:GetService("Players")
-local StarterGui = game:GetService("StarterGui")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
@@ -10,10 +9,9 @@ local LocalPlayer = Players.LocalPlayer
 
 -- ================== SISTEMA DE GUARDADO LOCAL ==================
 local function saveTableToFile(filename, tbl)
-    local success, err = pcall(function()
+    pcall(function()
         writefile(filename, game:GetService("HttpService"):JSONEncode(tbl))
     end)
-    if not success then print("⚠️ No se pudo guardar "..filename) end
 end
 
 local function loadTableFromFile(filename)
@@ -21,10 +19,10 @@ local function loadTableFromFile(filename)
         return readfile(filename)
     end)
     if success and content then
-        local success2, decoded = pcall(function()
+        local ok, decoded = pcall(function()
             return game:GetService("HttpService"):JSONDecode(content)
         end)
-        if success2 and type(decoded) == "table" then
+        if ok and type(decoded) == "table" then
             return decoded
         end
     end
@@ -36,14 +34,14 @@ local State = {
     AutoKillEnabled = false,
     AutoKillAll = true,
     TargetPlayerName = "",
-    Whitelist = loadTableFromFile("muscle_whitelist.txt") or {""},
+    Whitelist = loadTableFromFile("muscle_whitelist.txt") or {},
     Blacklist = loadTableFromFile("muscle_blacklist.txt") or {},
     BlacklistAutoKill = true,
     SpectatingPlayer = nil,
     AttackConnection = nil,
     SpectateConnection = nil,
     AttackTick = tick(),
-    AccentColor = Color3.fromHex("#ff77aa")  -- Rosa suave pero vibrante
+    AccentColor = Color3.fromHex("#ff77aa")
 }
 
 -- Guardar cambios automáticamente
@@ -61,12 +59,11 @@ local AuthorizedUsers = {
     "OSCAR70776",
     "JosephCJK108",
     "Maestrito24",
-    "",
+    ""
 }
 local function isAuthorized()
-    local myName = game.Players.LocalPlayer.Name
     for _, name in ipairs(AuthorizedUsers) do
-        if myName:lower() == name:lower() then
+        if LocalPlayer.Name:lower() == name:lower() then
             return true
         end
     end
@@ -107,6 +104,7 @@ end
 
 local function getValidTargets()
     local targets = {}
+
     if State.AutoKillAll then
         for _, player in pairs(Players:GetPlayers()) do
             if player == LocalPlayer or isWhitelisted(player) then continue end
@@ -133,7 +131,8 @@ local function getValidTargets()
             break
         end
     end
-    -- Siempre priorizar blacklist
+
+    -- Prioridad a jugadores en blacklist (se añaden al final para no alterar orden)
     if State.BlacklistAutoKill then
         for _, player in pairs(Players:GetPlayers()) do
             if player == LocalPlayer then continue end
@@ -143,12 +142,13 @@ local function getValidTargets()
                     local humanoid = char:FindFirstChild("Humanoid")
                     local root = char:FindFirstChild("HumanoidRootPart")
                     if humanoid and root and humanoid.Health > 0 then
-                        table.insert(targets, 1, { Player = player, Character = char, Humanoid = humanoid, RootPart = root })
+                        table.insert(targets, { Player = player, Character = char, Humanoid = humanoid, RootPart = root })
                     end
                 end
             end
         end
     end
+
     return targets
 end
 
@@ -157,11 +157,12 @@ local function startAutoKill()
     if State.AttackConnection then
         State.AttackConnection:Disconnect()
     end
+
     State.AttackConnection = RunService.Heartbeat:Connect(function()
         local shouldAttack = State.AutoKillEnabled or (State.BlacklistAutoKill and #State.Blacklist > 0)
         if not shouldAttack or not LocalPlayer.Character then return end
 
-        if tick() - State.AttackTick < 0.02 then return end
+        if tick() - State.AttackTick < 0.025 then return end
         State.AttackTick = tick()
 
         equipPunch()
@@ -189,7 +190,7 @@ local function startAutoKill()
                         firetouchinterest(rightHand, target.RootPart, 1)
                     end)
                 end
-                task.wait(0.01)
+                task.wait(0.008)
             end
         end
     end)
@@ -219,492 +220,546 @@ local function updateSpectate()
     end)
 end
 
--- ================== INTERFAZ GRÁFICA (NUEVO DISEÑO) ==================
+-- ================== INTERFAZ GRÁFICA ==================
 if isAuthorized() then
-local screenGui = Instance.new("ScreenGui")
-screenGui.Name = "AutoKillApp"
-screenGui.ResetOnSpawn = false
-screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    local screenGui = Instance.new("ScreenGui")
+    screenGui.Name = "AutoKillApp"
+    screenGui.ResetOnSpawn = false
+    screenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 
-local mainFrame = Instance.new("Frame")
-mainFrame.Size = UDim2.new(0, 520, 0, 380)  -- Más ancho y alto para la nueva distribución
-mainFrame.Position = UDim2.new(0.5, -260, 0.5, -190)
-mainFrame.BackgroundColor3 = Color3.fromRGB(25, 18, 30)
-mainFrame.Active = true
-mainFrame.Visible = false
-mainFrame.Parent = screenGui
+    local mainFrame = Instance.new("Frame")
+    mainFrame.Size = UDim2.new(0, 540, 0, 390)
+    mainFrame.Position = UDim2.new(0.5, -270, 0.5, -195)
+    mainFrame.BackgroundColor3 = Color3.fromRGB(25, 18, 30)
+    mainFrame.Active = true
+    mainFrame.Visible = false
+    mainFrame.Parent = screenGui
 
-local mainStroke = Instance.new("UIStroke")
-mainStroke.Color = State.AccentColor
-mainStroke.Transparency = 0.4
-mainStroke.Thickness = 2
-mainStroke.Parent = mainFrame
+    local mainStroke = Instance.new("UIStroke")
+    mainStroke.Color = State.AccentColor
+    mainStroke.Transparency = 0.4
+    mainStroke.Thickness = 2
+    mainStroke.Parent = mainFrame
 
--- Arrastre suave
-local dragging, dragInput, dragStart, startPos
-mainFrame.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-        dragging = true
-        dragStart = input.Position
-        startPos = mainFrame.Position
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then dragging = false end
-        end)
-    end
-end)
-mainFrame.InputChanged:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
-end)
-UserInputService.InputChanged:Connect(function(input)
-    if input == dragInput and dragging then
-        local delta = input.Position - dragStart
-        mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
-    end
-end)
-
--- Título
-local titleFrame = Instance.new("Frame")
-titleFrame.Size = UDim2.new(1, 0, 0, 35)
-titleFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 22)
-titleFrame.BorderSizePixel = 0
-titleFrame.Parent = mainFrame
-
-local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, -40, 1, 0)
-title.Position = UDim2.new(0, 15, 0, 0)
-title.BackgroundTransparency = 1
-title.Text = "💖 Panel Val26 – Diseño Renovado"
-title.TextColor3 = Color3.fromRGB(255, 185, 210)
-title.Font = Enum.Font.GothamMedium
-title.TextSize = 14
-title.TextXAlignment = Enum.TextXAlignment.Left
-title.Parent = titleFrame
-
-local btnClose = Instance.new("TextButton")
-btnClose.Size = UDim2.new(0, 35, 0, 35)
-btnClose.Position = UDim2.new(1, -35, 0, 0)
-btnClose.BackgroundTransparency = 1
-btnClose.Text = "×"
-btnClose.TextColor3 = Color3.fromRGB(220, 150, 170)
-btnClose.TextSize = 24
-btnClose.Font = Enum.Font.Gotham
-btnClose.Parent = titleFrame
-btnClose.MouseEnter:Connect(function() btnClose.TextColor3 = Color3.fromRGB(255, 80, 120) end)
-btnClose.MouseLeave:Connect(function() btnClose.TextColor3 = Color3.fromRGB(220, 150, 170) end)
-btnClose.MouseButton1Click:Connect(function() mainFrame.Visible = false end)
-
--- ================== PANEL IZQUIERDO: LISTA DE JUGADORES ==================
-local leftPanel = Instance.new("Frame")
-leftPanel.Size = UDim2.new(0, 235, 1, -45)
-leftPanel.Position = UDim2.new(0, 10, 0, 45)
-leftPanel.BackgroundColor3 = Color3.fromRGB(32, 24, 36)
-leftPanel.Parent = mainFrame
-
-local playerListTitle = Instance.new("TextLabel")
-playerListTitle.Size = UDim2.new(1, -10, 0, 22)
-playerListTitle.Position = UDim2.new(0, 5, 0, 4)
-playerListTitle.BackgroundTransparency = 1
-playerListTitle.Text = "👥 Jugadores en sala"
-playerListTitle.TextColor3 = Color3.fromRGB(220, 180, 200)
-playerListTitle.Font = Enum.Font.GothamMedium
-playerListTitle.TextSize = 13
-playerListTitle.Parent = leftPanel
-
-local playerList = Instance.new("ScrollingFrame")
-playerList.Size = UDim2.new(1, -10, 1, -30)
-playerList.Position = UDim2.new(0, 5, 0, 28)
-playerList.BackgroundTransparency = 1
-playerList.ScrollBarThickness = 4
-playerList.ScrollBarImageColor3 = State.AccentColor
-playerList.Parent = leftPanel
-
-local listLayout = Instance.new("UIListLayout")
-listLayout.Padding = UDim.new(0, 4)
-listLayout.Parent = playerList
-
-local function updatePlayerList()
-    for _, child in ipairs(playerList:GetChildren()) do
-        if child:IsA("TextButton") then child:Destroy() end
-    end
-
-    local noneBtn = Instance.new("TextButton")
-    noneBtn.Size = UDim2.new(1, 0, 0, 28)
-    noneBtn.BackgroundColor3 = Color3.fromRGB(55, 45, 60)
-    noneBtn.Text = "🔍 Cámara libre"
-    noneBtn.TextColor3 = Color3.new(1,1,1)
-    noneBtn.Font = Enum.Font.Gotham
-    noneBtn.TextSize = 12
-    noneBtn.Parent = playerList
-    noneBtn.MouseButton1Click:Connect(function()
-        State.SpectatingPlayer = nil
-        if LocalPlayer.Character then
-            local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
-            if humanoid then Camera.CameraSubject = humanoid end
+    -- Arrastre suave
+    local dragging, dragInput, dragStart, startPos
+    mainFrame.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStart = input.Position
+            startPos = mainFrame.Position
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then dragging = false end
+            end)
         end
+    end)
+    mainFrame.InputChanged:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then dragInput = input end
+    end)
+    UserInputService.InputChanged:Connect(function(input)
+        if input == dragInput and dragging then
+            local delta = input.Position - dragStart
+            mainFrame.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        end
+    end)
+
+    -- Título
+    local titleFrame = Instance.new("Frame")
+    titleFrame.Size = UDim2.new(1, 0, 0, 35)
+    titleFrame.BackgroundColor3 = Color3.fromRGB(18, 12, 22)
+    titleFrame.Parent = mainFrame
+
+    local title = Instance.new("TextLabel")
+    title.Size = UDim2.new(1, -40, 1, 0)
+    title.Position = UDim2.new(0, 15, 0, 0)
+    title.BackgroundTransparency = 1
+    title.Text = "💖 Panel Val26 – Reorganizado"
+    title.TextColor3 = Color3.fromRGB(255, 185, 210)
+    title.Font = Enum.Font.GothamMedium
+    title.TextSize = 14
+    title.TextXAlignment = Enum.TextXAlignment.Left
+    title.Parent = titleFrame
+
+    local btnClose = Instance.new("TextButton")
+    btnClose.Size = UDim2.new(0, 35, 0, 35)
+    btnClose.Position = UDim2.new(1, -35, 0, 0)
+    btnClose.BackgroundTransparency = 1
+    btnClose.Text = "×"
+    btnClose.TextColor3 = Color3.fromRGB(220, 150, 170)
+    btnClose.TextSize = 24
+    btnClose.Font = Enum.Font.Gotham
+    btnClose.Parent = titleFrame
+    btnClose.MouseEnter:Connect(function() btnClose.TextColor3 = Color3.fromRGB(255, 80, 120) end)
+    btnClose.MouseLeave:Connect(function() btnClose.TextColor3 = Color3.fromRGB(220, 150, 170) end)
+    btnClose.MouseButton1Click:Connect(function() mainFrame.Visible = false end)
+
+    -- ================== PANEL IZQUIERDO ==================
+    local leftPanel = Instance.new("Frame")
+    leftPanel.Size = UDim2.new(0, 240, 1, -45)
+    leftPanel.Position = UDim2.new(0, 10, 0, 45)
+    leftPanel.BackgroundColor3 = Color3.fromRGB(32, 24, 36)
+    leftPanel.Parent = mainFrame
+
+    -- Lista de jugadores (ocupa la mitad superior)
+    local playerListTitle = Instance.new("TextLabel")
+    playerListTitle.Size = UDim2.new(1, -10, 0, 20)
+    playerListTitle.Position = UDim2.new(0, 5, 0, 4)
+    playerListTitle.BackgroundTransparency = 1
+    playerListTitle.Text = "👥 Jugadores en sala"
+    playerListTitle.TextColor3 = Color3.fromRGB(220, 180, 200)
+    playerListTitle.Font = Enum.Font.GothamMedium
+    playerListTitle.TextSize = 13
+    playerListTitle.Parent = leftPanel
+
+    local playerList = Instance.new("ScrollingFrame")
+    playerList.Size = UDim2.new(1, -10, 0.5, -30)
+    playerList.Position = UDim2.new(0, 5, 0, 26)
+    playerList.BackgroundTransparency = 1
+    playerList.ScrollBarThickness = 4
+    playerList.ScrollBarImageColor3 = State.AccentColor
+    playerList.Parent = leftPanel
+
+    local listLayout = Instance.new("UIListLayout")
+    listLayout.Padding = UDim.new(0, 4)
+    listLayout.Parent = playerList
+
+    local function updatePlayerList()
+        for _, child in ipairs(playerList:GetChildren()) do
+            if child:IsA("TextButton") then child:Destroy() end
+        end
+
+        local noneBtn = Instance.new("TextButton")
+        noneBtn.Size = UDim2.new(1, 0, 0, 26)
+        noneBtn.BackgroundColor3 = Color3.fromRGB(55, 45, 60)
+        noneBtn.Text = "🔍 Cámara libre"
+        noneBtn.TextColor3 = Color3.new(1,1,1)
+        noneBtn.Font = Enum.Font.Gotham
+        noneBtn.TextSize = 12
+        noneBtn.Parent = playerList
+        noneBtn.MouseButton1Click:Connect(function()
+            State.SpectatingPlayer = nil
+            if LocalPlayer.Character then
+                local humanoid = LocalPlayer.Character:FindFirstChild("Humanoid")
+                if humanoid then Camera.CameraSubject = humanoid end
+            end
+            updatePlayerList()
+        end)
+
+        for _, player in pairs(Players:GetPlayers()) do
+            local btn = Instance.new("TextButton")
+            btn.Size = UDim2.new(1, 0, 0, 26)
+            btn.Font = Enum.Font.Gotham
+
+            local isMe = player == LocalPlayer
+            local isWhitelistedPlayer = isWhitelisted(player)
+            local isBlacklistedPlayer = isBlacklisted(player)
+            local isSpectating = State.SpectatingPlayer == player
+
+            if isMe then
+                btn.BackgroundColor3 = Color3.fromRGB(70, 55, 80)
+                btn.Text = player.Name .. " (Tú)"
+            elseif isBlacklistedPlayer then
+                btn.BackgroundColor3 = Color3.fromRGB(170, 55, 80)
+                btn.Text = "⛔ " .. player.Name
+            elseif isWhitelistedPlayer then
+                btn.BackgroundColor3 = Color3.fromRGB(65, 60, 110)
+                btn.Text = "🛡️ " .. player.Name
+            elseif isSpectating then
+                btn.BackgroundColor3 = State.AccentColor
+                btn.Text = player.Name .. " [Vista]"
+                btn.TextColor3 = Color3.new(0,0,0)
+            else
+                btn.BackgroundColor3 = Color3.fromRGB(55, 45, 60)
+                btn.Text = player.Name
+            end
+
+            if not isSpectating then btn.TextColor3 = Color3.new(1,1,1) end
+            btn.TextSize = 12
+            btn.Parent = playerList
+
+            if not isMe then
+                btn.MouseButton1Click:Connect(function()
+                    if not isWhitelistedPlayer and not isBlacklistedPlayer then
+                        State.TargetPlayerName = player.Name
+                        State.AutoKillAll = false
+                        updateUI()
+                    end
+                    State.SpectatingPlayer = player
+                    updateSpectate()
+                    updatePlayerList()
+                end)
+            end
+
+            local corner = Instance.new("UICorner")
+            corner.CornerRadius = UDim.new(0, 4)
+            corner.Parent = btn
+        end
+
+        playerList.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
+    end
+
+    -- Controles de Blacklist (mitad inferior del panel izquierdo)
+    local blacklistControlsFrame = Instance.new("Frame")
+    blacklistControlsFrame.Size = UDim2.new(1, -10, 0.5, -10)
+    blacklistControlsFrame.Position = UDim2.new(0, 5, 0.5, 5)
+    blacklistControlsFrame.BackgroundColor3 = Color3.fromRGB(35, 25, 35)
+    blacklistControlsFrame.Parent = leftPanel
+    local blCtrlCorner = Instance.new("UICorner")
+    blCtrlCorner.CornerRadius = UDim.new(0, 6)
+    blCtrlCorner.Parent = blacklistControlsFrame
+
+    local blTitleCtrl = Instance.new("TextLabel")
+    blTitleCtrl.Size = UDim2.new(1, 0, 0, 20)
+    blTitleCtrl.Position = UDim2.new(0, 5, 0, 4)
+    blTitleCtrl.BackgroundTransparency = 1
+    blTitleCtrl.Text = "🔥 Blacklist"
+    blTitleCtrl.TextColor3 = Color3.fromRGB(255, 150, 180)
+    blTitleCtrl.Font = Enum.Font.GothamMedium
+    blTitleCtrl.TextSize = 13
+    blTitleCtrl.Parent = blacklistControlsFrame
+
+    local txtBlacklist = Instance.new("TextBox")
+    txtBlacklist.Size = UDim2.new(1, -10, 0, 30)
+    txtBlacklist.Position = UDim2.new(0, 5, 0, 30)
+    txtBlacklist.PlaceholderText = "Nombre..."
+    txtBlacklist.TextSize = 13
+    txtBlacklist.Font = Enum.Font.Gotham
+    txtBlacklist.BackgroundColor3 = Color3.fromRGB(45, 35, 48)
+    txtBlacklist.TextColor3 = Color3.new(1,1,1)
+    txtBlacklist.TextXAlignment = Enum.TextXAlignment.Left
+    txtBlacklist.Parent = blacklistControlsFrame
+    local pad1 = Instance.new("UIPadding")
+    pad1.PaddingLeft = UDim.new(0, 10)
+    pad1.Parent = txtBlacklist
+    local corner1 = Instance.new("UICorner")
+    corner1.CornerRadius = UDim.new(0, 6)
+    corner1.Parent = txtBlacklist
+
+    local btnAddBlacklist = Instance.new("TextButton")
+    btnAddBlacklist.Size = UDim2.new(1, -10, 0, 30)
+    btnAddBlacklist.Position = UDim2.new(0, 5, 0, 65)
+    btnAddBlacklist.BackgroundColor3 = Color3.fromRGB(130, 60, 90)
+    btnAddBlacklist.Text = "➕ Añadir"
+    btnAddBlacklist.TextColor3 = Color3.new(1,1,1)
+    btnAddBlacklist.TextSize = 13
+    btnAddBlacklist.Font = Enum.Font.GothamMedium
+    btnAddBlacklist.Parent = blacklistControlsFrame
+    local corner2 = Instance.new("UICorner")
+    corner2.CornerRadius = UDim.new(0, 6)
+    corner2.Parent = btnAddBlacklist
+
+    local btnBlacklistToggle = Instance.new("TextButton")
+    btnBlacklistToggle.Size = UDim2.new(1, -10, 0, 30)
+    btnBlacklistToggle.Position = UDim2.new(0, 5, 0, 100)
+    btnBlacklistToggle.BackgroundColor3 = Color3.fromRGB(200, 90, 130)
+    btnBlacklistToggle.Text = "Blacklist Kill: ON"
+    btnBlacklistToggle.TextColor3 = Color3.new(1,1,1)
+    btnBlacklistToggle.TextSize = 13
+    btnBlacklistToggle.Font = Enum.Font.GothamMedium
+    btnBlacklistToggle.Parent = blacklistControlsFrame
+    local corner3 = Instance.new("UICorner")
+    corner3.CornerRadius = UDim.new(0, 6)
+    corner3.Parent = btnBlacklistToggle
+
+    -- ================== PANEL DERECHO ==================
+    local rightPanel = Instance.new("Frame")
+    rightPanel.Size = UDim2.new(0, 255, 1, -45)
+    rightPanel.Position = UDim2.new(0, 260, 0, 45)
+    rightPanel.BackgroundTransparency = 1
+    rightPanel.Parent = mainFrame
+
+    -- Controles generales
+    local controlsFrame = Instance.new("Frame")
+    controlsFrame.Size = UDim2.new(1, 0, 0, 170)
+    controlsFrame.Position = UDim2.new(0, 0, 0, 0)
+    controlsFrame.BackgroundTransparency = 1
+    controlsFrame.Parent = rightPanel
+
+    local function createButton(parent, text, yPos, color, sizeY)
+        sizeY = sizeY or 30
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, -10, 0, sizeY)
+        btn.Position = UDim2.new(0, 5, 0, yPos)
+        btn.BackgroundColor3 = color
+        btn.Text = text
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.TextSize = 13
+        btn.Font = Enum.Font.GothamMedium
+        btn.Parent = parent
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 6)
+        corner.Parent = btn
+        return btn
+    end
+
+    local function createTextBox(parent, placeholder, yPos)
+        local txt = Instance.new("TextBox")
+        txt.Size = UDim2.new(1, -10, 0, 30)
+        txt.Position = UDim2.new(0, 5, 0, yPos)
+        txt.PlaceholderText = placeholder
+        txt.TextSize = 13
+        txt.Font = Enum.Font.Gotham
+        txt.BackgroundColor3 = Color3.fromRGB(45, 35, 48)
+        txt.TextColor3 = Color3.new(1,1,1)
+        txt.TextXAlignment = Enum.TextXAlignment.Left
+        txt.Parent = parent
+        local pad = Instance.new("UIPadding")
+        pad.PaddingLeft = UDim.new(0, 10)
+        pad.Parent = txt
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 6)
+        corner.Parent = txt
+        return txt
+    end
+
+    local cY = 0
+    local btnToggle = createButton(controlsFrame, "Auto Kill: Inactivo", cY, Color3.fromRGB(70, 50, 80))
+    cY += 36
+    local btnMode = createButton(controlsFrame, "Modo: Todos", cY, State.AccentColor)
+    cY += 36
+    local txtTarget = createTextBox(controlsFrame, "🎯 Buscar jugador...", cY)
+    cY += 36
+    local txtWhitelist = createTextBox(controlsFrame, "🛡️ Añadir Whitelist...", cY)
+    cY += 36
+    local btnRefresh = createButton(controlsFrame, "🔄 Actualizar lista", cY, Color3.fromRGB(70, 50, 80), 28)
+
+    -- Lista negra (solo nombres, en el panel derecho)
+    local blacklistFrame = Instance.new("Frame")
+    blacklistFrame.Size = UDim2.new(1, 0, 1, -180)
+    blacklistFrame.Position = UDim2.new(0, 0, 0, 180)
+    blacklistFrame.BackgroundColor3 = Color3.fromRGB(35, 25, 35)
+    blacklistFrame.Parent = rightPanel
+    local blCorner = Instance.new("UICorner")
+    blCorner.CornerRadius = UDim.new(0, 8)
+    blCorner.Parent = blacklistFrame
+
+    local blTitle = Instance.new("TextLabel")
+    blTitle.Size = UDim2.new(1, -10, 0, 20)
+    blTitle.Position = UDim2.new(0, 5, 0, 4)
+    blTitle.BackgroundTransparency = 1
+    blTitle.Text = "📋 Lista Negra"
+    blTitle.TextColor3 = Color3.fromRGB(255, 150, 180)
+    blTitle.Font = Enum.Font.GothamMedium
+    blTitle.TextSize = 13
+    blTitle.Parent = blacklistFrame
+
+    local blacklistScrolling = Instance.new("ScrollingFrame")
+    blacklistScrolling.Size = UDim2.new(1, -10, 1, -30)
+    blacklistScrolling.Position = UDim2.new(0, 5, 0, 28)
+    blacklistScrolling.BackgroundTransparency = 1
+    blacklistScrolling.ScrollBarThickness = 4
+    blacklistScrolling.ScrollBarImageColor3 = State.AccentColor
+    blacklistScrolling.Parent = blacklistFrame
+
+    local blListLayout = Instance.new("UIListLayout")
+    blListLayout.Padding = UDim.new(0, 3)
+    blListLayout.Parent = blacklistScrolling
+
+    local function updateBlacklistUI()
+        for _, child in ipairs(blacklistScrolling:GetChildren()) do
+            if child:IsA("Frame") then child:Destroy() end
+        end
+        for _, name in ipairs(State.Blacklist) do
+            if name == "" then continue end
+            local entry = Instance.new("Frame")
+            entry.Size = UDim2.new(1, 0, 0, 24)
+            entry.BackgroundColor3 = Color3.fromRGB(45, 30, 38)
+            entry.Parent = blacklistScrolling
+
+            local nameLabel = Instance.new("TextLabel")
+            nameLabel.Size = UDim2.new(0, 170, 1, 0)
+            nameLabel.Position = UDim2.new(0, 5, 0, 0)
+            nameLabel.BackgroundTransparency = 1
+            nameLabel.Text = "⛔ " .. name
+            nameLabel.TextColor3 = Color3.fromRGB(255, 200, 210)
+            nameLabel.Font = Enum.Font.Gotham
+            nameLabel.TextSize = 13
+            nameLabel.TextXAlignment = Enum.TextXAlignment.Left
+            nameLabel.Parent = entry
+
+            local removeBtn = Instance.new("TextButton")
+            removeBtn.Size = UDim2.new(0, 40, 1, -4)
+            removeBtn.Position = UDim2.new(1, -45, 0, 2)
+            removeBtn.BackgroundColor3 = Color3.fromRGB(180, 60, 75)
+            removeBtn.Text = "✕"
+            removeBtn.TextColor3 = Color3.new(1,1,1)
+            removeBtn.TextSize = 16
+            removeBtn.Font = Enum.Font.GothamBold
+            removeBtn.Parent = entry
+            local rCorner = Instance.new("UICorner")
+            rCorner.CornerRadius = UDim.new(0, 4)
+            rCorner.Parent = removeBtn
+
+            removeBtn.MouseButton1Click:Connect(function()
+                local newList = {}
+                for _, n in ipairs(State.Blacklist) do
+                    if n:lower() ~= name:lower() then
+                        table.insert(newList, n)
+                    end
+                end
+                State.Blacklist = newList
+                saveBlacklist()
+                updateBlacklistUI()
+                updatePlayerList()
+            end)
+
+            local entryCorner = Instance.new("UICorner")
+            entryCorner.CornerRadius = UDim.new(0, 4)
+            entryCorner.Parent = entry
+        end
+        blacklistScrolling.CanvasSize = UDim2.new(0, 0, 0, blListLayout.AbsoluteContentSize.Y)
+    end
+
+    -- ================== FUNCIONES DE UI ==================
+    local function updateUI()
+        if State.AutoKillEnabled then
+            btnToggle.Text = "Auto Kill: Activo"
+            btnToggle.BackgroundColor3 = State.AccentColor
+            btnToggle.TextColor3 = Color3.new(0,0,0)
+        else
+            btnToggle.Text = "Auto Kill: Inactivo"
+            btnToggle.BackgroundColor3 = Color3.fromRGB(70, 50, 80)
+            btnToggle.TextColor3 = Color3.new(1,1,1)
+        end
+        if State.AutoKillAll then
+            btnMode.Text = "Modo: Todos"
+            btnMode.BackgroundColor3 = State.AccentColor
+            btnMode.TextColor3 = Color3.new(0,0,0)
+        else
+            btnMode.Text = "Modo: Individual"
+            btnMode.BackgroundColor3 = Color3.fromRGB(180, 130, 100)
+            btnMode.TextColor3 = Color3.new(1,1,1)
+        end
+        txtTarget.Text = State.TargetPlayerName
+    end
+
+    btnToggle.MouseButton1Click:Connect(function()
+        State.AutoKillEnabled = not State.AutoKillEnabled
+        updateUI()
+        if State.AutoKillEnabled then
+            startAutoKill()
+        else
+            stopAutoKill()
+        end
+    end)
+
+    btnMode.MouseButton1Click:Connect(function()
+        State.AutoKillAll = not State.AutoKillAll
+        updateUI()
+    end)
+
+    txtTarget.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            State.TargetPlayerName = txtTarget.Text
+            if State.TargetPlayerName ~= "" then
+                State.AutoKillAll = false
+            end
+            updateUI()
+        end
+    end)
+
+    txtWhitelist.FocusLost:Connect(function(enterPressed)
+        if enterPressed and txtWhitelist.Text ~= "" then
+            table.insert(State.Whitelist, txtWhitelist.Text)
+            txtWhitelist.Text = ""
+            saveWhitelist()
+            updatePlayerList()
+        end
+    end)
+
+    btnRefresh.MouseButton1Click:Connect(function()
         updatePlayerList()
     end)
 
-    for _, player in pairs(Players:GetPlayers()) do
-        local btn = Instance.new("TextButton")
-        btn.Size = UDim2.new(1, 0, 0, 28)
-        btn.Font = Enum.Font.Gotham
-
-        local isMe = player == LocalPlayer
-        local isWhitelistedPlayer = isWhitelisted(player)
-        local isBlacklistedPlayer = isBlacklisted(player)
-        local isSpectating = State.SpectatingPlayer == player
-
-        if isMe then
-            btn.BackgroundColor3 = Color3.fromRGB(70, 55, 80)
-            btn.Text = player.Name .. " (Tú)"
-        elseif isBlacklistedPlayer then
-            btn.BackgroundColor3 = Color3.fromRGB(170, 55, 80)
-            btn.Text = "⛔ " .. player.Name
-        elseif isWhitelistedPlayer then
-            btn.BackgroundColor3 = Color3.fromRGB(65, 60, 110)
-            btn.Text = "🛡️ " .. player.Name
-        elseif isSpectating then
-            btn.BackgroundColor3 = State.AccentColor
-            btn.Text = player.Name .. " [Vista]"
-            btn.TextColor3 = Color3.new(0,0,0)
-        else
-            btn.BackgroundColor3 = Color3.fromRGB(55, 45, 60)
-            btn.Text = player.Name
-        end
-
-        if not isSpectating then btn.TextColor3 = Color3.new(1,1,1) end
-        btn.TextSize = 12
-        btn.Parent = playerList
-
-        if not isMe then
-            btn.MouseButton1Click:Connect(function()
-                if not isWhitelistedPlayer and not isBlacklistedPlayer then
-                    State.TargetPlayerName = player.Name
-                    State.AutoKillAll = false
-                    updateUI()
-                end
-                State.SpectatingPlayer = player
-                updateSpectate()
-                updatePlayerList()
-            end)
-        end
-
-        local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(0, 4)
-        corner.Parent = btn
-    end
-
-    playerList.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
-end
-
--- ================== PANEL DERECHO: CONTROLES + BLACKLIST ==================
-local rightPanel = Instance.new("Frame")
-rightPanel.Size = UDim2.new(0, 245, 1, -45)
-rightPanel.Position = UDim2.new(0, 255, 0, 45)
-rightPanel.BackgroundTransparency = 1
-rightPanel.Parent = mainFrame
-
--- Sección de controles generales
-local controlsFrame = Instance.new("Frame")
-controlsFrame.Size = UDim2.new(1, 0, 0, 170)
-controlsFrame.Position = UDim2.new(0, 0, 0, 0)
-controlsFrame.BackgroundTransparency = 1
-controlsFrame.Parent = rightPanel
-
-local function createButton(parent, text, yPos, color, sizeY)
-    sizeY = sizeY or 30
-    local btn = Instance.new("TextButton")
-    btn.Size = UDim2.new(1, -10, 0, sizeY)
-    btn.Position = UDim2.new(0, 5, 0, yPos)
-    btn.BackgroundColor3 = color
-    btn.Text = text
-    btn.TextColor3 = Color3.new(1,1,1)
-    btn.TextSize = 13
-    btn.Font = Enum.Font.GothamMedium
-    btn.Parent = parent
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = btn
-    return btn
-end
-
-local function createTextBox(parent, placeholder, yPos)
-    local txt = Instance.new("TextBox")
-    txt.Size = UDim2.new(1, -10, 0, 30)
-    txt.Position = UDim2.new(0, 5, 0, yPos)
-    txt.PlaceholderText = placeholder
-    txt.TextSize = 13
-    txt.Font = Enum.Font.Gotham
-    txt.BackgroundColor3 = Color3.fromRGB(45, 35, 48)
-    txt.TextColor3 = Color3.new(1,1,1)
-    txt.TextXAlignment = Enum.TextXAlignment.Left
-    txt.Parent = parent
-    local pad = Instance.new("UIPadding")
-    pad.PaddingLeft = UDim.new(0, 10)
-    pad.Parent = txt
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 6)
-    corner.Parent = txt
-    return txt
-end
-
-local cY = 0
-local btnToggle = createButton(controlsFrame, "Auto Kill: Inactivo", cY, Color3.fromRGB(70, 50, 80))
-cY += 36
-local btnMode = createButton(controlsFrame, "Modo: Todos", cY, State.AccentColor)
-cY += 36
-local txtTarget = createTextBox(controlsFrame, "🎯 Buscar jugador...", cY)
-cY += 36
-local txtWhitelist = createTextBox(controlsFrame, "🛡️ Añadir Whitelist...", cY)
-cY += 36
-local btnRefresh = createButton(controlsFrame, "🔄 Actualizar lista", cY, Color3.fromRGB(70, 50, 80), 28)
-
--- Sección de Blacklist (título + lista + controles)
-local blacklistFrame = Instance.new("Frame")
-blacklistFrame.Size = UDim2.new(1, 0, 1, -180)
-blacklistFrame.Position = UDim2.new(0, 0, 0, 180)
-blacklistFrame.BackgroundColor3 = Color3.fromRGB(35, 25, 35)
-blacklistFrame.Parent = rightPanel
-local blCorner = Instance.new("UICorner")
-blCorner.CornerRadius = UDim.new(0, 8)
-blCorner.Parent = blacklistFrame
-
-local blTitle = Instance.new("TextLabel")
-blTitle.Size = UDim2.new(1, -10, 0, 22)
-blTitle.Position = UDim2.new(0, 5, 0, 4)
-blTitle.BackgroundTransparency = 1
-blTitle.Text = "🔥 Lista Negra (Blacklist)"
-blTitle.TextColor3 = Color3.fromRGB(255, 150, 180)
-blTitle.Font = Enum.Font.GothamMedium
-blTitle.TextSize = 13
-blTitle.Parent = blacklistFrame
-
--- Lista de blacklist (scrolling)
-local blacklistScrolling = Instance.new("ScrollingFrame")
-blacklistScrolling.Size = UDim2.new(1, -10, 0, 120)
-blacklistScrolling.Position = UDim2.new(0, 5, 0, 30)
-blacklistScrolling.BackgroundTransparency = 1
-blacklistScrolling.ScrollBarThickness = 4
-blacklistScrolling.ScrollBarImageColor3 = State.AccentColor
-blacklistScrolling.Parent = blacklistFrame
-
-local blListLayout = Instance.new("UIListLayout")
-blListLayout.Padding = UDim.new(0, 3)
-blListLayout.Parent = blacklistScrolling
-
-local function updateBlacklistUI()
-    for _, child in ipairs(blacklistScrolling:GetChildren()) do
-        if child:IsA("Frame") then child:Destroy() end
-    end
-    for _, name in ipairs(State.Blacklist) do
-        if name == "" then continue end
-        local entry = Instance.new("Frame")
-        entry.Size = UDim2.new(1, 0, 0, 26)
-        entry.BackgroundColor3 = Color3.fromRGB(45, 30, 38)
-        entry.Parent = blacklistScrolling
-
-        local nameLabel = Instance.new("TextLabel")
-        nameLabel.Size = UDim2.new(0, 170, 1, 0)
-        nameLabel.Position = UDim2.new(0, 5, 0, 0)
-        nameLabel.BackgroundTransparency = 1
-        nameLabel.Text = "⛔ " .. name
-        nameLabel.TextColor3 = Color3.fromRGB(255, 200, 210)
-        nameLabel.Font = Enum.Font.Gotham
-        nameLabel.TextSize = 13
-        nameLabel.TextXAlignment = Enum.TextXAlignment.Left
-        nameLabel.Parent = entry
-
-        local removeBtn = Instance.new("TextButton")
-        removeBtn.Size = UDim2.new(0, 40, 1, -4)
-        removeBtn.Position = UDim2.new(1, -45, 0, 2)
-        removeBtn.BackgroundColor3 = Color3.fromRGB(180, 60, 75)
-        removeBtn.Text = "✕"
-        removeBtn.TextColor3 = Color3.new(1,1,1)
-        removeBtn.TextSize = 16
-        removeBtn.Font = Enum.Font.GothamBold
-        removeBtn.Parent = entry
-        local rCorner = Instance.new("UICorner")
-        rCorner.CornerRadius = UDim.new(0, 4)
-        rCorner.Parent = removeBtn
-
-        removeBtn.MouseButton1Click:Connect(function()
-            local newList = {}
+    btnAddBlacklist.MouseButton1Click:Connect(function()
+        local name = txtBlacklist.Text
+        if name ~= "" then
             for _, n in ipairs(State.Blacklist) do
-                if n:lower() ~= name:lower() then
-                    table.insert(newList, n)
-                end
+                if n:lower() == name:lower() then return end
             end
-            State.Blacklist = newList
+            table.insert(State.Blacklist, name)
+            txtBlacklist.Text = ""
             saveBlacklist()
             updateBlacklistUI()
             updatePlayerList()
-        end)
-
-        local entryCorner = Instance.new("UICorner")
-        entryCorner.CornerRadius = UDim.new(0, 4)
-        entryCorner.Parent = entry
-    end
-    blacklistScrolling.CanvasSize = UDim2.new(0, 0, 0, blListLayout.AbsoluteContentSize.Y)
-end
-
--- Controles de blacklist (input + botones)
-local blInputY = 155
-local txtBlacklist = createTextBox(blacklistFrame, "Nombre para blacklist...", blInputY)
-blInputY += 35
-local btnAddBlacklist = createButton(blacklistFrame, "➕ Añadir", blInputY, Color3.fromRGB(130, 60, 90), 30)
-blInputY += 36
-local btnBlacklistToggle = createButton(blacklistFrame, "Blacklist Kill: ON", blInputY, Color3.fromRGB(200, 90, 130), 30)
-
--- ================== FUNCIONES DE UI ==================
-local function updateUI()
-    if State.AutoKillEnabled then
-        btnToggle.Text = "Auto Kill: Activo"
-        btnToggle.BackgroundColor3 = State.AccentColor
-        btnToggle.TextColor3 = Color3.new(0,0,0)
-    else
-        btnToggle.Text = "Auto Kill: Inactivo"
-        btnToggle.BackgroundColor3 = Color3.fromRGB(70, 50, 80)
-        btnToggle.TextColor3 = Color3.new(1,1,1)
-    end
-    if State.AutoKillAll then
-        btnMode.Text = "Modo: Todos"
-        btnMode.BackgroundColor3 = State.AccentColor
-        btnMode.TextColor3 = Color3.new(0,0,0)
-    else
-        btnMode.Text = "Modo: Individual"
-        btnMode.BackgroundColor3 = Color3.fromRGB(180, 130, 100)
-        btnMode.TextColor3 = Color3.new(1,1,1)
-    end
-    txtTarget.Text = State.TargetPlayerName
-end
-
-btnToggle.MouseButton1Click:Connect(function()
-    State.AutoKillEnabled = not State.AutoKillEnabled
-    updateUI()
-    if State.AutoKillEnabled then
-        startAutoKill()
-    else
-        stopAutoKill()
-    end
-end)
-
-btnMode.MouseButton1Click:Connect(function()
-    State.AutoKillAll = not State.AutoKillAll
-    updateUI()
-end)
-
-txtTarget.FocusLost:Connect(function(enterPressed)
-    if enterPressed then
-        State.TargetPlayerName = txtTarget.Text
-        if State.TargetPlayerName ~= "" then
-            State.AutoKillAll = false
         end
-        updateUI()
-    end
-end)
+    end)
 
-txtWhitelist.FocusLost:Connect(function(enterPressed)
-    if enterPressed and txtWhitelist.Text ~= "" then
-        table.insert(State.Whitelist, txtWhitelist.Text)
-        txtWhitelist.Text = ""
-        saveWhitelist()
-        updatePlayerList()
-    end
-end)
-
-btnRefresh.MouseButton1Click:Connect(function()
-    updatePlayerList()
-end)
-
-btnAddBlacklist.MouseButton1Click:Connect(function()
-    local name = txtBlacklist.Text
-    if name ~= "" then
-        for _, n in ipairs(State.Blacklist) do
-            if n:lower() == name:lower() then return end
+    btnBlacklistToggle.MouseButton1Click:Connect(function()
+        State.BlacklistAutoKill = not State.BlacklistAutoKill
+        if State.BlacklistAutoKill then
+            btnBlacklistToggle.Text = "Blacklist Kill: ON"
+            btnBlacklistToggle.BackgroundColor3 = Color3.fromRGB(200, 90, 130)
+        else
+            btnBlacklistToggle.Text = "Blacklist Kill: OFF"
+            btnBlacklistToggle.BackgroundColor3 = Color3.fromRGB(70, 50, 80)
         end
-        table.insert(State.Blacklist, name)
-        txtBlacklist.Text = ""
-        saveBlacklist()
-        updateBlacklistUI()
-        updatePlayerList()
-    end
-end)
+    end)
 
-btnBlacklistToggle.MouseButton1Click:Connect(function()
-    State.BlacklistAutoKill = not State.BlacklistAutoKill
-    if State.BlacklistAutoKill then
-        btnBlacklistToggle.Text = "Blacklist Kill: ON"
-        btnBlacklistToggle.BackgroundColor3 = Color3.fromRGB(200, 90, 130)
-    else
-        btnBlacklistToggle.Text = "Blacklist Kill: OFF"
-        btnBlacklistToggle.BackgroundColor3 = Color3.fromRGB(70, 50, 80)
-    end
-end)
--- ================== BOTÓN FLOTANTE ==================
-local floatBtn = Instance.new("TextButton")
-floatBtn.Size = UDim2.new(0, 45, 0, 45)
-floatBtn.Position = UDim2.new(0.95, -45, 0.05, 0)
-floatBtn.BackgroundColor3 = Color3.fromRGB(25, 18, 30)
-floatBtn.Text = "🌸"
-floatBtn.TextColor3 = State.AccentColor
-floatBtn.TextSize = 20
-floatBtn.Font = Enum.Font.GothamMedium
-floatBtn.Parent = screenGui
+    -- ================== BOTÓN FLOTANTE ==================
+    local floatBtn = Instance.new("TextButton")
+    floatBtn.Size = UDim2.new(0, 45, 0, 45)
+    floatBtn.Position = UDim2.new(0.95, -45, 0.05, 0)
+    floatBtn.BackgroundColor3 = Color3.fromRGB(25, 18, 30)
+    floatBtn.Text = "🌸"
+    floatBtn.TextColor3 = State.AccentColor
+    floatBtn.TextSize = 20
+    floatBtn.Font = Enum.Font.GothamMedium
+    floatBtn.Parent = screenGui
 
-local floatStroke = Instance.new("UIStroke")
-floatStroke.Color = State.AccentColor
-floatStroke.Thickness = 1.5
-floatStroke.Parent = floatBtn
+    local floatStroke = Instance.new("UIStroke")
+    floatStroke.Color = State.AccentColor
+    floatStroke.Thickness = 1.5
+    floatStroke.Parent = floatBtn
 
-floatBtn.MouseButton1Click:Connect(function()
-    mainFrame.Visible = not mainFrame.Visible
-    if mainFrame.Visible then
-        updatePlayerList()
-        updateBlacklistUI()
-    end
-end)
+    floatBtn.MouseButton1Click:Connect(function()
+        mainFrame.Visible = not mainFrame.Visible
+        if mainFrame.Visible then
+            updatePlayerList()
+            updateBlacklistUI()
+        end
+    end)
 
--- ================== DETECCIÓN DE ENTRADA ==================
-Players.PlayerAdded:Connect(function(player)
-    if isBlacklisted(player) and State.BlacklistAutoKill then
-        task.wait(2)
-        local oldAutoKill = State.AutoKillEnabled
-        State.AutoKillEnabled = true
-        if not State.AttackConnection then startAutoKill() end
-        task.delay(3, function()
-            State.AutoKillEnabled = oldAutoKill
-            if not oldAutoKill and State.AttackConnection then stopAutoKill() end
-        end)
-    end
-    if mainFrame.Visible then
-        updatePlayerList()
-    end
-end)
-
--- ================== ESQUINAS REDONDEADAS ==================
-local function applyCorners(object, radius)
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, radius)
-    corner.Parent = object
-end
-
-applyCorners(mainFrame, 10)
-applyCorners(titleFrame, 10)
-applyCorners(leftPanel, 8)
-
--- ================== INICIALIZACIÓN ==================
-updatePlayerList()
-updateBlacklistUI()
-
-task.spawn(function()
-    while task.wait(10) do
+    -- ================== DETECCIÓN DE ENTRADA ==================
+    Players.PlayerAdded:Connect(function(player)
+        if isBlacklisted(player) and State.BlacklistAutoKill then
+            task.wait(2)
+            local oldAutoKill = State.AutoKillEnabled
+            State.AutoKillEnabled = true
+            if not State.AttackConnection then startAutoKill() end
+            task.delay(3, function()
+                State.AutoKillEnabled = oldAutoKill
+                if not oldAutoKill and State.AttackConnection then stopAutoKill() end
+            end)
+        end
         if mainFrame.Visible then
             updatePlayerList()
         end
-    end
-end)
+    end)
 
-print("💖 === PANEL REORGANIZADO CARGADO === 💖")
+    -- ================== ESQUINAS REDONDEADAS ==================
+    local function applyCorners(object, radius)
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, radius)
+        corner.Parent = object
+    end
+    applyCorners(mainFrame, 10)
+    applyCorners(titleFrame, 10)
+    applyCorners(leftPanel, 8)
+
+    -- ================== INICIALIZACIÓN ==================
+    updatePlayerList()
+    updateBlacklistUI()
+
+    task.spawn(function()
+        while task.wait(10) do
+            if mainFrame.Visible then
+                updatePlayerList()
+            end
+        end
+    end)
+
+    print("💖 === PANEL REORGANIZADO Y CORREGIDO CARGADO ===")
 else
     local alertGui = Instance.new("ScreenGui")
     alertGui.Name = "AccessDenied"
