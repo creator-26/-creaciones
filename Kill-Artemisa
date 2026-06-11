@@ -54,9 +54,9 @@ end
 local AuthorizedUsers = {
     "phol_268t",
     "alexander_346g",
-    "",
-    "",
-    "",
+    "Juakolilu",
+    "Oulordyao",
+    "Hannahz458",
     "",
 }
 local function isAuthorized()
