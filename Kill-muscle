@@ -146,6 +146,41 @@ local function getValidTargets()
 end
 
  
+-- ================== SISTEMA DE BLACKLIST INDEPENDIENTE ==================
+local BlacklistConnection = nil
+
+local function startBlacklistKill()
+    if BlacklistConnection then BlacklistConnection:Disconnect() end
+    
+    BlacklistConnection = RunService.Heartbeat:Connect(function()
+        if not LocalPlayer.Character then return end
+        
+        -- Buscamos solo a los de la lista negra
+        for _, player in pairs(Players:GetPlayers()) do
+            if player ~= LocalPlayer and isBlacklisted(player) then
+                local char = player.Character
+                if char and char:FindFirstChild("HumanoidRootPart") and char.Humanoid.Health > 0 then
+                    -- Ejecutamos el ataque específico para ellos
+                    equipPunch()
+                    pcall(function()
+                        LocalPlayer.muscleEvent:FireServer("punch", "leftHand")
+                        LocalPlayer.muscleEvent:FireServer("punch", "rightHand")
+                        
+                        local myChar = LocalPlayer.Character
+                        if myChar:FindFirstChild("LeftHand") then
+                            firetouchinterest(myChar.LeftHand, char.HumanoidRootPart, 0)
+                            firetouchinterest(myChar.LeftHand, char.HumanoidRootPart, 1)
+                        end
+                        if myChar:FindFirstChild("RightHand") then
+                            firetouchinterest(myChar.RightHand, char.HumanoidRootPart, 0)
+                            firetouchinterest(myChar.RightHand, char.HumanoidRootPart, 1)
+                        end
+                    end)
+                end
+            end
+        end
+    end)
+end
 
 -- ================== SISTEMA DE AUTO KILL OPTIMIZADO ==================
 local function startAutoKill()
@@ -606,6 +641,7 @@ end
 -- ================== INICIALIZACIÓN ==================
 updatePlayerList()
 updateBlacklistVisual()
+startBlacklistKill()
 
 task.spawn(function()
     while task.wait(10) do
