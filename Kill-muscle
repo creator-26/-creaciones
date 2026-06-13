@@ -36,6 +36,8 @@ local AuthorizedUsers = {
     "venezuela_bugs",
     "kkz_dani",
     "Peque1760",
+    "BDRL_1",
+    "BDRL_2",
     -- Puedes añadir más usuarios separados por coma
 }
 local function isAuthorized()
