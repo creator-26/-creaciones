@@ -2,12 +2,13 @@
 -- Hub horizontal 500x320 | Lista derecha | Funciones 100% funcionales y seguras
 
 local Players = game:GetService("Players")
+local HttpService = game:GetService("HttpService")
 local StarterGui = game:GetService("StarterGui")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
-local HttpService = game:GetService("HttpService")
+
 
 
 -- ================== VARIABLES DE ESTADO LOCALES ==================
