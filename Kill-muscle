@@ -105,11 +105,10 @@ end
 
 local function getValidTargets()
     local targets = {}
-    local targetAdded = {} -- Tabla auxiliar para evitar añadir al mismo jugador dos veces
+    local targetAdded = {}
 
-    -- Función interna para añadir objetivos de forma segura sin duplicados
     local function addTarget(player)
-        if targetAdded[player] then return end -- Si ya está en la lista de ataque, lo ignora
+        if targetAdded[player] then return end
         local char = player.Character
         if char then
             local humanoid = char:FindFirstChild("Humanoid")
@@ -121,29 +120,15 @@ local function getValidTargets()
         end
     end
 
--- REGLA AUTOMÁTICA: Si el jugador está en la Blacklist
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer then
-            if isBlacklisted(player) then
-                print("¡Blacklist detectada! Intentando atacar a: " .. player.Name) -- <--- AÑADE ESTO
-                addTarget(player)
-            else
-                -- Esto te ayudará a ver qué nombres está leyendo el script
-                -- print("Jugador revisado: " .. player.Name) 
-            end
-        end
-    end
-     ====================================================================
-    -- REGLA AUTOMÁTICA: Si el jugador está en la Blacklist, lo atacamos SIEMPRE
-    -- ====================================================================
+    -- 1. REGLA ÚNICA Y CORRECTA PARA BLACKLIST
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer and isBlacklisted(player) then
+            print("¡Blacklist detectada! Atacando a: " .. player.Name)
             addTarget(player)
         end
     end
-       ====================================================================
-    -- REGLA DE MODOS: Lógica normal del Hub (Todos o Individual)
-    -- ====================================================================
+
+    -- 2. REGLA DE MODOS (TODOS O INDIVIDUAL)
     if State.AutoKillAll then
         for _, player in pairs(Players:GetPlayers()) do
             if player == LocalPlayer or isWhitelisted(player) then continue end
@@ -159,6 +144,7 @@ local function getValidTargets()
 
     return targets
 end
+
  
 
 -- ================== SISTEMA DE AUTO KILL OPTIMIZADO ==================
