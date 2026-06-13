@@ -121,16 +121,7 @@ local function getValidTargets()
         end
     end
 
-     ====================================================================
-    -- REGLA AUTOMÁTICA: Si el jugador está en la Blacklist, lo atacamos SIEMPRE
-    -- ====================================================================
-    for _, player in pairs(Players:GetPlayers()) do
-        if player ~= LocalPlayer and isBlacklisted(player) then
-            addTarget(player)
-        end
-    end
-
-        -- REGLA AUTOMÁTICA: Si el jugador está en la Blacklist
+-- REGLA AUTOMÁTICA: Si el jugador está en la Blacklist
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= LocalPlayer then
             if isBlacklisted(player) then
@@ -142,7 +133,15 @@ local function getValidTargets()
             end
         end
     end
- ====================================================================
+     ====================================================================
+    -- REGLA AUTOMÁTICA: Si el jugador está en la Blacklist, lo atacamos SIEMPRE
+    -- ====================================================================
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and isBlacklisted(player) then
+            addTarget(player)
+        end
+    end
+       ====================================================================
     -- REGLA DE MODOS: Lógica normal del Hub (Todos o Individual)
     -- ====================================================================
     if State.AutoKillAll then
