@@ -7,6 +7,8 @@ local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local Camera = workspace.CurrentCamera
 local LocalPlayer = Players.LocalPlayer
+local HttpService = game:GetService("HttpService")
+
 
 -- ================== VARIABLES DE ESTADO LOCALES ==================
 -- Reemplazamos _G por una tabla local para mayor seguridad y rendimiento
@@ -43,6 +45,25 @@ local function isAuthorized()
     end
     return false
 end
+
+-- ================== SISTEMA DE GUARDADO ==================
+local function saveLists()
+    writefile("AutoKill_Whitelist.json", HttpService:JSONEncode(State.Whitelist))
+    writefile("AutoKill_Blacklist.json", HttpService:JSONEncode(State.Blacklist))
+end
+
+local function loadLists()
+    if isfile("AutoKill_Whitelist.json") then
+        State.Whitelist = HttpService:JSONDecode(readfile("AutoKill_Whitelist.json"))
+    end
+    if isfile("AutoKill_Blacklist.json") then
+        State.Blacklist = HttpService:JSONDecode(readfile("AutoKill_Blacklist.json"))
+    end
+end
+
+-- Cargar al iniciar
+loadLists()
+
 
 
 -- ================== FUNCIONES BÁSICAS ==================
@@ -453,6 +474,7 @@ local function updateBlacklistVisual()
         btn.MouseButton1Click:Connect(function()
             table.remove(State.Blacklist, index)
             updateBlacklistVisual()
+            saveLists()
         end)
 
         local corner = Instance.new("UICorner")
@@ -511,6 +533,7 @@ txtWhitelist.FocusLost:Connect(function(enterPressed)
         table.insert(State.Whitelist, txtWhitelist.Text)
         txtWhitelist.Text = ""
         updatePlayerList()
+        saveLists()
     end
 end)
 
@@ -524,6 +547,7 @@ txtBlacklist.FocusLost:Connect(function(enterPressed)
         txtBlacklist.Text = "Añadir a Blacklist..."
         -- Aquí llamaremos a la función que actualiza la lista visual de la derecha
         if updateBlacklistVisual then updateBlacklistVisual() end 
+saveLists()
     end
 end)
 
