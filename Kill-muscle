@@ -148,12 +148,17 @@ end
  
 -- ================== SISTEMA DE BLACKLIST INDEPENDIENTE ==================
 local BlacklistConnection = nil
+local BlacklistAttackTick = tick()
 
 local function startBlacklistKill()
     if BlacklistConnection then BlacklistConnection:Disconnect() end
     
     BlacklistConnection = RunService.Heartbeat:Connect(function()
         if not LocalPlayer.Character then return end
+
+-- COOLDOWN: Ajustado a 0.02 para velocidad "Super Pro"
+        if tick() - BlacklistAttackTick < 0.02 then return end
+        BlacklistAttackTick = tick()
         
         -- Buscamos solo a los de la lista negra
         for _, player in pairs(Players:GetPlayers()) do
