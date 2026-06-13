@@ -83,36 +83,50 @@ end
 
 local function getValidTargets()
     local targets = {}
+    local targetAdded = {} -- Tabla auxiliar para evitar añadir al mismo jugador dos veces
 
+    -- Función interna para añadir objetivos de forma segura sin duplicados
+    local function addTarget(player)
+        if targetAdded[player] then return end -- Si ya está en la lista de ataque, lo ignora
+        local char = player.Character
+        if char then
+            local humanoid = char:FindFirstChild("Humanoid")
+            local root = char:FindFirstChild("HumanoidRootPart")
+            if humanoid and root and humanoid.Health > 0 then
+                targetAdded[player] = true
+                table.insert(targets, { Player = player, Character = char, Humanoid = humanoid, RootPart = root })
+            end
+        end
+    end
+
+    -- ====================================================================
+    -- REGLA AUTOMÁTICA: Si el jugador está en la Blacklist, lo atacamos SIEMPRE
+    -- ====================================================================
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= LocalPlayer and isBlacklisted(player) then
+            addTarget(player)
+        end
+    end
+
+    -- ====================================================================
+    -- REGLA DE MODOS: Lógica normal del Hub (Todos o Individual)
+    -- ====================================================================
     if State.AutoKillAll then
         for _, player in pairs(Players:GetPlayers()) do
             if player == LocalPlayer or isWhitelisted(player) then continue end
-            local char = player.Character
-            if char then
-                local humanoid = char:FindFirstChild("Humanoid")
-                local root = char:FindFirstChild("HumanoidRootPart")
-                if humanoid and root and humanoid.Health > 0 then
-                    table.insert(targets, { Player = player, Character = char, Humanoid = humanoid, RootPart = root })
-                end
-            end
+            addTarget(player)
         end
     elseif State.TargetPlayerName ~= "" then
         for _, player in pairs(Players:GetPlayers()) do
             if player == LocalPlayer or not player.Name:lower():find(State.TargetPlayerName:lower()) then continue end
-            local char = player.Character
-            if char then
-                local humanoid = char:FindFirstChild("Humanoid")
-                local root = char:FindFirstChild("HumanoidRootPart")
-                if humanoid and root and humanoid.Health > 0 then
-                    table.insert(targets, { Player = player, Character = char, Humanoid = humanoid, RootPart = root })
-                end
-            end
+            addTarget(player)
             break
         end
     end
 
     return targets
 end
+ 
 
 -- ================== SISTEMA DE AUTO KILL OPTIMIZADO ==================
 local function startAutoKill()
