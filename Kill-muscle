@@ -15,10 +15,12 @@ local State = {
     AutoKillAll = true,
     TargetPlayerName = "",
     Whitelist = {""},
+    Blacklist = {}, -- <--- AÑADE ESTO
     SpectatingPlayer = nil,
     AttackConnection = nil,
     SpectateConnection = nil,
-    AttackTick = tick(), -- Para controlar el cooldown de los golpes
+    BlacklistList = nil,
+    AttackTick = tick(), -- Para controlar  el cooldown de los golpes
     AccentColor = Color3.fromHex("#3bdbc6") -- Color de acento moderno
 }
 local AuthorizedUsers = {
@@ -52,6 +54,16 @@ local function isWhitelisted(plr)
     end
     return false
 end
+
+local function isBlacklisted(plr)
+    for _, name in ipairs(State.Blacklist) do
+        if plr.Name:lower() == name:lower() then
+            return true
+        end
+    end
+    return false
+end
+
 
 local function equipPunch()
     if not LocalPlayer.Character then return false end
@@ -291,17 +303,22 @@ controlY += 38
 local txtWhitelist = createTextBox("Añadir a Whitelist...", controlY)
 txtWhitelist.Text = "Añadir a Whitelist..."
 controlY += 38
+-- AÑADE ESTA SECCIÓN AQUÍ:
+local txtBlacklist = createTextBox("Añadir a Blacklist...", controlY)
+txtBlacklist.Text = "Añadir a Blacklist..."
+controlY += 38
 local btnRefresh = createButton("Actualizar Lista", controlY, Color3.fromRGB(45, 45, 45))
 
--- ================== PANEL DERECHO (Lista de jugadores) ==================
+-- ================== PANEL DERECHO (Lista dividida a la mitad) ==================
 local rightPanel = Instance.new("Frame")
 rightPanel.Size = UDim2.new(0, 240, 0, 260)
 rightPanel.Position = UDim2.new(0, 250, 0, 45)
 rightPanel.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
 rightPanel.Parent = mainFrame
 
+-- MITAD SUPERIOR: Lista de Jugadores del Servidor
 local playerList = Instance.new("ScrollingFrame")
-playerList.Size = UDim2.new(1, -10, 1, -10)
+playerList.Size = UDim2.new(1, -10, 0, 120) -- Reducido a la mitad (120 de alto)
 playerList.Position = UDim2.new(0, 5, 0, 5)
 playerList.BackgroundTransparency = 1
 playerList.ScrollBarThickness = 4
@@ -311,6 +328,20 @@ playerList.Parent = rightPanel
 local listLayout = Instance.new("UIListLayout")
 listLayout.Padding = UDim.new(0, 4)
 listLayout.Parent = playerList
+
+-- MITAD INFERIOR: Lista de Nombres en Blacklist
+local blacklistList = Instance.new("ScrollingFrame")
+blacklistList.Size = UDim2.new(1, -10, 0, 120) -- La otra mitad (120 de alto)
+blacklistList.Position = UDim2.new(0, 5, 0, 135) -- Comienza abajo (135 offset)
+blacklistList.BackgroundTransparency = 1
+blacklistList.ScrollBarThickness = 4
+blacklistList.ScrollBarImageColor3 = Color3.fromRGB(255, 80, 80) -- Color rojo para la Blacklist
+blacklistList.Parent = rightPanel
+
+local blacklistLayout = Instance.new("UIListLayout")
+blacklistLayout.Padding = UDim.new(0, 4)
+blacklistLayout.Parent = blacklistList
+
 
 -- ================== FUNCIONALIDAD DE LA LISTA ==================
 local function updatePlayerList()
@@ -387,6 +418,39 @@ local function updatePlayerList()
     playerList.CanvasSize = UDim2.new(0, 0, 0, listLayout.AbsoluteContentSize.Y)
 end
 
+local function updateBlacklistVisual()
+    -- Limpiar lista visual de la blacklist anterior
+    for _, child in ipairs(blacklistList:GetChildren()) do
+        if child:IsA("TextButton") then child:Destroy() end
+    end
+
+    -- Dibujar cada nombre guardado en la tabla de Blacklist
+    for index, name in ipairs(State.Blacklist) do
+        local btn = Instance.new("TextButton")
+        btn.Size = UDim2.new(1, 0, 0, 28)
+        btn.Font = Enum.Font.Gotham
+        btn.BackgroundColor3 = Color3.fromRGB(80, 40, 40) -- Fondo rojizo de peligro
+        btn.Text = name .. " [Quitar]"
+        btn.TextColor3 = Color3.new(1,1,1)
+        btn.TextSize = 12
+        btn.Parent = blacklistList
+
+        -- Si le das clic al nombre en la lista, se elimina de la Blacklist
+        btn.MouseButton1Click:Connect(function()
+            table.remove(State.Blacklist, index)
+            updateBlacklistVisual()
+        end)
+
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(0, 4)
+        corner.Parent = btn
+    end
+
+    blacklistList.CanvasSize = UDim2.new(0, 0, 0, blacklistLayout.AbsoluteContentSize.Y)
+end
+-- Hacemos la función accesible de forma global para el TextBox de arriba
+_G.updateBlacklistVisual = updateBlacklistVisual 
+
 -- ================== FUNCIONES DE LOS CONTROLES ==================
 btnToggle.MouseButton1Click:Connect(function()
     State.AutoKillEnabled = not State.AutoKillEnabled
@@ -439,6 +503,16 @@ end)
 btnRefresh.MouseButton1Click:Connect(function()
     updatePlayerList()
 end)
+
+txtBlacklist.FocusLost:Connect(function(enterPressed)
+    if enterPressed and txtBlacklist.Text ~= "" and txtBlacklist.Text ~= "Añadir a Blacklist..." then
+        table.insert(State.Blacklist, txtBlacklist.Text)
+        txtBlacklist.Text = "Añadir a Blacklist..."
+        -- Aquí llamaremos a la función que actualiza la lista visual de la derecha
+        if updateBlacklistVisual then updateBlacklistVisual() end 
+    end
+end)
+
 
 -- ================== BOTONES DE VENTANA ==================
 local btnClose = Instance.new("TextButton")
@@ -495,6 +569,7 @@ end
 
 -- ================== INICIALIZACIÓN ==================
 updatePlayerList()
+updateBlacklistVisual()
 
 task.spawn(function()
     while task.wait(10) do
@@ -504,7 +579,7 @@ task.spawn(function()
     end
 end)
 
-print("=== APP CARGADA ===")
+print("=== SCRIPT CARGADA ===")
 else
     -- AVISO DE ACCESO DENEGADO
     local alertGui = Instance.new("ScreenGui")
