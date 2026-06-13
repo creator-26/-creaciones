@@ -39,7 +39,7 @@ local AuthorizedUsers = {
     "BDRL_1",
     "BDRL_2",
     "Yeremipro123477",
-    "el2yeremipro123477",
+    "",
     -- Puedes añadir más usuarios separados por coma
 }
 local function isAuthorized()
