@@ -26,31 +26,30 @@ local State = {
     AttackTick = tick(), -- Para controlar  el cooldown de los golpes
     AccentColor = Color3.fromHex("#3bdbc6") -- Color de acento moderno
 }
-local AuthorizedUsers = {
-    "phol_268t", -- Pon tu nombre aquí
-    "alexander_346g",
-    "Walypro1234",
-    "OSCAR70776",
-    "JosephCJK108",
-    "Maestrito24",
-    "venezuela_bugs",
-    "kkz_dani",
-    "Peque1760",
-    "BDRL_1",
-    "BDRL_2",
-    "Yeremipro123477",
-    "Ian_okeee4",
-    -- Puedes añadir más usuarios separados por coma
-}
+-- ================== SISTEMA DE SEGURIDAD REMOTO ==================
 local function isAuthorized()
     local myName = game.Players.LocalPlayer.Name
-    for _, name in ipairs(AuthorizedUsers) do
-        if myName:lower() == name:lower() then
+    
+    
+    local linkLista = "https://pastebin.com/raw/T8TaJE2Y" 
+    
+    -- pcall evita que el script se rompa si no hay internet o Pastebin está caído
+    local success, content = pcall(function()
+        return game:HttpGet(linkLista)
+    end)
+    
+    if success and content then
+        -- Comprobamos si el nombre del jugador está dentro del texto que descargamos
+        if string.find(string.lower(content), string.lower(myName)) then
             return true
         end
+    else
+        warn("No se pudo conectar a la lista de usuarios.")
     end
+    
     return false
 end
+
 
 -- ================== SISTEMA DE GUARDADO ==================
 local function saveLists()
