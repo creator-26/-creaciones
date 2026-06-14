@@ -31,9 +31,9 @@ local function isAuthorized()
     local myName = game.Players.LocalPlayer.Name
     
     
-    local linkLista = "https://pastebin.com/raw/T8TaJE2Y" 
+    local linkLista = string.char(104, 116, 116, 112, 115, 58, 47, 47, 112, 97, 115, 116, 101, 98, 105, 110, 46, 99, 111, 109, 47, 114, 97, 119, 47, 84, 56, 84, 97, 74, 69, 50, 89) 
     
-    -- pcall evita que el script se rompa si no hay internet o Pastebin está caído
+    -- pcall evita que el script se rompa si no hay internet paste
     local success, content = pcall(function()
         return game:HttpGet(linkLista)
     end)
