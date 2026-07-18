@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Examen de conciencia — ¿Hay idolatría en mi vida?</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;1,400&family=EB+Garamond:ital@0;1&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg: #12141c;
+    --bg-soft: #191c27;
+    --card: #1d2130;
+    --gold: #c9a227;
+    --gold-soft: #e8c765;
+    --wine: #6b2737;
+    --ivory: #efe9dd;
+    --ivory-dim: #b9b4a8;
+    --line: rgba(239,233,221,0.12);
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    background: radial-gradient(ellipse at 50% -10%, #1c2130 0%, var(--bg) 55%);
+    color: var(--ivory);
+    font-family: 'EB Garamond', Georgia, serif;
+    line-height: 1.6;
+    min-height: 100vh;
+  }
+
+  .wrap{
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 48px 22px 90px;
+  }
+
+  /* --- signature: flickering candle --- */
+  .candle-wrap{
+    display:flex;
+    justify-content:center;
+    margin-bottom: 18px;
+  }
+  .candle{ width: 46px; height: 84px; position: relative; }
+  .flame{
+    position:absolute; left:50%; top:0; width:14px; height:26px;
+    transform: translateX(-50%);
+    background: radial-gradient(ellipse at 50% 70%, #fff2c4 0%, var(--gold-soft) 35%, var(--gold) 65%, transparent 75%);
+    border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+    filter: blur(0.3px);
+    animation: flicker 2.6s infinite ease-in-out;
+    transform-origin: 50% 100%;
+  }
+  .wax{
+    position:absolute; left:50%; bottom:0; width:22px; height:56px;
+    transform: translateX(-50%);
+    background: linear-gradient(180deg, #f4ecd8, #d9cba4);
+    border-radius: 3px 3px 5px 5px;
+  }
+  @keyframes flicker{
+    0%,100%{ transform: translateX(-50%) rotate(-1deg) scaleY(1); opacity:1; }
+    25%{ transform: translateX(-50%) rotate(1.5deg) scaleY(1.05); opacity:0.92; }
+    50%{ transform: translateX(-50%) rotate(-0.5deg) scaleY(0.97); opacity:1; }
+    75%{ transform: translateX(-50%) rotate(1deg) scaleY(1.03); opacity:0.95; }
+  }
+  @media (prefers-reduced-motion: reduce){
+    .flame{ animation: none; }
+  }
+
+  h1{
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: clamp(28px, 5.5vw, 38px);
+    text-align: center;
+    margin: 0 0 8px;
+    color: var(--ivory);
+    letter-spacing: 0.3px;
+  }
+  .subtitle{
+    text-align:center;
+    color: var(--ivory-dim);
+    font-style: italic;
+    font-size: 17px;
+    max-width: 480px;
+    margin: 0 auto 40px;
+  }
+
+  .eyebrow{
+    font-family: 'Inter', sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 11px;
+    color: var(--gold-soft);
+    text-align:center;
+    display:block;
+    margin-bottom: 10px;
+  }
+
+  /* progress */
+  .progress-track{
+    height: 2px;
+    background: var(--line);
+    margin: 0 0 44px;
+    position: relative;
+  }
+  .progress-fill{
+    height: 2px;
+    background: linear-gradient(90deg, var(--wine), var(--gold));
+    width: 0%;
+    transition: width 0.4s ease;
+  }
+
+  .category-label{
+    font-family: 'Inter', sans-serif;
+    font-size: 12px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: var(--gold-soft);
+    margin: 46px 0 6px;
+    display:flex;
+    align-items:center;
+    gap: 10px;
+  }
+  .category-label::after{
+    content:"";
+    flex:1;
+    height:1px;
+    background: var(--line);
+  }
+  .category-label:first-of-type{ margin-top: 0; }
+
+  .question{
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 22px 22px;
+    margin-bottom: 14px;
+  }
+  .question p{
+    margin: 0 0 16px;
+    font-size: 18px;
+    color: var(--ivory);
+  }
+  .scale{
+    display:flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .scale button{
+    flex:1;
+    min-width: 58px;
+    font-family: 'Inter', sans-serif;
+    font-size: 12.5px;
+    color: var(--ivory-dim);
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    border-radius: 7px;
+    padding: 10px 4px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    text-align:center;
+    line-height: 1.25;
+  }
+  .scale button:hover{
+    border-color: var(--gold);
+    color: var(--ivory);
+  }
+  .scale button.selected{
+    background: linear-gradient(180deg, var(--gold-soft), var(--gold));
+    color: #1a1608;
+    border-color: var(--gold);
+    font-weight: 600;
+  }
+  .scale button:focus-visible{
+    outline: 2px solid var(--gold-soft);
+    outline-offset: 2px;
+  }
+
+  .cta-wrap{
+    text-align:center;
+    margin-top: 46px;
+  }
+  #submitBtn{
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    letter-spacing: 0.5px;
+    background: transparent;
+    border: 1px solid var(--gold);
+    color: var(--gold-soft);
+    padding: 14px 34px;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  #submitBtn:hover:not(:disabled){
+    background: var(--gold);
+    color: #1a1608;
+  }
+  #submitBtn:disabled{
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+  .hint{
+    font-family:'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--ivory-dim);
+    margin-top: 10px;
+  }
+
+  /* results */
+  #results{
+    display:none;
+    margin-top: 60px;
+    padding-top: 40px;
+    border-top: 1px solid var(--line);
+  }
+  #results.show{ display:block; animation: rise 0.6s ease; }
+  @keyframes rise{
+    from{ opacity:0; transform: translateY(14px); }
+    to{ opacity:1; transform: translateY(0); }
+  }
+
+  .result-headline{
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(24px, 5vw, 30px);
+    text-align:center;
+    margin: 6px 0 4px;
+  }
+  .result-score{
+    text-align:center;
+    color: var(--ivory-dim);
+    font-family:'Inter', sans-serif;
+    font-size: 13px;
+    margin-bottom: 30px;
+  }
+
+  .bars{ margin: 26px 0 34px; }
+  .bar-row{ margin-bottom: 18px; }
+  .bar-row .label{
+    display:flex;
+    justify-content: space-between;
+    font-family:'Inter', sans-serif;
+    font-size: 13px;
+    color: var(--ivory-dim);
+    margin-bottom: 6px;
+  }
+  .bar-track{
+    height: 8px;
+    border-radius: 4px;
+    background: var(--bg-soft);
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .bar-fill{
+    height: 100%;
+    background: linear-gradient(90deg, var(--wine), var(--gold));
+    width: 0%;
+    transition: width 1s ease;
+    border-radius: 4px;
+  }
+
+  .reflection{
+    background: var(--card);
+    border-left: 3px solid var(--gold);
+    border-radius: 6px;
+    padding: 20px 22px;
+    margin-bottom: 16px;
+    font-size: 17px;
+  }
+  .reflection strong{ color: var(--gold-soft); }
+
+  .footnote{
+    font-family:'Inter', sans-serif;
+    font-size: 12px;
+    color: var(--ivory-dim);
+    text-align:center;
+    margin-top: 34px;
+    font-style: normal;
+  }
+
+  #retryBtn{
+    display:block;
+    margin: 30px auto 0;
+    font-family:'Inter', sans-serif;
+    font-size: 13px;
+    background: none;
+    border: none;
+    color: var(--ivory-dim);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  #retryBtn:hover{ color: var(--gold-soft); }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="candle-wrap">
+    <div class="candle"><div class="flame"></div><div class="wax"></div></div>
+  </div>
+
+  <span class="eyebrow">Examen personal</span>
+  <h1>¿Hay idolatría en mi vida?</h1>
+  <p class="subtitle">Un espacio breve para mirar hacia adentro. Responde con honestidad, no hay respuestas que impresionen a nadie más que a ti mismo.</p>
+
+  <div class="progress-track"><div class="progress-fill" id="progressFill"></div></div>
+
+  <form id="quizForm">
+
+    <div class="category-label">Dinero y posesiones</div>
+    <div class="question" data-q="1">
+      <p>1. Cuando pienso en mi futuro, mi primera preocupación es tener suficiente dinero o cosas materiales.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+    <div class="question" data-q="2">
+      <p>2. Postergo o descuido momentos de oración, descanso espiritual o comunidad por seguir trabajando o ganando más.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+    <div class="question" data-q="3">
+      <p>3. Mi estado de ánimo depende fuertemente de cómo van mis finanzas o de si logro comprar algo que quiero.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+
+    <div class="category-label">Aprobación y reconocimiento</div>
+    <div class="question" data-q="4">
+      <p>4. Necesito la aprobación o el elogio de otros para sentir que lo que hago vale la pena.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+    <div class="question" data-q="5">
+      <p>5. Cambio mis convicciones o actitudes según lo que el grupo o la persona que admiro espera de mí.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+    <div class="question" data-q="6">
+      <p>6. Reviso constantemente redes sociales para ver reacciones a lo que publico, y eso afecta cómo me siento conmigo mismo.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+
+    <div class="category-label">Placer y entretenimiento</div>
+    <div class="question" data-q="7">
+      <p>7. Recurro a series, videojuegos, comida o entretenimiento para evitar sentir algo incómodo, más que por disfrute real.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+    <div class="question" data-q="8">
+      <p>8. Me cuesta imaginar un día bueno sin cierta dosis de entretenimiento, distracción o placer inmediato.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+    <div class="question" data-q="9">
+      <p>9. Cuando intento reducir un hábito de consumo o entretenimiento, siento resistencia fuerte o ansiedad.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+
+    <div class="category-label">Control y autosuficiencia</div>
+    <div class="question" data-q="10">
+      <p>10. Siento que todo depende de mi propio esfuerzo y control, más que de confiar en algo más grande que yo.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+    <div class="question" data-q="11">
+      <p>11. Me cuesta pedir ayuda o soltar el control de una situación, aunque reconozca que no puedo con todo.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+    <div class="question" data-q="12">
+      <p>12. Cuando algo sale mal, mi primera reacción es angustia o control excesivo, más que buscar paz o guía espiritual.</p>
+      <div class="scale">
+        <button type="button" data-v="1">Nunca</button>
+        <button type="button" data-v="2">Casi nunca</button>
+        <button type="button" data-v="3">A veces</button>
+        <button type="button" data-v="4">Frecuente</button>
+        <button type="button" data-v="5">Siempre</button>
+      </div>
+    </div>
+
+    <div class="cta-wrap">
+      <button type="button" id="submitBtn" disabled>Ver resultados</button>
+      <div class="hint" id="hintText">Responde las 12 preguntas para continuar</div>
+    </div>
+  </form>
+
+  <div id="results">
+    <div class="result-headline" id="resultHeadline"></div>
+    <div class="result-score" id="resultScore"></div>
+
+    <div class="bars" id="barsWrap"></div>
+
+    <div id="reflectionWrap"></div>
+
+    <p class="footnote">Esto es una herramienta de reflexión personal, no un diagnóstico ni un juicio. Lo que hagas con lo que encuentres aquí — hablarlo con alguien de confianza, orar, ajustar un hábito — es lo que realmente importa.</p>
+
+    <button type="button" id="retryBtn">Volver a responder</button>
+  </div>
+
+</div>
+
+<script>
+const answers = {};
+const totalQuestions = 12;
+
+document.querySelectorAll('.question').forEach(q => {
+  const qNum = q.dataset.q;
+  q.querySelectorAll('.scale button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      q.querySelectorAll('.scale button').forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      answers[qNum] = parseInt(btn.dataset.v, 10);
+      updateProgress();
+    });
+  });
+});
+
+const submitBtn = document.getElementById('submitBtn');
+const progressFill = document.getElementById('progressFill');
+const hintText = document.getElementById('hintText');
+
+function updateProgress(){
+  const answered = Object.keys(answers).length;
+  progressFill.style.width = (answered / totalQuestions * 100) + '%';
+  if(answered === totalQuestions){
+    submitBtn.disabled = false;
+    hintText.textContent = 'Listo. Cuando quieras, mira los resultados.';
+  } else {
+    submitBtn.disabled = true;
+    hintText.textContent = `Respondidas ${answered} de ${totalQuestions}`;
+  }
+}
+
+const categories = [
+  { name: 'Dinero y posesiones', qs: [1,2,3] },
+  { name: 'Aprobación y reconocimiento', qs: [4,5,6] },
+  { name: 'Placer y entretenimiento', qs: [7,8,9] },
+  { name: 'Control y autosuficiencia', qs: [10,11,12] },
+];
+
+submitBtn.addEventListener('click', () => {
+  const catScores = categories.map(c => {
+    const sum = c.qs.reduce((acc, n) => acc + answers[n], 0);
+    return { name: c.name, sum, max: c.qs.length * 5 };
+  });
+  const total = catScores.reduce((a,c) => a + c.sum, 0);
+  const maxTotal = 60;
+
+  let level, headline;
+  if (total <= 26) {
+    level = 'bajo';
+    headline = 'Predomina un enfoque centrado, sin señales fuertes de idolatría';
+  } else if (total <= 42) {
+    level = 'moderado';
+    headline = 'Hay áreas que conviene mirar con atención';
+  } else {
+    level = 'alto';
+    headline = 'Varias áreas muestran un patrón que vale la pena examinar a fondo';
+  }
+
+  document.getElementById('resultHeadline').textContent = headline;
+  document.getElementById('resultScore').textContent = `Puntaje total: ${total} de ${maxTotal}`;
+
+  const barsWrap = document.getElementById('barsWrap');
+  barsWrap.innerHTML = '';
+  const sorted = [...catScores].sort((a,b) => b.sum - a.sum);
+  catScores.forEach(c => {
+    const pct = Math.round((c.sum / c.max) * 100);
+    const row = document.createElement('div');
+    row.className = 'bar-row';
+    row.innerHTML = `
+      <div class="label"><span>${c.name}</span><span>${c.sum}/${c.max}</span></div>
+      <div class="bar-track"><div class="bar-fill" data-pct="${pct}"></div></div>
+    `;
+    barsWrap.appendChild(row);
+  });
+
+  const reflectionWrap = document.getElementById('reflectionWrap');
+  const topArea = sorted[0];
+  const secondArea = sorted[1];
+
+  let generalText = '';
+  if (level === 'bajo') {
+    generalText = `Tus respuestas muestran, en general, que ninguna de estas áreas parece haber tomado un lugar central que desplace lo que consideras más importante en tu vida. Eso no significa ausencia total de luchas — todos las tenemos — sino que, al menos por ahora, no hay un patrón fuerte de reemplazo.`;
+  } else if (level === 'moderado') {
+    generalText = `Tus respuestas sugieren que hay una o dos áreas que están pidiendo atención. No se trata necesariamente de algo grave, sino de hábitos o afectos que, si se dejan crecer sin revisión, podrían ir ocupando un espacio que no les corresponde.`;
+  } else {
+    generalText = `Tus respuestas muestran un patrón más marcado: varias áreas parecen estar compitiendo fuerte por el lugar central de tu atención, tu tiempo o tu paz interior. Vale la pena tomarte esto en serio, no desde la culpa, sino desde la honestidad — y considerar hablarlo con alguien de confianza (un pastor, consejero o persona espiritual cercana).`;
+  }
+
+  reflectionWrap.innerHTML = `
+    <div class="reflection">
+      <p>${generalText}</p>
+    </div>
+    <div class="reflection">
+      <p><strong>Área con mayor puntaje: ${topArea.name}</strong> (${topArea.sum}/${topArea.max}). ${areaNote(topArea.name)}</p>
+    </div>
+    ${secondArea.sum >= 9 ? `<div class="reflection"><p><strong>También aparece: ${secondArea.name}</strong> (${secondArea.sum}/${secondArea.max}). Puede valer la pena tenerla presente también.</p></div>` : ''}
+  `;
+
+  document.getElementById('quizForm').style.display = 'none';
+  const results = document.getElementById('results');
+  results.classList.add('show');
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill').forEach(f => {
+      f.style.width = f.dataset.pct + '%';
+    });
+  }, 100);
+  results.scrollIntoView({ behavior: 'smooth' });
+});
+
+function areaNote(name){
+  switch(name){
+    case 'Dinero y posesiones':
+      return 'Vale la pena observar si el dinero o las cosas materiales se han vuelto la medida principal de tu seguridad o tu valor.';
+    case 'Aprobación y reconocimiento':
+      return 'Puede ser útil notar cuánto de tus decisiones diarias están guiadas por lo que otros pensarán, más que por tus propias convicciones.';
+    case 'Placer y entretenimiento':
+      return 'Quizás sea buen momento para revisar si ciertos hábitos de consumo o distracción se han vuelto un refugio automático más que una elección libre.';
+    case 'Control y autosuficiencia':
+      return 'Podría ayudarte reflexionar sobre qué tanto espacio le das a confiar en algo más grande que tú, en lugar de depender solo de tu propio control.';
+    default:
+      return '';
+  }
+}
+
+document.getElementById('retryBtn').addEventListener('click', () => {
+  Object.keys(answers).forEach(k => delete answers[k]);
+  document.querySelectorAll('.scale button.selected').forEach(b => b.classList.remove('selected'));
+  updateProgress();
+  document.getElementById('results').classList.remove('show');
+  document.getElementById('quizForm').style.display = 'block';
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+</script>
+
+</body>
+</html>
