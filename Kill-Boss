@@ -1,0 +1,586 @@
+--// AUTO PUNCH HUB
+--// Muscle Legends
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+
+--==================================================
+-- CONFIG
+--==================================================
+
+local AutoPunch = false
+local PunchSpeed = 0.05
+
+--==================================================
+-- FUNCIONES
+--==================================================
+
+local function GetCharacter()
+    return LocalPlayer.Character
+end
+
+local function EquipPunch()
+    local Character = GetCharacter()
+
+    if not Character then
+        return nil
+    end
+
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+    local Backpack = LocalPlayer:FindFirstChildOfClass("Backpack")
+
+    if not Humanoid or not Backpack then
+        return nil
+    end
+
+    -- Ya está equipado
+    local Punch = Character:FindFirstChild("Punch")
+
+    if Punch and Punch:IsA("Tool") then
+        return Punch
+    end
+
+    -- Buscar Punch en la mochila
+    Punch = Backpack:FindFirstChild("Punch")
+
+    if not Punch then
+        return nil
+    end
+
+    -- Equipar
+    pcall(function()
+        Humanoid:EquipTool(Punch)
+    end)
+
+    task.wait()
+
+    -- Comprobar nuevamente
+    Punch = Character:FindFirstChild("Punch")
+
+    if Punch and Punch:IsA("Tool") then
+        return Punch
+    end
+
+    return nil
+end
+
+--==================================================
+-- AUTO PUNCH
+--==================================================
+
+task.spawn(function()
+
+    while true do
+
+        if AutoPunch then
+
+            local Punch = EquipPunch()
+
+            if Punch then
+
+                -- Golpear al aire
+                pcall(function()
+                    Punch:Activate()
+                end)
+
+                task.wait(PunchSpeed)
+
+            else
+                task.wait(0.1)
+            end
+
+        else
+            task.wait(0.1)
+        end
+
+    end
+
+end)
+
+--==================================================
+-- GUI
+--==================================================
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "AutoPunchHub"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+pcall(function()
+    ScreenGui.Parent = game:GetService("CoreGui")
+end)
+
+if not ScreenGui.Parent then
+    ScreenGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+end
+
+--==================================================
+-- MAIN HUB
+--==================================================
+
+local Main = Instance.new("Frame")
+Main.Name = "Main"
+Main.Size = UDim2.new(0, 270, 0, 190)
+Main.Position = UDim2.new(0.5, -135, 0.5, -95)
+Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+Main.BorderSizePixel = 0
+Main.Parent = ScreenGui
+
+local MainCorner = Instance.new("UICorner")
+MainCorner.CornerRadius = UDim.new(0, 8)
+MainCorner.Parent = Main
+
+local MainStroke = Instance.new("UIStroke")
+MainStroke.Color = Color3.fromRGB(45, 45, 45)
+MainStroke.Thickness = 1
+MainStroke.Parent = Main
+
+--==================================================
+-- TITLE
+--==================================================
+
+local Title = Instance.new("TextLabel")
+Title.Name = "Title"
+Title.Size = UDim2.new(1, -45, 0, 38)
+Title.Position = UDim2.new(0, 12, 0, 0)
+Title.BackgroundTransparency = 1
+Title.Text = "AUTO PUNCH"
+Title.TextColor3 = Color3.fromRGB(255, 255, 255)
+Title.TextSize = 15
+Title.Font = Enum.Font.GothamBold
+Title.TextXAlignment = Enum.TextXAlignment.Left
+Title.Parent = Main
+
+--==================================================
+-- CLOSE X
+--==================================================
+
+local Close = Instance.new("TextButton")
+Close.Name = "Close"
+Close.Size = UDim2.new(0, 32, 0, 32)
+Close.Position = UDim2.new(1, -37, 0, 3)
+Close.BackgroundTransparency = 1
+Close.Text = "X"
+Close.TextColor3 = Color3.fromRGB(255, 255, 255)
+Close.TextSize = 15
+Close.Font = Enum.Font.GothamBold
+Close.Parent = Main
+
+--==================================================
+-- TOGGLE
+--==================================================
+
+local Toggle = Instance.new("TextButton")
+Toggle.Name = "Toggle"
+Toggle.Size = UDim2.new(1, -24, 0, 42)
+Toggle.Position = UDim2.new(0, 12, 0, 48)
+Toggle.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+Toggle.BorderSizePixel = 0
+Toggle.Text = "AUTO PUNCH  •  OFF"
+Toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
+Toggle.TextSize = 13
+Toggle.Font = Enum.Font.GothamBold
+Toggle.Parent = Main
+
+local ToggleCorner = Instance.new("UICorner")
+ToggleCorner.CornerRadius = UDim.new(0, 6)
+ToggleCorner.Parent = Toggle
+
+local ToggleStroke = Instance.new("UIStroke")
+ToggleStroke.Color = Color3.fromRGB(55, 55, 55)
+ToggleStroke.Thickness = 1
+ToggleStroke.Parent = Toggle
+
+--==================================================
+-- ESPACIO PARA FUTURAS OPCIONES
+--==================================================
+
+local FutureSpace = Instance.new("Frame")
+FutureSpace.Name = "FutureOptions"
+FutureSpace.Size = UDim2.new(1, -24, 0, 80)
+FutureSpace.Position = UDim2.new(0, 12, 0, 100)
+FutureSpace.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
+FutureSpace.BorderSizePixel = 0
+FutureSpace.Parent = Main
+
+local FutureCorner = Instance.new("UICorner")
+FutureCorner.CornerRadius = UDim.new(0, 6)
+FutureCorner.Parent = FutureSpace
+
+local FutureStroke = Instance.new("UIStroke")
+FutureStroke.Color = Color3.fromRGB(25, 25, 25)
+FutureStroke.Thickness = 1
+FutureStroke.Parent = FutureSpace
+
+--==================================================
+-- BOTÓN PEQUEÑO PARA MOSTRAR/OCULTAR
+--==================================================
+
+local MiniButton = Instance.new("TextButton")
+MiniButton.Name = "MiniButton"
+MiniButton.Size = UDim2.new(0, 45, 0, 45)
+
+-- Costado derecho de la pantalla
+MiniButton.Position = UDim2.new(1, -55, 0.5, -22)
+
+MiniButton.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
+MiniButton.BorderSizePixel = 0
+MiniButton.Text = "AP"
+MiniButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+MiniButton.TextSize = 13
+MiniButton.Font = Enum.Font.GothamBold
+MiniButton.Visible = false
+MiniButton.Parent = ScreenGui
+
+local MiniCorner = Instance.new("UICorner")
+MiniCorner.CornerRadius = UDim.new(0, 10)
+MiniCorner.Parent = MiniButton
+
+local MiniStroke = Instance.new("UIStroke")
+MiniStroke.Color = Color3.fromRGB(45, 45, 45)
+MiniStroke.Thickness = 1
+MiniStroke.Parent = MiniButton
+
+--==================================================
+-- MOSTRAR / OCULTAR HUB
+--==================================================
+
+Close.MouseButton1Click:Connect(function()
+
+    Main.Visible = false
+    MiniButton.Visible = true
+
+end)
+
+MiniButton.MouseButton1Click:Connect(function()
+
+    Main.Visible = true
+    MiniButton.Visible = false
+
+end)
+
+--==================================================
+-- TOGGLE AUTO PUNCH
+--==================================================
+
+local function UpdateToggle()
+
+    if AutoPunch then
+
+        Toggle.Text = "AUTO PUNCH  •  ON"
+        Toggle.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+
+    else
+
+        Toggle.Text = "AUTO PUNCH  •  OFF"
+        Toggle.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
+
+    end
+
+end
+
+Toggle.MouseButton1Click:Connect(function()
+
+    AutoPunch = not AutoPunch
+
+    UpdateToggle()
+
+    if AutoPunch then
+
+        task.spawn(function()
+            EquipPunch()
+        end)
+
+    end
+
+end)
+
+--==================================================
+-- DRAG DEL HUB
+--==================================================
+
+local Dragging = false
+local DragStart
+local StartPosition
+
+Title.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        Dragging = true
+        DragStart = Input.Position
+        StartPosition = Main.Position
+
+    end
+
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+
+    if not Dragging then
+        return
+    end
+
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        local Delta = Input.Position - DragStart
+
+        Main.Position = UDim2.new(
+            StartPosition.X.Scale,
+            StartPosition.X.Offset + Delta.X,
+            StartPosition.Y.Scale,
+            StartPosition.Y.Offset + Delta.Y
+        )
+
+    end
+
+end)
+
+UserInputService.InputEnded:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        Dragging = false
+
+    end
+
+end)
+
+--==================================================
+-- DRAG DEL MINI BUTTON
+--==================================================
+
+local MiniDragging = false
+local MiniDragStart
+local MiniStartPosition
+
+MiniButton.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        MiniDragging = true
+        MiniDragStart = Input.Position
+        MiniStartPosition = MiniButton.Position
+
+    end
+
+end)
+
+UserInputService.InputChanged:Connect(function(Input)
+
+    if not MiniDragging then
+        return
+    end
+
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        local Delta = Input.Position - MiniDragStart
+
+        MiniButton.Position = UDim2.new(
+            MiniStartPosition.X.Scale,
+            MiniStartPosition.X.Offset + Delta.X,
+            MiniStartPosition.Y.Scale,
+            MiniStartPosition.Y.Offset + Delta.Y
+        )
+
+    end
+
+end)
+
+UserInputService.InputEnded:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+    or Input.UserInputType == Enum.UserInputType.Touch then
+
+        MiniDragging = false
+
+    end
+
+end)
+
+--==================================================
+-- RESPAWN
+--==================================================
+
+LocalPlayer.CharacterAdded:Connect(function()
+
+    if AutoPunch then
+        task.wait(0.5)
+        EquipPunch()
+    end
+
+end)
+
+--==================================================
+-- INICIAR
+--==================================================
+
+UpdateToggle()
+
+-- Shift lock
+local players = game:GetService("Players")
+local runService = game:GetService("RunService")
+local userInputService = game:GetService("UserInputService")
+
+local localPlayer = players.LocalPlayer
+local character = localPlayer.Character or localPlayer.CharacterAdded:Wait()
+
+local root = character:WaitForChild("HumanoidRootPart")
+local humanoid = character:WaitForChild("Humanoid")
+local camera = workspace.CurrentCamera
+
+local iconOff = "rbxassetid://77288664952024"
+local iconOn = "rbxassetid://140416355442805"
+
+local cursorImg = "rbxasset://textures/MouseLockedCursor.png"
+
+local isTouchDevice = userInputService.TouchEnabled
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "shiftlockgui"
+screenGui.ResetOnSpawn = false
+screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+screenGui.IgnoreGuiInset = true
+screenGui.Parent = localPlayer:WaitForChild("PlayerGui")
+
+local customIconId = ""
+local customCursorId = ""
+
+if customIconId ~= "" then
+	iconOff = customIconId
+	iconOn = customIconId
+end
+
+if customCursorId ~= "" then
+	cursorImg = customCursorId
+end
+
+local buttonPosition = UDim2.new(0.86, 0, 0.93, 0)
+local buttonSize = UDim2.new(0, 44, 0, 44)
+
+local button = Instance.new("ImageButton")
+button.Name = "shiftlockbutton"
+button.Size = buttonSize
+button.Position = buttonPosition
+button.AnchorPoint = Vector2.new(0.5, 0.5)
+button.Image = iconOff
+button.BackgroundTransparency = 1
+button.BorderSizePixel = 0
+button.ImageRectSize = Vector2.new(0, 0)
+button.Visible = isTouchDevice
+button.Parent = screenGui
+
+local cursorSize = UDim2.new(0, 25, 0, 25)
+
+local cursor = Instance.new("ImageLabel")
+cursor.Name = "shiftlockcursor"
+cursor.AnchorPoint = Vector2.new(0.5, 0.5)
+cursor.Position = UDim2.new(0.5, 0, 0.5, 0)
+cursor.Size = cursorSize
+cursor.BackgroundTransparency = 1
+cursor.BorderSizePixel = 0
+cursor.ScaleType = Enum.ScaleType.Fit
+cursor.Image = cursorImg
+cursor.Visible = false
+cursor.Parent = screenGui
+
+local shiftLockActive = false
+local renderConnection
+
+local shoulderOffset = CFrame.new(1.7, 0, 0)
+local maxLength = 999999999
+
+local function updateButton(state)
+	button.Image = state and iconOn or iconOff
+end
+
+local function getFacingCFrame()
+	return CFrame.new(
+		root.Position,
+		Vector3.new(
+			root.Position.X + camera.CFrame.LookVector.X * maxLength,
+			root.Position.Y,
+			root.Position.Z + camera.CFrame.LookVector.Z * maxLength
+		)
+	)
+end
+
+local function enableShiftLock()
+	humanoid.AutoRotate = false
+	updateButton(true)
+
+	userInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
+	userInputService.MouseIconEnabled = false
+
+	cursor.Visible = true
+
+	renderConnection = runService.RenderStepped:Connect(function()
+		root.CFrame = getFacingCFrame()
+		camera.CFrame = camera.CFrame * shoulderOffset
+
+		camera.Focus = CFrame.fromMatrix(
+			camera.Focus.Position,
+			camera.CFrame.RightVector,
+			camera.CFrame.UpVector
+		) * shoulderOffset
+	end)
+end
+
+local function disableShiftLock()
+	humanoid.AutoRotate = true
+	updateButton(false)
+
+	userInputService.MouseBehavior = Enum.MouseBehavior.Default
+	userInputService.MouseIconEnabled = true
+
+	cursor.Visible = false
+
+	if renderConnection then
+		renderConnection:Disconnect()
+		renderConnection = nil
+	end
+end
+
+local function toggleShiftLock()
+	shiftLockActive = not shiftLockActive
+
+	if shiftLockActive then
+		enableShiftLock()
+	else
+		disableShiftLock()
+	end
+end
+
+button.MouseButton1Click:Connect(toggleShiftLock)
+
+localPlayer.CharacterAdded:Connect(function(newCharacter)
+	character = newCharacter
+	root = newCharacter:WaitForChild("HumanoidRootPart")
+	humanoid = newCharacter:WaitForChild("Humanoid")
+
+	if renderConnection then
+		renderConnection:Disconnect()
+		renderConnection = nil
+	end
+
+	shiftLockActive = false
+	updateButton(false)
+
+	cursor.Visible = false
+
+	userInputService.MouseBehavior = Enum.MouseBehavior.Default
+	userInputService.MouseIconEnabled = true
+end)
+
+players.PlayerRemoving:Connect(function(leavingPlayer)
+	if leavingPlayer == localPlayer and shiftLockActive then
+		disableShiftLock()
+	end
+end)
