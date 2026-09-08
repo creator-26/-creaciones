@@ -100,6 +100,78 @@ task.spawn(function()
 end)
 
 --==================================================
+-- AUTO RULETA
+--==================================================
+
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local ReplicatorClient = require(
+    ReplicatedStorage
+        :WaitForChild("packages")
+        :WaitForChild("ReplicatorClient")
+)
+
+local Data = ReplicatorClient.get("Data")
+
+local FortuneRemote = ReplicatedStorage
+    :WaitForChild("rEvents")
+    :WaitForChild("openFortuneWheelRemote")
+
+local Chances = ReplicatedStorage
+    .shared
+    .catalogs
+    .fortuneWheelChances["Fortune Wheel"]
+
+local AutoRuleta = false
+local RuletaRunning = false
+
+local function GetSpins()
+    local Free = Data:TryIndex({"freeWheelSpins"})
+    local Purchased = Data:TryIndex({"purchasedSpins"})
+
+    Free = typeof(Free) == "number" and Free or 0
+    Purchased = typeof(Purchased) == "number" and Purchased or 0
+
+    return Free + Purchased
+end
+
+local function AutoSpin()
+    if RuletaRunning then
+        return
+    end
+
+    RuletaRunning = true
+
+    while AutoRuleta do
+
+        -- Si no quedan giros, apagar automáticamente
+        if GetSpins() <= 0 then
+            AutoRuleta = false
+
+            if AutoRuletaButton then
+                AutoRuletaButton.Text = "AUTO RULETA  •  OFF"
+            end
+
+            break
+        end
+
+        local Success = pcall(function()
+            FortuneRemote:InvokeServer(
+                "openFortuneWheel",
+                Chances
+            )
+        end)
+
+        if not Success then
+            task.wait(1)
+        else
+            task.wait(0.5)
+        end
+    end
+
+    RuletaRunning = false
+end
+--==================================================
 -- GUI
 --==================================================
 
