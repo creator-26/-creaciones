@@ -194,7 +194,7 @@ end
 
 local Main = Instance.new("Frame")
 Main.Name = "Main"
-Main.Size = UDim2.new(0, 270, 0, 190)
+Main.Size = UDim2.new(0, 270, 0, 210)
 Main.Position = UDim2.new(0.5, -135, 0.5, -95)
 Main.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 Main.BorderSizePixel = 0
@@ -271,7 +271,7 @@ ToggleStroke.Parent = Toggle
 
 local FutureSpace = Instance.new("Frame")
 FutureSpace.Name = "FutureOptions"
-FutureSpace.Size = UDim2.new(1, -24, 0, 80)
+FutureSpace.Size = UDim2.new(1, -24, 0, 92)
 FutureSpace.Position = UDim2.new(0, 12, 0, 100)
 FutureSpace.BackgroundColor3 = Color3.fromRGB(7, 7, 7)
 FutureSpace.BorderSizePixel = 0
