@@ -322,6 +322,44 @@ TPBoss.MouseButton1Click:Connect(function()
 end)
 
 --==================================================
+-- BOTÓN AUTO RULETA
+--==================================================
+
+AutoRuletaButton = Instance.new("TextButton")
+AutoRuletaButton.Name = "AutoRuleta"
+AutoRuletaButton.Size = UDim2.new(1, -16, 0, 36)
+AutoRuletaButton.Position = UDim2.new(0, 8, 0, 48)
+AutoRuletaButton.BackgroundColor3 = Color3.fromRGB(20, 20, 20)
+AutoRuletaButton.BorderSizePixel = 0
+AutoRuletaButton.Text = "AUTO RULETA  •  OFF"
+AutoRuletaButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+AutoRuletaButton.TextSize = 13
+AutoRuletaButton.Font = Enum.Font.GothamBold
+AutoRuletaButton.Parent = FutureSpace
+
+local AutoRuletaCorner = Instance.new("UICorner")
+AutoRuletaCorner.CornerRadius = UDim.new(0, 6)
+AutoRuletaCorner.Parent = AutoRuletaButton
+
+local AutoRuletaStroke = Instance.new("UIStroke")
+AutoRuletaStroke.Color = Color3.fromRGB(45, 45, 45)
+AutoRuletaStroke.Thickness = 1
+AutoRuletaStroke.Parent = AutoRuletaButton
+
+AutoRuletaButton.MouseButton1Click:Connect(function()
+
+    AutoRuleta = not AutoRuleta
+
+    if AutoRuleta then
+        AutoRuletaButton.Text = "AUTO RULETA  •  ON"
+        task.spawn(AutoSpin)
+    else
+        AutoRuletaButton.Text = "AUTO RULETA  •  OFF"
+    end
+
+end)
+
+--==================================================
 -- BOTÓN PEQUEÑO PARA MOSTRAR/OCULTAR
 --==================================================
 
@@ -336,7 +374,7 @@ MiniButton.BackgroundColor3 = Color3.fromRGB(10, 10, 10)
 MiniButton.BorderSizePixel = 0
 MiniButton.Text = "BOSS"
 MiniButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-MiniButton.TextSize = 11
+MiniButton.TextSize = 12
 MiniButton.Font = Enum.Font.GothamBold
 MiniButton.Visible = false
 MiniButton.Parent = ScreenGui
